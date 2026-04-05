@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 职引未来</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 48px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #f0f0f0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #8b5cf6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #8b5cf6;
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 24px 40px;
+        }
+
+        .profile-header {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .user-details h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .user-details p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        /* 功能卡片 */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .profile-card:hover {
+            border-color: #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .card-desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .card-count {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: flex;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #1a1a1a;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #8b5cf6;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn-cancel,
+        .btn-save {
+            padding: 12px 32px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e5e5;
+        }
+
+        .btn-save {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">职</div>
+            职引未来
+        </div>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/insights">数据洞察</a>
+            <a href="/profile">个人中心</a>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- 用户信息 -->
+        <div class="profile-header">
+            <div class="user-info">
+                <div class="avatar">{{ user.username[0].upper() }}</div>
+                <div class="user-details">
+                    <h1>{{ user.username }}</h1>
+                    <p>{{ user.email }} {% if user.phone %} | {{ user.phone }}{% endif %}</p>
+                    <p>毕业年份：{{ user.graduation_year or '未设置' }} | 学历：{{ user.education or '未设置' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能卡片 -->
+        <div class="profile-grid">
+            <!-- 投递记录 -->
+            <div class="profile-card" onclick="location.href='/applications'" style="cursor: pointer;">
+                <h3 class="card-title">投递记录</h3>
+                <p class="card-desc">追踪投递状态，从提交到面试全程掌握。</p>
+                <div class="card-count">{{ applications_count }} 个</div>
+            </div>
+
+            <!-- 账户设置 -->
+            <div class="profile-card" onclick="openAccountSettings()" style="cursor: pointer;">
+                <h3 class="card-title">账户设置</h3>
+                <p class="card-desc">修改个人信息、密码和求职偏好。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 账户设置弹窗 -->
+    <div id="accountSettingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>账户设置</h2>
+                <span class="close" onclick="closeAccountSettings()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="accountSettingsForm">
+                    <div class="form-section">
+                        <h3 class="section-title">基本信息</h3>
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <input type="text" id="username" value="{{ user.username }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>邮箱</label>
+                            <input type="email" id="email" value="{{ user.email }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>手机号</label>
+                            <input type="text" id="phone" value="{{ user.phone or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">教育信息</h3>
+                        <div class="form-group">
+                            <label>毕业年份</label>
+                            <input type="number" id="graduation_year" value="{{ user.graduation_year or '' }}" min="2000" max="2030">
+                        </div>
+                        <div class="form-group">
+                            <label>学历</label>
+                            <select id="education">
+                                <option value="">请选择</option>
+                                <option value="高中" {% if user.education == '高中' %}selected{% endif %}>高中</option>
+                                <option value="大专" {% if user.education == '大专' %}selected{% endif %}>大专</option>
+                                <option value="本科" {% if user.education == '本科' %}selected{% endif %}>本科</option>
+                                <option value="硕士" {% if user.education == '硕士' %}selected{% endif %}>硕士</option>
+                                <option value="博士" {% if user.education == '博士' %}selected{% endif %}>博士</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">修改密码</h3>
+                        <div class="form-group">
+                            <label>当前密码</label>
+                            <input type="password" id="current_password">
+                        </div>
+                        <div class="form-group">
+                            <label>新密码</label>
+                            <input type="password" id="new_password">
+                        </div>
+                        <div class="form-group">
+                            <label>确认新密码</label>
+                            <input type="password" id="confirm_password">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeAccountSettings()">取消</button>
+                        <button type="submit" class="btn-save">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 退出登录
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/';
+                    } else {
+                        alert('退出失败：' + (data.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('退出登录失败:', error);
+                    alert('退出失败，请重试');
+                });
+        }
+
+        // 打开账户设置弹窗
+        function openAccountSettings() {
+            document.getElementById('accountSettingsModal').style.display = 'flex';
+        }
+
+        // 关闭账户设置弹窗
+        function closeAccountSettings() {
+            document.getElementById('accountSettingsModal').style.display = 'none';
+            document.getElementById('accountSettingsForm').reset();
+        }
+
+        // 保存账户设置
+        document.getElementById('accountSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const data = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                graduation_year: document.getElementById('graduation_year').value,
+                education: document.getElementById('education').value,
+                current_password: document.getElementById('current_password').value,
+                new_password: document.getElementById('new_password').value,
+                confirm_password: document.getElementById('confirm_password').value
+            };
+            
+            // 验证密码
+            if (data.current_password || data.new_password || data.confirm_password) {
+                if (!data.current_password) {
+                    alert('请输入当前密码');
+                    return;
+                }
+                if (data.new_password !== data.confirm_password) {
+                    alert('两次输入的新密码不一致');
+                    return;
+                }
+                if (data.new_password.length < 6) {
+                    alert('新密码长度至少 6 位');
+                    return;
+                }
+            }
+            
+            fetch('/api/account/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('保存成功');
+                    closeAccountSettings();
+                    window.location.reload();
+                } else {
+                    alert(result.message || '保存失败');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('保存失败，请重试');
+            });
+        });
+
+        // 点击弹窗外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('accountSettingsModal');
+            if (event.target === modal) {
+                closeAccountSettings();
+            }
+        }
+    </script>
+</body>
+</html>

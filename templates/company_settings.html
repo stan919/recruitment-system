@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司设置 - 职引未来</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .page-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-label .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .logo-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logo-upload:hover {
+            border-color: #8b5cf6;
+            background: #f9fafb;
+        }
+
+        .logo-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 10px auto;
+        }
+
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+        }
+
+        .switch-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .switch-group:last-child {
+            border-bottom: none;
+        }
+
+        .switch-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .switch-desc {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #8b5cf6;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">公司设置</h1>
+            <p class="page-desc">管理公司信息、招聘设置和合规配置</p>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="settings-card">
+            <h2 class="card-title">基本信息</h2>
+            <form id="basicInfoForm">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">公司名称<span class="required">*</span></label>
+                        <input type="text" class="form-input" id="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">英文名称</label>
+                        <input type="text" class="form-input" id="englishName">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">公司简称</label>
+                        <input type="text" class="form-input" id="shortName">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">统一社会信用代码</label>
+                        <input type="text" class="form-input" id="creditCode">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">成立时间</label>
+                        <input type="date" class="form-input" id="establishedDate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">行业分类</label>
+                        <select class="form-select" id="industry">
+                            <option value="">请选择</option>
+                            <option value="互联网">互联网/IT</option>
+                            <option value="制造业">制造业</option>
+                            <option value="金融">金融/银行</option>
+                            <option value="教育">教育/培训</option>
+                            <option value="医疗">医疗/健康</option>
+                            <option value="零售">零售/电商</option>
+                            <option value="服务业">服务业</option>
+                            <option value="房地产">房地产/建筑</option>
+                            <option value="传媒">传媒/广告</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">公司 Logo</label>
+                        <div class="logo-upload" onclick="document.getElementById('logoFile').click()">
+                            <div id="logoPreview">
+                                <p>点击上传 Logo</p>
+                                <p class="form-help">支持 JPG、PNG 格式，建议尺寸 200x200</p>
+                            </div>
+                        </div>
+                        <input type="file" id="logoFile" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('basicInfoForm')">重置</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 联系方式 -->
+        <div class="settings-card">
+            <h2 class="card-title">联系方式</h2>
+            <form id="contactForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">官网地址</label>
+                        <input type="url" class="form-input" id="website" placeholder="https://">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">联系电话</label>
+                        <input type="tel" class="form-input" id="phone">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">联系邮箱</label>
+                        <input type="email" class="form-input" id="email">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">公司地址</label>
+                        <input type="text" class="form-input" id="address">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('contactForm')">重置</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 招聘介绍 -->
+        <div class="settings-card">
+            <h2 class="card-title">招聘介绍</h2>
+            <form id="recruitmentForm">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">企业简介</label>
+                        <textarea class="form-textarea" id="description" rows="5" placeholder="介绍公司基本情况..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">招聘宣言</label>
+                        <textarea class="form-textarea" id="recruitmentDeclaration" rows="3" placeholder="展示招聘理念和口号..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('recruitmentForm')">重置</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 雇主品牌 -->
+        <div class="settings-card">
+            <h2 class="card-title">雇主品牌</h2>
+            <div class="switch-group">
+                <div>
+                    <div class="switch-label">启用雇主品牌模块</div>
+                    <div class="switch-desc">展示公司文化、员工故事等内容</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="enableEmployerBrand" onchange="toggleEmployerBrand()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div id="employerBrandSettings" style="display: none; margin-top: 20px;">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">文化视频 URL</label>
+                        <input type="url" class="form-input" id="cultureVideoUrl" placeholder="https://">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">员工故事</label>
+                        <textarea class="form-textarea" id="employeeStories" rows="4" placeholder="分享员工的成长故事..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('employerBrandSettings')">重置</button>
+                    <button type="submit" class="btn btn-primary" onclick="saveEmployerBrand()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据保留策略 -->
+        <div class="settings-card">
+            <h2 class="card-title">数据保留策略</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">简历保存期限（天）</label>
+                    <input type="number" class="form-input" id="resumeRetentionDays" value="365" min="30">
+                    <p class="form-help">超过此期限的简历将自动归档</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">面试记录归档周期（天）</label>
+                    <input type="number" class="form-input" id="interviewRecordArchiveDays" value="180" min="30">
+                    <p class="form-help">超过此期限的面试记录将自动归档</p>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetDataPolicy()">重置</button>
+                <button type="submit" class="btn btn-primary" onclick="saveDataPolicy()">保存</button>
+            </div>
+        </div>
+
+        <!-- 合规设置 -->
+        <div class="settings-card">
+            <h2 class="card-title">合规设置</h2>
+            <div class="switch-group">
+                <div>
+                    <div class="switch-label">GDPR / 个人信息保护法合规</div>
+                    <div class="switch-desc">启用数据保护和隐私合规功能</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="gdprCompliance" onchange="toggleGdprOptions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div id="gdprOptions" style="display: none; margin-top: 15px;">
+                <div class="switch-group">
+                    <div>
+                        <div class="switch-label">候选人同意书弹窗</div>
+                        <div class="switch-desc">收集信息前显示隐私协议</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="consentPopupEnabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-group">
+                    <div>
+                        <div class="switch-label">数据导出入口</div>
+                        <div class="switch-desc">允许用户导出个人数据</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="dataExportEnabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-group">
+                    <div>
+                        <div class="switch-label">数据删除入口</div>
+                        <div class="switch-desc">允许用户申请删除数据</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="dataDeletionEnabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetGdprSettings()">重置</button>
+                    <button type="submit" class="btn btn-primary" onclick="saveGdprSettings()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 审计日志 -->
+        <div class="settings-card">
+            <h2 class="card-title">审计日志</h2>
+            <div class="switch-group">
+                <div>
+                    <div class="switch-label">启用审计日志</div>
+                    <div class="switch-desc">记录所有敏感操作</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="auditLogEnabled" checked onchange="toggleAuditLog()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div id="auditLogSettings" style="margin-top: 15px;">
+                <div class="form-group">
+                    <label class="form-label">日志存储周期（天）</label>
+                    <input type="number" class="form-input" id="auditLogRetentionDays" value="90" min="7">
+                    <p class="form-help">超过此期限的日志将自动清理</p>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetAuditLog()">重置</button>
+                    <button type="submit" class="btn btn-primary" onclick="saveAuditLog()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 敏感字段脱敏 -->
+        <div class="settings-card">
+            <h2 class="card-title">敏感字段脱敏</h2>
+            <div class="switch-group">
+                <div>
+                    <div class="switch-label">手机号脱敏</div>
+                    <div class="switch-desc">显示为 138****1234</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="phoneMaskEnabled" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-group">
+                <div>
+                    <div class="switch-label">邮箱脱敏</div>
+                    <div class="switch-desc">显示为 t**@example.com</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="emailMaskEnabled">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetMaskSettings()">重置</button>
+                <button type="submit" class="btn btn-primary" onclick="saveMaskSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let companyData = null;
+
+        // 加载公司数据
+        async function loadCompanyData() {
+            try {
+                const response = await fetch('/api/company/settings');
+                const data = await response.json();
+                
+                if (data.success && data.company) {
+                    companyData = data.company;
+                    fillFormData();
+                }
+            } catch (error) {
+                console.error('加载公司数据失败:', error);
+            }
+        }
+
+        // 填充表单数据
+        function fillFormData() {
+            if (!companyData) return;
+
+            // 基本信息
+            document.getElementById('companyName').value = companyData.company_name || '';
+            document.getElementById('englishName').value = companyData.english_name || '';
+            document.getElementById('shortName').value = companyData.short_name || '';
+            document.getElementById('creditCode').value = companyData.credit_code || '';
+            document.getElementById('establishedDate').value = companyData.established_date || '';
+            document.getElementById('industry').value = companyData.industry || '';
+            
+            // 联系方式
+            document.getElementById('website').value = companyData.website || '';
+            document.getElementById('phone').value = companyData.phone || '';
+            document.getElementById('email').value = companyData.email || '';
+            document.getElementById('address').value = companyData.address || '';
+            
+            // 招聘介绍
+            document.getElementById('description').value = companyData.description || '';
+            document.getElementById('recruitmentDeclaration').value = companyData.recruitment_declaration || '';
+            
+            // 雇主品牌
+            document.getElementById('enableEmployerBrand').checked = companyData.enable_employer_brand || false;
+            document.getElementById('cultureVideoUrl').value = companyData.culture_video_url || '';
+            document.getElementById('employeeStories').value = companyData.employee_stories || '';
+            toggleEmployerBrand();
+            
+            // 数据保留策略
+            document.getElementById('resumeRetentionDays').value = companyData.resume_retention_days || 365;
+            document.getElementById('interviewRecordArchiveDays').value = companyData.interview_record_archive_days || 180;
+            
+            // 合规设置
+            document.getElementById('gdprCompliance').checked = companyData.gdpr_compliance || false;
+            document.getElementById('consentPopupEnabled').checked = companyData.consent_popup_enabled || true;
+            document.getElementById('dataExportEnabled').checked = companyData.data_export_enabled || true;
+            document.getElementById('dataDeletionEnabled').checked = companyData.data_deletion_enabled || true;
+            toggleGdprOptions();
+            
+            // 审计日志
+            document.getElementById('auditLogEnabled').checked = companyData.audit_log_enabled || true;
+            document.getElementById('auditLogRetentionDays').value = companyData.audit_log_retention_days || 90;
+            toggleAuditLog();
+            
+            // 敏感字段脱敏
+            document.getElementById('phoneMaskEnabled').checked = companyData.phone_mask_enabled || true;
+            document.getElementById('emailMaskEnabled').checked = companyData.email_mask_enabled || false;
+        }
+
+        // Logo 上传
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('logoPreview');
+                preview.innerHTML = `<img src="${e.target.result}" class="logo-preview" alt="Logo">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 切换雇主品牌
+        function toggleEmployerBrand() {
+            const enabled = document.getElementById('enableEmployerBrand').checked;
+            document.getElementById('employerBrandSettings').style.display = enabled ? 'block' : 'none';
+        }
+
+        // 切换 GDPR 选项
+        function toggleGdprOptions() {
+            const enabled = document.getElementById('gdprCompliance').checked;
+            document.getElementById('gdprOptions').style.display = enabled ? 'block' : 'none';
+        }
+
+        // 切换审计日志
+        function toggleAuditLog() {
+            const enabled = document.getElementById('auditLogEnabled').checked;
+            document.getElementById('auditLogSettings').style.display = enabled ? 'block' : 'none';
+        }
+
+        // 重置表单
+        function resetForm(formId) {
+            document.getElementById(formId).reset();
+        }
+
+        // 保存基本信息
+        document.getElementById('basicInfoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveCompanySettings({
+                company_name: document.getElementById('companyName').value,
+                english_name: document.getElementById('englishName').value,
+                short_name: document.getElementById('shortName').value,
+                credit_code: document.getElementById('creditCode').value,
+                established_date: document.getElementById('establishedDate').value,
+                industry: document.getElementById('industry').value
+            });
+        });
+
+        // 保存联系方式
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveCompanySettings({
+                website: document.getElementById('website').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value
+            });
+        });
+
+        // 保存招聘介绍
+        document.getElementById('recruitmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveCompanySettings({
+                description: document.getElementById('description').value,
+                recruitment_declaration: document.getElementById('recruitmentDeclaration').value
+            });
+        });
+
+        // 保存公司设置
+        async function saveCompanySettings(data) {
+            try {
+                const response = await fetch('/api/company/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('保存成功');
+                    loadCompanyData();
+                } else {
+                    alert(result.message || '保存失败');
+                }
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败，请重试');
+            }
+        }
+
+        // 保存雇主品牌
+        async function saveEmployerBrand() {
+            await saveCompanySettings({
+                enable_employer_brand: document.getElementById('enableEmployerBrand').checked,
+                culture_video_url: document.getElementById('cultureVideoUrl').value,
+                employee_stories: document.getElementById('employeeStories').value
+            });
+        }
+
+        // 保存数据策略
+        async function saveDataPolicy() {
+            await saveCompanySettings({
+                resume_retention_days: parseInt(document.getElementById('resumeRetentionDays').value),
+                interview_record_archive_days: parseInt(document.getElementById('interviewRecordArchiveDays').value)
+            });
+        }
+
+        // 保存 GDPR 设置
+        async function saveGdprSettings() {
+            await saveCompanySettings({
+                gdpr_compliance: document.getElementById('gdprCompliance').checked,
+                consent_popup_enabled: document.getElementById('consentPopupEnabled').checked,
+                data_export_enabled: document.getElementById('dataExportEnabled').checked,
+                data_deletion_enabled: document.getElementById('dataDeletionEnabled').checked
+            });
+        }
+
+        // 保存审计日志
+        async function saveAuditLog() {
+            await saveCompanySettings({
+                audit_log_enabled: document.getElementById('auditLogEnabled').checked,
+                audit_log_retention_days: parseInt(document.getElementById('auditLogRetentionDays').value)
+            });
+        }
+
+        // 保存脱敏设置
+        async function saveMaskSettings() {
+            await saveCompanySettings({
+                phone_mask_enabled: document.getElementById('phoneMaskEnabled').checked,
+                email_mask_enabled: document.getElementById('emailMaskEnabled').checked
+            });
+        }
+
+        // 重置函数
+        function resetDataPolicy() {
+            document.getElementById('resumeRetentionDays').value = 365;
+            document.getElementById('interviewRecordArchiveDays').value = 180;
+        }
+
+        function resetGdprSettings() {
+            document.getElementById('gdprCompliance').checked = false;
+            document.getElementById('consentPopupEnabled').checked = true;
+            document.getElementById('dataExportEnabled').checked = true;
+            document.getElementById('dataDeletionEnabled').checked = true;
+            toggleGdprOptions();
+        }
+
+        function resetAuditLog() {
+            document.getElementById('auditLogEnabled').checked = true;
+            document.getElementById('auditLogRetentionDays').value = 90;
+        }
+
+        function resetMaskSettings() {
+            document.getElementById('phoneMaskEnabled').checked = true;
+            document.getElementById('emailMaskEnabled').checked = false;
+        }
+
+        // 初始化
+        loadCompanyData();
+    </script>
+</body>
+</html>

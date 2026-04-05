@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>职引未来 - 数据驱动就业，精准匹配理想职位</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 48px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #f0f0f0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1a1a1a;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #8b5cf6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-size: 15px;
+            font-weight: 400;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #1a1a1a;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #8b5cf6;
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-login {
+            padding: 10px 28px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .btn-register {
+            padding: 10px 28px;
+            background: transparent;
+            color: #8b5cf6;
+            border: 1.5px solid #8b5cf6;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-register:hover {
+            background: #8b5cf6;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* 主视觉区域 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 140px 20px 80px;
+            background: #ffffff;
+            color: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f7ff;
+            padding: 8px 20px;
+            border-radius: 9999px;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid #f0f0f0;
+        }
+
+        .hero-badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .hero h1 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            color: #1a1a1a;
+        }
+
+        .hero h2 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            color: #8b5cf6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 640px;
+            margin: 0 auto 48px;
+            color: #666;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+            justify-content: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-primary {
+            padding: 12px 32px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            padding: 12px 32px;
+            background: transparent;
+            color: #1a1a1a;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 9999px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f8f8;
+            border-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        /* 统计数据 */
+        .stats {
+            display: flex;
+            gap: 80px;
+            margin-top: 80px;
+            padding-top: 60px;
+            border-top: 1px solid #f0f0f0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 40px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* 特性区域 */
+        .features {
+            background: #fafbff;
+            padding: 120px 48px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            padding: 40px 32px;
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: #e8e4ff;
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.1);
+        }
+
+        .feature-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #fafbff;
+            color: #1a1a1a;
+            padding: 64px 48px;
+            border-top: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .footer p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero h2 {
+                font-size: 28px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .features {
+                padding: 60px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">职</div>
+            职引未来
+        </div>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/jobs/search">职位搜索</a>
+            <a href="/insights">数据洞察</a>
+            <a href="#features">功能介绍</a>
+            {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+            <a href="/chat/user" style="color: #8b5cf6;">消息中心</a>
+            <a href="/applications" style="color: #666;">投递记录</a>
+            {% endif %}
+        </div>
+        <div class="auth-buttons">
+            {% if session.get('user_id') %}
+            {% if session.get('is_admin') %}
+            <button class="btn-register" onclick="location.href='/admin'">管理后台</button>
+            {% elif session.get('is_company') %}
+            <button class="btn-register" onclick="location.href='/company'">企业后台</button>
+            {% else %}
+            <button class="btn-register" onclick="location.href='/profile'">个人中心</button>
+            {% endif %}
+            <button class="btn-login" onclick="logout()">退出</button>
+            {% else %}
+            <button class="btn-login" onclick="location.href='/login'">登录</button>
+            <button class="btn-register" onclick="location.href='/register'">注册</button>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- 主视觉区域 -->
+    <section class="hero">
+        <h1>数据驱动就业</h1>
+        <h2>精准匹配理想职位</h2>
+        <p>整合全国企业招聘信息，通过智能分析为高校毕业生提供个性化推荐，让求职更高效、更简单。</p>
+        
+        <div class="hero-buttons">
+            {% if not session.get('user_id') %}
+            <a href="/register" class="btn-primary">免费注册</a>
+            {% endif %}
+            <a href="/dashboard" class="btn-secondary">进入平台</a>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number">10W+</span>
+                <span class="stat-label">优质企业</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">50W+</span>
+                <span class="stat-label">在招职位</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">98%</span>
+                <span class="stat-label">就业成功率</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能介绍 -->
+    <section class="features" id="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3 class="feature-title">数据中心</h3>
+                <p class="feature-desc">多维度数据分析，涵盖专业、学历、经验要求，助您了解就业市场趋势。</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">企业探索</h3>
+                <p class="feature-desc">深入了解企业信息，包括行业分布、公司规模、薪资水平等关键数据。</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">技能分析</h3>
+                <p class="feature-desc">智能技能图谱，精准匹配岗位需求，提升个人竞争力。</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">地域洞察</h3>
+                <p class="feature-desc">全国城市就业数据对比，帮助您选择最适合的发展城市。</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">职位搜索</h3>
+                <p class="feature-desc">智能搜索引擎，支持多条件筛选，快速找到理想职位。</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">用户中心</h3>
+                <p class="feature-desc">个性化管理，投递记录以及撤回修改</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>&copy; 2026 职引未来。All rights reserved. 数据驱动就业，精准匹配理想职位</p>
+    </footer>
+    
+    <script>
+        // 检查管理员权限并显示入口
+        fetch('/api/admin/check')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user.is_admin) {
+                    // 在导航栏添加管理后台链接
+                    const navLinks = document.querySelector('.nav-links');
+                    const adminLink = document.createElement('a');
+                    adminLink.href = '/admin';
+                    adminLink.textContent = '管理后台';
+                    adminLink.style.color = '#8b5cf6';
+                    adminLink.style.fontWeight = '600';
+                    navLinks.appendChild(adminLink);
+                }
+            })
+            .catch(error => console.error('检查管理员权限失败:', error));
+        
+        // 退出登录
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.removeItem('user');
+                        window.location.reload();
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

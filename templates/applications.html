@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投递记录 - 职引未来</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 48px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #f0f0f0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #8b5cf6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #8b5cf6;
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1200px;
+            margin: 100px auto 40px;
+            padding: 0 24px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            color: #666;
+            font-size: 15px;
+        }
+
+        /* 投递记录列表 */
+        .applications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .application-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .application-card:hover {
+            border-color: #e8e4ff;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+            cursor: pointer;
+        }
+
+        .application-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .job-info h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .company-name {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-submitted {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status-viewed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-interview {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-offer {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .application-meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .meta-item {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .meta-label {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .chat-btn {
+            position: absolute;
+            top: 24px;
+            right: 100px;
+            padding: 8px 16px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: #999;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: flex;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #1a1a1a;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .detail-section {
+            margin-bottom: 32px;
+        }
+
+        .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .detail-item {
+            margin-bottom: 16px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .detail-item strong {
+            color: #666;
+            margin-right: 8px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn-cancel,
+        .btn-save {
+            padding: 12px 32px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e5e5;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .btn-save:hover {
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-withdraw,
+        .btn-edit {
+            padding: 12px 32px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-withdraw {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-withdraw:hover {
+            background: #333;
+        }
+
+        .btn-edit {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #333;
+        }
+        
+        /* 编辑表单样式 */
+        .step {
+            margin-bottom: 32px;
+        }
+        
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #8b5cf6;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: #8b5cf6;
+            background: #f5f3ff;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        
+        .upload-hint {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            margin-top: 12px;
+        }
+        
+        .file-name {
+            font-size: 14px;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+        
+        .remove-file {
+            font-size: 14px;
+            color: #ef4444;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .remove-file:hover {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">职</div>
+            职引未来
+        </div>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/jobs/search">职位搜索</a>
+            <a href="/insights">数据洞察</a>
+            <a href="/profile">个人中心</a>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">投递记录</h1>
+            <p class="page-desc">追踪您的投递状态，从提交到面试全程掌握</p>
+        </div>
+
+        <div id="applicationsList">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 申请详情弹窗 -->
+    <div id="applicationDetailModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>申请详情</h2>
+                <span class="close" onclick="closeApplicationDetail()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <h3 class="detail-title">职位信息</h3>
+                    <div class="detail-item"><strong>职位名称：</strong><span id="detailJobName"></span></div>
+                    <div class="detail-item"><strong>公司名称：</strong><span id="detailCompanyName"></span></div>
+                    <div class="detail-item"><strong>投递状态：</strong><span id="detailStatus" class="status-badge"></span></div>
+                    <div class="detail-item"><strong>投递时间：</strong><span id="detailAppliedAt"></span></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3 class="detail-title">申请信息</h3>
+                    <div class="detail-item"><strong>期望薪资：</strong><span id="detailExpectedSalary"></span></div>
+                    <div class="detail-item"><strong>申请理由：</strong><span id="detailReason" style="white-space: pre-wrap;"></span></div>
+                    <div class="detail-item"><strong>其他信息：</strong><span id="detailOtherInfo" style="white-space: pre-wrap;"></span></div>
+                </div>
+                
+                <div class="form-actions" id="actionButtons" style="display: none;">
+                    <button type="button" class="btn-cancel" onclick="closeApplicationDetail()">关闭</button>
+                    <button type="button" class="btn-withdraw" id="withdrawBtn" onclick="withdrawApplication()" style="background: #1a1a1a; color: white;">撤回申请</button>
+                    <button type="button" class="btn-edit" id="editBtn" onclick="editApplication()" style="background: #1a1a1a; color: white;">修改申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改申请弹窗（完整表单） -->
+    <div id="editApplicationModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>修改申请</h2>
+                <span class="close" onclick="closeEditApplicationModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- 步骤 1：基本信息 -->
+                <div class="step">
+                    <h3 class="step-title">
+                        <span class="step-number">1</span>
+                        基本信息
+                    </h3>
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" id="editName" placeholder="请输入姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>手机号 *</label>
+                        <input type="tel" id="editPhone" placeholder="请输入手机号">
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱 *</label>
+                        <input type="email" id="editEmail" placeholder="请输入邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label>学历</label>
+                        <select id="editEducation" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                            <option value="">请选择</option>
+                            <option value="高中">高中</option>
+                            <option value="大专">大专</option>
+                            <option value="本科">本科</option>
+                            <option value="硕士">硕士</option>
+                            <option value="博士">博士</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>毕业年份</label>
+                        <input type="number" id="editGraduationYear" placeholder="如：2024" min="2000" max="2030">
+                    </div>
+                    <div class="form-group">
+                        <label>学校</label>
+                        <input type="text" id="editSchool" placeholder="请输入学校名称">
+                    </div>
+                    <div class="form-group">
+                        <label>专业</label>
+                        <input type="text" id="editMajor" placeholder="请输入专业名称">
+                    </div>
+                </div>
+
+                <!-- 步骤 2：工作和技能 -->
+                <div class="step">
+                    <h3 class="step-title">
+                        <span class="step-number">2</span>
+                        工作经历和技能
+                    </h3>
+                    <div class="form-group">
+                        <label>工作经历</label>
+                        <textarea id="editWorkExperience" placeholder="请描述您的工作经历" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>技能特长</label>
+                        <textarea id="editSkills" placeholder="请描述您的技能特长" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>自我介绍</label>
+                        <textarea id="editSelfIntroduction" placeholder="请做简单的自我介绍" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- 步骤 3：上传简历 -->
+                <div class="step">
+                    <h3 class="step-title">
+                        <span class="step-number">3</span>
+                        上传简历附件
+                    </h3>
+                    <div class="upload-area" id="editUploadArea" onclick="document.getElementById('editFileInput').click()"
+                         ondrop="handleEditDrop(event)" ondragover="handleEditDragOver(event)">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">点击或拖拽上传简历</div>
+                        <div class="upload-hint">支持 PDF、Word 格式，最大 10MB</div>
+                    </div>
+                    <input type="file" id="editFileInput" accept=".pdf,.doc,.docx" style="display: none;" onchange="handleEditFileSelect(event)">
+                    <div id="editFileInfo" class="file-info" style="display: none;">
+                        <span class="file-name" id="editFileName"></span>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="remove-file" onclick="removeEditResume()">✕ 删除</span>
+                            <span class="remove-file" onclick="previewEditResume()" style="color: #8b5cf6;">👁 预览</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤 4：申请信息 -->
+                <div class="step">
+                    <h3 class="step-title">
+                        <span class="step-number">4</span>
+                        申请信息
+                    </h3>
+                    <div class="form-group">
+                        <label>期望薪资</label>
+                        <input type="text" id="editExpectedSalary" placeholder="如：8000-10000 或 面议">
+                    </div>
+                    <div class="form-group">
+                        <label>申请理由</label>
+                        <textarea id="editReason" placeholder="为什么想加入我们？" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>其他信息</label>
+                        <textarea id="editOtherInfo" placeholder="其他需要说明的信息（选填）" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditApplicationModal()">取消</button>
+                    <button type="button" class="btn-save" onclick="saveEditApplication()">保存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前查看的申请
+        let currentApplicationId = null;
+        let applicationsData = [];
+
+        // 加载投递记录
+        function loadApplications() {
+            fetch('/api/applications')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        applicationsData = data.applications || [];
+                        renderApplications(data.applications);
+                    } else {
+                        document.getElementById('applicationsList').innerHTML = `
+                            <div class="empty-state">
+                                <h3>加载失败</h3>
+                                <p>请稍后重试</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载失败:', error);
+                    document.getElementById('applicationsList').innerHTML = `
+                        <div class="empty-state">
+                            <h3>加载失败</h3>
+                            <p>请稍后重试</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // 渲染投递记录
+        function renderApplications(applications) {
+            const container = document.getElementById('applicationsList');
+            
+            if (applications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无投递记录</h3>
+                        <p>快去探索心仪的职位吧</p>
+                        <a href="/jobs/search" class="btn-primary">浏览职位</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const statusMap = {
+                'submitted': { text: '已提交', class: 'status-submitted' },
+                'viewed': { text: '已查看', class: 'status-viewed' },
+                'interview': { text: '面试中', class: 'status-interview' },
+                'offer': { text: '已录用', class: 'status-offer' },
+                'rejected': { text: '已拒绝', class: 'status-rejected' }
+            };
+
+            container.innerHTML = applications.map(app => {
+                const status = statusMap[app.status] || { text: app.status, class: 'status-submitted' };
+                const appliedDate = new Date(app.applied_at).toLocaleDateString('zh-CN');
+                
+                return `
+                    <div class="application-card" onclick="viewApplication(${app.id})">
+                        <div class="application-header">
+                            <div class="job-info">
+                                <h3>${app.job_name || '未知职位'}</h3>
+                                <p class="company-name">${app.company_name || '未知公司'}</p>
+                            </div>
+                            <button class="chat-btn" onclick="event.stopPropagation(); startChat(${app.id})">发消息</button>
+                            <span class="status-badge ${status.class}">${status.text}</span>
+                        </div>
+                        <div class="application-meta">
+                            <div class="meta-item">
+                                <div class="meta-label">投递时间</div>
+                                <div class="meta-value">${appliedDate}</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">期望薪资</div>
+                                <div class="meta-value">${app.expected_salary || '面议'}</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">申请理由</div>
+                                <div class="meta-value">${app.reason ? app.reason.substring(0, 30) + '...' : '未填写'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 查看申请详情
+        function viewApplication(appId) {
+            currentApplicationId = appId;
+            fetch(`/api/application/${appId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showApplicationDetail(data.application);
+                    } else {
+                        alert('加载申请详情失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('加载失败:', error);
+                    alert('加载失败');
+                });
+        }
+        
+        // 发起聊天
+        function startChat(applicationId) {
+            const app = applicationsData.find(a => a.id === applicationId);
+            if (!app) {
+                alert('未找到申请信息');
+                return;
+            }
+            
+            // 创建新会话
+            fetch('/api/chat/conversations', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    company_name: app.company_name || '',
+                    job_id: app.job_id || null,
+                    job_name: app.job_name || ''
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success && result.conversation) {
+                    // 跳转到消息中心
+                    window.location.href = '/chat/user?conversation_id=' + result.conversation.id;
+                } else {
+                    alert('创建会话失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('创建会话失败:', error);
+                alert('创建会话失败');
+            });
+        }
+        
+        // 显示申请详情弹窗
+        function showApplicationDetail(app) {
+            const modal = document.getElementById('applicationDetailModal');
+            const statusMap = {
+                'submitted': '已提交',
+                'viewed': '已查看',
+                'interview': '面试中',
+                'offer': '已录用',
+                'rejected': '已拒绝'
+            };
+            
+            document.getElementById('detailJobName').textContent = app.job_name || '未知职位';
+            document.getElementById('detailCompanyName').textContent = app.company_name || '未知公司';
+            document.getElementById('detailStatus').textContent = statusMap[app.status] || app.status;
+            document.getElementById('detailAppliedAt').textContent = new Date(app.applied_at).toLocaleString('zh-CN');
+            document.getElementById('detailExpectedSalary').textContent = app.expected_salary || '未填写';
+            document.getElementById('detailReason').textContent = app.reason || '未填写';
+            document.getElementById('detailOtherInfo').textContent = app.other_info || '未填写';
+            
+            // 显示/隐藏操作按钮
+            const actionButtons = document.getElementById('actionButtons');
+            if (app.status === 'submitted' || app.status === 'viewed') {
+                actionButtons.style.display = 'flex';
+                document.getElementById('editBtn').style.display = 'inline-block';
+                document.getElementById('withdrawBtn').style.display = 'inline-block';
+            } else {
+                actionButtons.style.display = 'none';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // 关闭详情弹窗
+        function closeApplicationDetail() {
+            document.getElementById('applicationDetailModal').style.display = 'none';
+        }
+        
+        // 撤回申请
+        function withdrawApplication() {
+            if (!confirm('确定要撤回这份申请吗？')) {
+                return;
+            }
+            
+            fetch(`/api/application/${currentApplicationId}/withdraw`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('申请已撤回');
+                    closeApplicationDetail();
+                    loadApplications();
+                } else {
+                    alert(result.message || '撤回失败');
+                }
+            })
+            .catch(error => {
+                console.error('撤回失败:', error);
+                alert('撤回失败，请重试');
+            });
+        }
+        
+        // 编辑申请
+        function editApplication() {
+            // 获取申请详情和简历数据
+            Promise.all([
+                fetch(`/api/application/${currentApplicationId}`).then(r => r.json()),
+                fetch('/api/resume').then(r => r.json())
+            ])
+            .then(([appRes, resumeRes]) => {
+                if (appRes.success && resumeRes.success) {
+                    const app = appRes.application;
+                    const resume = resumeRes.resume;
+                    
+                    // 填充简历数据
+                    document.getElementById('editName').value = resume.name || '';
+                    document.getElementById('editPhone').value = resume.phone || '';
+                    document.getElementById('editEmail').value = resume.email || '';
+                    document.getElementById('editEducation').value = resume.education || '';
+                    document.getElementById('editGraduationYear').value = resume.graduation_year || '';
+                    document.getElementById('editSchool').value = resume.school || '';
+                    document.getElementById('editMajor').value = resume.major || '';
+                    document.getElementById('editWorkExperience').value = resume.work_experience || '';
+                    document.getElementById('editSkills').value = resume.skills || '';
+                    document.getElementById('editSelfIntroduction').value = resume.self_introduction || '';
+                    
+                    // 填充申请数据
+                    document.getElementById('editExpectedSalary').value = app.expected_salary || '';
+                    document.getElementById('editReason').value = app.reason || '';
+                    document.getElementById('editOtherInfo').value = app.other_info || '';
+                    
+                    // 显示简历附件信息
+                    if (resume.has_attachment && resume.attachment_name) {
+                        document.getElementById('editFileInfo').style.display = 'flex';
+                        document.getElementById('editFileName').textContent = resume.attachment_name;
+                    } else {
+                        document.getElementById('editFileInfo').style.display = 'none';
+                        document.getElementById('editFileName').textContent = '';
+                    }
+                    
+                    // 显示编辑弹窗
+                    document.getElementById('editApplicationModal').style.display = 'flex';
+                }
+            })
+            .catch(error => {
+                console.error('加载失败:', error);
+                alert('加载失败');
+            });
+        }
+        
+        // 关闭编辑弹窗
+        function closeEditApplicationModal() {
+            document.getElementById('editApplicationModal').style.display = 'none';
+        }
+        
+        // 保存修改
+        function saveEditApplication() {
+            // 验证必填项
+            const name = document.getElementById('editName').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            
+            if (!name || !phone || !email) {
+                alert('请填写基本信息（姓名、手机号、邮箱）');
+                return;
+            }
+            
+            // 保存简历
+            const resumeData = {
+                name: name,
+                phone: phone,
+                email: email,
+                education: document.getElementById('editEducation').value,
+                graduation_year: document.getElementById('editGraduationYear').value,
+                school: document.getElementById('editSchool').value,
+                major: document.getElementById('editMajor').value,
+                work_experience: document.getElementById('editWorkExperience').value,
+                skills: document.getElementById('editSkills').value,
+                self_introduction: document.getElementById('editSelfIntroduction').value
+            };
+            
+            fetch('/api/resume', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(resumeData)
+            })
+            .then(response => response.json())
+            .then(resumeResult => {
+                if (resumeResult.success) {
+                    // 保存申请信息
+                    const appData = {
+                        expected_salary: document.getElementById('editExpectedSalary').value,
+                        reason: document.getElementById('editReason').value,
+                        other_info: document.getElementById('editOtherInfo').value
+                    };
+                    
+                    return fetch(`/api/application/${currentApplicationId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(appData)
+                    }).then(r => r.json());
+                } else {
+                    throw new Error(resumeResult.message);
+                }
+            })
+            .then(result => {
+                if (result.success) {
+                    alert('修改成功！');
+                    closeEditApplicationModal();
+                    closeApplicationDetail();
+                    loadApplications();
+                } else {
+                    alert(result.message || '修改失败，请重试');
+                }
+            })
+            .catch(error => {
+                console.error('修改失败:', error);
+                alert('修改失败，请重试');
+            });
+        }
+        
+        // 点击弹窗外部关闭
+        window.onclick = function(event) {
+            const modal1 = document.getElementById('applicationDetailModal');
+            const modal2 = document.getElementById('editApplicationModal');
+            if (event.target === modal1) {
+                closeApplicationDetail();
+            }
+            if (event.target === modal2) {
+                closeEditApplicationModal();
+            }
+        }
+        
+        // 编辑模式下的文件上传处理
+        function handleEditDrop(event) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                uploadEditResume(file);
+            }
+        }
+        
+        function handleEditDragOver(event) {
+            event.preventDefault();
+        }
+        
+        function handleEditFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadEditResume(file);
+            }
+        }
+        
+        function uploadEditResume(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/api/resume/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('editFileInfo').style.display = 'flex';
+                    document.getElementById('editFileName').textContent = result.filename;
+                } else {
+                    alert(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('上传失败:', error);
+                alert('上传失败，请重试');
+            });
+        }
+        
+        function removeEditResume() {
+            fetch('/api/resume/attachment', {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('editFileInfo').style.display = 'none';
+                    document.getElementById('editFileName').textContent = '';
+                    document.getElementById('editFileInput').value = '';
+                } else {
+                    alert(result.message || '删除失败');
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请重试');
+            });
+        }
+        
+        function previewEditResume() {
+            const fileName = document.getElementById('editFileName').textContent;
+            if (!fileName) {
+                alert('没有可预览的简历');
+                return;
+            }
+            
+            const ext = fileName.split('.').pop().toLowerCase();
+            if (ext === 'pdf') {
+                fetch('/api/resume/attachment/preview')
+                    .then(response => {
+                        if (response.ok) {
+                            return response.blob();
+                        }
+                        throw new Error('预览失败');
+                    })
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        showEditPreviewModal(url);
+                    })
+                    .catch(error => {
+                        console.error('预览失败:', error);
+                        alert('预览失败，请重试');
+                    });
+            } else {
+                window.location.href = '/api/resume/attachment/download';
+            }
+        }
+        
+        function showEditPreviewModal(url) {
+            const previewHTML = `
+                <div id="editPreviewModal" class="preview-modal" onclick="closeEditPreviewModal()" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:3000;display:flex;align-items:center;justify-content:center;">
+                    <div class="preview-content" onclick="event.stopPropagation()" style="background:white;width:90%;max-width:800px;height:90%;border-radius:8px;overflow:hidden;">
+                        <div class="preview-header" style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #eee;">
+                            <h3 style="margin:0;">简历预览</h3>
+                            <button class="close-btn" onclick="closeEditPreviewModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">✕ 关闭</button>
+                        </div>
+                        <div class="preview-body" style="height:calc(100% - 73px);">
+                            <iframe src="${url}" width="100%" height="100%" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = previewHTML;
+            document.body.appendChild(tempDiv);
+        }
+        
+        function closeEditPreviewModal() {
+            const modal = document.getElementById('editPreviewModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // 页面加载时获取投递记录
+        loadApplications();
+    </script>
+</body>
+</html>

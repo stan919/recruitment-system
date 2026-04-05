@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息中心 - 企业后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-back {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-logout {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        /* 聊天区域 */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* 会话列表 */
+        .conversations-panel {
+            width: 350px;
+            border-right: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conversations-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .conversation-item:hover {
+            background: #fafafa;
+        }
+
+        .conversation-item.active {
+            background: #f5f3ff;
+        }
+
+        .conversation-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .conversation-item-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .conversation-item-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .conversation-item-preview {
+            color: #666;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 聊天窗口 */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+            display: none;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .message-bubble {
+            display: inline-flex;
+            flex-direction: column;
+            max-width: min(72%, 560px);
+        }
+
+        .message.sent .message-bubble {
+            align-items: flex-end;
+        }
+
+        .message.received .message-bubble {
+            align-items: flex-start;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            width: fit-content;
+            max-width: 100%;
+            min-width: 96px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .message.sent .message-content {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .message-time {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .message.sent .message-time {
+            color: rgba(255,255,255,0.7);
+            text-align: right;
+        }
+
+        .message.received .message-time {
+            color: #999;
+            text-align: left;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .chat-input {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+
+        .chat-send-btn {
+            padding: 10px 30px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .chat-send-btn:hover {
+            background: #7c3aed;
+        }
+
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .empty-chat svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .empty-chat p {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💬 消息中心</h1>
+        <div class="header-actions">
+            <button onclick="goBack()" class="btn btn-back">← 返回企业后台</button>
+            <button onclick="logout()" class="btn btn-logout">退出登录</button>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="conversations-panel">
+            <div class="conversations-header">会话列表</div>
+            <div class="conversations-list" id="conversationsList">
+                <div style="padding: 40px 20px; text-align: center; color: #999;">加载中...</div>
+            </div>
+        </div>
+
+        <div class="chat-panel">
+            <div class="chat-header" id="chatHeader" style="display: none;">
+                <h3 id="chatPartner"></h3>
+            </div>
+            <div class="chat-messages" id="chatMessages" style="display: none;"></div>
+            <div class="empty-chat" id="emptyChat">
+                <div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <p>选择一个会话开始聊天</p>
+                </div>
+            </div>
+            <div class="chat-input-area" id="chatInput" style="display: none;">
+                <textarea id="messageInput" placeholder="输入消息..." rows="3" class="chat-input"></textarea>
+                <button onclick="sendMessage()" class="chat-send-btn">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentConversationId = null;
+        let pendingConversationId = null;
+        let autoOpened = false;
+        let roleVerified = false;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationParam = parseInt(urlParams.get('conversation_id') || '', 10);
+        if (!Number.isNaN(conversationParam) && conversationParam > 0) {
+            pendingConversationId = conversationParam;
+        }
+
+        // 返回企业后台
+        function goBack() {
+            window.location.href = '/company';
+        }
+
+        async function ensureCompanyChatRole() {
+            try {
+                const r = await fetch('/api/user');
+                if (r.status === 401) {
+                    window.location.href = '/login';
+                    return false;
+                }
+
+                const data = await r.json();
+                if (!data.logged_in) {
+                    window.location.href = '/login';
+                    return false;
+                }
+
+                const flags = data.session_flags || {};
+                if (flags.is_admin) {
+                    window.location.href = '/admin';
+                    return false;
+                }
+                if (!flags.is_company) {
+                    window.location.href = '/chat/user';
+                    return false;
+                }
+
+                roleVerified = true;
+                return true;
+            } catch (e) {
+                window.location.href = '/login';
+                return false;
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/login';
+                    }
+                });
+        }
+
+        // 加载会话列表
+        function loadConversations() {
+            fetch('/api/chat/conversations')
+                .then(r => {
+                    if (r.status === 401) {
+                        window.location.href = '/login';
+                        throw new Error('未登录');
+                    }
+                    if (r.status === 403) {
+                        window.location.href = '/chat/user';
+                        throw new Error('身份已切换');
+                    }
+                    return r;
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderConversations(data.conversations);
+                    }
+                });
+        }
+
+        function renderConversations(conversations) {
+            const list = document.getElementById('conversationsList');
+            if (conversations.length === 0) {
+                list.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: #999;">暂无会话</div>';
+                return;
+            }
+
+            list.innerHTML = conversations.map(c => {
+                const partnerName = c.user_name || '求职者';
+                const jobName = c.job_name || '未关联岗位';
+                const displayName = `${partnerName} · ${jobName}`;
+                const safeDisplayName = String(displayName).replace(/'/g, "\\'");
+                const time = formatTime(c.last_message_at || c.updated_at);
+                return `
+                    <div class="conversation-item" onclick="openChat(${c.id}, '${safeDisplayName}', event)">
+                        <div class="conversation-item-header">
+                            <span class="conversation-item-name">${escapeHtml(displayName)}</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="conversation-item-time">${time}</span>
+                                <button onclick="deleteConversation(${c.id}, event)" style="border: none; background: transparent; color: #999; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px;" title="删除会话">×</button>
+                            </div>
+                        </div>
+                        <div class="conversation-item-preview">${escapeHtml(c.last_message_content || (c.job_name || '点击开始聊天'))}</div>
+                    </div>
+                `;
+            }).join('');
+
+            if (pendingConversationId && !autoOpened) {
+                const target = conversations.find(c => c.id === pendingConversationId);
+                if (target) {
+                    const item = list.querySelector(`.conversation-item[onclick^="openChat(${target.id},"]`);
+                    const autoPartnerName = target.user_name || '求职者';
+                    const autoJobName = target.job_name || '未关联岗位';
+                    openChat(target.id, `${autoPartnerName} · ${autoJobName}`, { currentTarget: item });
+                    autoOpened = true;
+                }
+            }
+        }
+
+        // 打开聊天
+        function openChat(conversationId, partnerName, event) {
+            currentConversationId = conversationId;
+            document.getElementById('chatPartner').textContent = partnerName;
+            document.getElementById('chatHeader').style.display = 'block';
+            document.getElementById('chatMessages').style.display = 'block';
+            document.getElementById('chatInput').style.display = 'block';
+            document.getElementById('emptyChat').style.display = 'none';
+
+            // 移除所有激活状态
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // 添加激活状态到当前会话
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            loadMessages(conversationId);
+        }
+
+        function deleteConversation(conversationId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            if (!confirm('确定删除该会话吗？删除后会从列表中移除。')) {
+                return;
+            }
+
+            fetch(`/api/chat/conversations/${conversationId}`, {
+                method: 'DELETE'
+            })
+            .then(r => {
+                if (r.status === 401) {
+                    window.location.href = '/login';
+                    throw new Error('未登录');
+                }
+                if (r.status === 403) {
+                    window.location.href = '/chat/user';
+                    throw new Error('身份已切换');
+                }
+                return r;
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message || '删除失败');
+                    return;
+                }
+
+                if (currentConversationId === conversationId) {
+                    currentConversationId = null;
+                    document.getElementById('chatHeader').style.display = 'none';
+                    document.getElementById('chatMessages').style.display = 'none';
+                    document.getElementById('chatInput').style.display = 'none';
+                    document.getElementById('emptyChat').style.display = 'flex';
+                }
+
+                loadConversations();
+            })
+            .catch(error => {
+                console.error('删除会话失败:', error);
+            });
+        }
+
+        // 加载消息
+        function loadMessages(conversationId) {
+            fetch(`/api/chat/messages/${conversationId}`)
+                .then(r => {
+                    if (r.status === 401) {
+                        window.location.href = '/login';
+                        throw new Error('未登录');
+                    }
+                    if (r.status === 403) {
+                        window.location.href = '/chat/user';
+                        throw new Error('身份已切换');
+                    }
+                    return r;
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderMessages(data.messages);
+                    }
+                });
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">暂无消息，发送第一条消息吧~</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(m => {
+                const isSelf = m.sender_type === 'company';
+                return `
+                    <div class="message ${isSelf ? 'sent' : 'received'}">
+                        <div class="message-bubble">
+                            <div class="message-content">${escapeHtml(m.content)}</div>
+                            <div class="message-time">${formatTime(m.created_at)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            if (!content || !currentConversationId) return;
+
+            fetch('/api/chat/messages', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    conversation_id: currentConversationId,
+                    content: content
+                })
+            })
+            .then(r => {
+                if (r.status === 401) {
+                    window.location.href = '/login';
+                    throw new Error('未登录');
+                }
+                if (r.status === 403) {
+                    window.location.href = '/chat/user';
+                    throw new Error('身份已切换');
+                }
+                return r;
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    loadMessages(currentConversationId);
+                    loadConversations();
+                } else {
+                    alert('发送失败：' + (data.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('发送失败:', error);
+                alert('发送失败，请检查网络连接');
+            });
+        }
+
+        // 格式化时间
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const date = new Date(timeStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 转义 HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 回车发送消息
+        document.getElementById('messageInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 每 3 秒轮询新消息
+        setInterval(() => {
+            if (!roleVerified) return;
+            if (currentConversationId) {
+                loadMessages(currentConversationId);
+            }
+            loadConversations();
+        }, 3000);
+
+        // 初始化
+        ensureCompanyChatRole().then(ok => {
+            if (ok) {
+                loadConversations();
+            }
+        });
+    </script>
+</body>
+</html>
