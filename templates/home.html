@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>职引未来 - 数据驱动就业，精准匹配理想职位</title>
+    <link rel="stylesheet" href="/static/css/global.css">
     <style>
         * {
             margin: 0;
@@ -49,7 +50,7 @@
         .logo-icon {
             width: 36px;
             height: 36px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -85,7 +86,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             transition: width 0.3s;
         }
 
@@ -100,7 +101,7 @@
 
         .btn-login {
             padding: 10px 28px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
             border: none;
             border-radius: 9999px;
@@ -111,15 +112,15 @@
         }
 
         .btn-login:hover {
-            background: #7c3aed;
-            transform: translateY(-1px);
+            opacity: 0.92;
+            filter: brightness(0.98);
         }
 
         .btn-register {
             padding: 10px 28px;
             background: transparent;
-            color: #8b5cf6;
-            border: 1.5px solid #8b5cf6;
+            color: var(--color-brand);
+            border: 1.5px solid var(--color-brand);
             border-radius: 9999px;
             cursor: pointer;
             font-size: 15px;
@@ -128,9 +129,9 @@
         }
 
         .btn-register:hover {
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
-            transform: translateY(-1px);
+            opacity: 0.92;
         }
 
         /* 主视觉区域 */
@@ -181,7 +182,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #8b5cf6;
+            background: var(--color-brand);
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
@@ -206,7 +207,7 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 24px;
-            color: #8b5cf6;
+            color: var(--color-brand);
             position: relative;
             z-index: 1;
         }
@@ -235,43 +236,42 @@
 
         .btn-primary {
             padding: 12px 32px;
-            background: #8b5cf6;
-            color: white;
+            background: var(--color-brand);
+            color: var(--color-brand-contrast);
             border: none;
             border-radius: 9999px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: opacity 0.2s, filter 0.2s;
             text-decoration: none;
             display: inline-block;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
         }
 
         .btn-primary:hover {
-            background: #7c3aed;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+            opacity: 0.92;
+            filter: brightness(0.98);
+        }
+
+        .nav-link-brand {
+            color: var(--color-brand) !important;
         }
 
         .btn-secondary {
             padding: 12px 32px;
             background: transparent;
-            color: #1a1a1a;
-            border: 1.5px solid #e0e0e0;
+            color: var(--text-main);
+            border: 1px solid var(--border-light);
             border-radius: 9999px;
-            font-size: 15px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background-color 0.2s, opacity 0.2s;
             text-decoration: none;
             display: inline-block;
         }
 
         .btn-secondary:hover {
-            background: #f8f8f8;
-            border-color: #d0d0d0;
-            transform: translateY(-2px);
+            background: var(--bg-secondary);
+            opacity: 0.95;
         }
 
         /* 统计数据 */
@@ -280,7 +280,7 @@
             gap: 80px;
             margin-top: 80px;
             padding-top: 60px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border-light);
             position: relative;
             z-index: 1;
         }
@@ -294,18 +294,18 @@
             font-weight: 700;
             display: block;
             margin-bottom: 8px;
-            color: #1a1a1a;
+            color: var(--text-main);
             letter-spacing: -0.02em;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #888;
+            color: var(--text-muted);
         }
 
         /* 特性区域 */
         .features {
-            background: #fafbff;
+            background: var(--bg-secondary);
             padding: 120px 48px;
         }
 
@@ -319,43 +319,40 @@
 
         .feature-card {
             padding: 40px 32px;
-            background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #f0f0f0;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            background: var(--bg-primary);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            transition: border-color 0.2s;
         }
 
         .feature-card:hover {
-            transform: translateY(-8px);
-            border-color: #e8e4ff;
-            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.1);
+            border-color: #dcdcdc;
         }
 
         .feature-title {
             font-size: 22px;
             font-weight: 600;
             margin-bottom: 12px;
-            color: #1a1a1a;
+            color: var(--text-main);
         }
 
         .feature-desc {
             font-size: 15px;
-            color: #666;
+            color: var(--text-muted);
             line-height: 1.8;
         }
 
         /* 页脚 */
         .footer {
-            background: #fafbff;
-            color: #1a1a1a;
+            background: var(--bg-secondary);
+            color: var(--text-main);
             padding: 64px 48px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border-light);
             text-align: center;
         }
 
         .footer p {
-            color: #888;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
@@ -401,7 +398,6 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="logo">
-            <div class="logo-icon">职</div>
             职引未来
         </div>
         <div class="nav-links">
@@ -410,7 +406,7 @@
             <a href="/insights">数据洞察</a>
             <a href="#features">功能介绍</a>
             {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
-            <a href="/chat/user" style="color: #8b5cf6;">消息中心</a>
+            <a href="/chat/user" class="nav-link-brand">消息中心</a>
             <a href="/applications" style="color: #666;">投递记录</a>
             {% endif %}
         </div>
@@ -464,28 +460,28 @@
     <section class="features" id="features">
         <div class="features-grid">
             <div class="feature-card">
-                <h3 class="feature-title">数据中心</h3>
-                <p class="feature-desc">多维度数据分析，涵盖专业、学历、经验要求，助您了解就业市场趋势。</p>
+                <h3 class="feature-title">数据洞察</h3>
+                <p class="feature-desc">支持专业筛选联动图表，实时查看岗位分布、薪资分位、学历经验结构与技能热词。</p>
             </div>
             <div class="feature-card">
-                <h3 class="feature-title">企业探索</h3>
-                <p class="feature-desc">深入了解企业信息，包括行业分布、公司规模、薪资水平等关键数据。</p>
+                <h3 class="feature-title">企业协同</h3>
+                <p class="feature-desc">企业端覆盖职位管理、投递处理、公司设置与日志追踪，让招聘流程更高效可控。</p>
             </div>
             <div class="feature-card">
-                <h3 class="feature-title">技能分析</h3>
-                <p class="feature-desc">智能技能图谱，精准匹配岗位需求，提升个人竞争力。</p>
+                <h3 class="feature-title">技能画像</h3>
+                <p class="feature-desc">基于岗位技能标签生成热词词云，帮助你识别核心能力与学习优先级。</p>
             </div>
             <div class="feature-card">
-                <h3 class="feature-title">地域洞察</h3>
-                <p class="feature-desc">全国城市就业数据对比，帮助您选择最适合的发展城市。</p>
+                <h3 class="feature-title">城市机会</h3>
+                <p class="feature-desc">按省市对比岗位数量与薪资表现，快速判断目标城市的机会和竞争强度。</p>
             </div>
             <div class="feature-card">
                 <h3 class="feature-title">职位搜索</h3>
-                <p class="feature-desc">智能搜索引擎，支持多条件筛选，快速找到理想职位。</p>
+                <p class="feature-desc">支持关键词、城市、专业方向和薪资区间筛选，一次检索更精准。</p>
             </div>
             <div class="feature-card">
-                <h3 class="feature-title">用户中心</h3>
-                <p class="feature-desc">个性化管理，投递记录以及撤回修改</p>
+                <h3 class="feature-title">求职中心</h3>
+                <p class="feature-desc">统一管理简历与附件，跟踪投递状态，支持撤回修改并可与企业在线沟通。</p>
             </div>
         </div>
     </section>
@@ -506,7 +502,7 @@
                     const adminLink = document.createElement('a');
                     adminLink.href = '/admin';
                     adminLink.textContent = '管理后台';
-                    adminLink.style.color = '#8b5cf6';
+                    adminLink.className = 'nav-link-brand';
                     adminLink.style.fontWeight = '600';
                     navLinks.appendChild(adminLink);
                 }

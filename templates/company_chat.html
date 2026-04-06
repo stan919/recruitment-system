@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
     <title>消息中心 - 企业后台</title>
     <style>
         * {
@@ -132,6 +133,19 @@
             white-space: nowrap;
         }
 
+        .conversation-unread {
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #ff4d4f;
+            color: #fff;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
         /* 聊天窗口 */
         .chat-panel {
             flex: 1;
@@ -153,6 +167,31 @@
             font-weight: 600;
         }
 
+        .message-tabs {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .message-tab {
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            color: #595959;
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .message-tab.active {
+            border-color: var(--color-brand);
+            background: rgba(15, 118, 110, 0.1);
+            color: var(--color-brand);
+            font-weight: 600;
+        }
+
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -171,10 +210,12 @@
         }
 
         .message.sent .message-bubble {
+            max-width: 280px;
             align-items: flex-end;
         }
 
         .message.received .message-bubble {
+            max-width: min(72%, 560px);
             align-items: flex-start;
         }
 
@@ -201,8 +242,13 @@
         }
 
         .message.sent .message-content {
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
+            min-width: 0;
+            width: auto;
+            max-width: 280px;
+            padding: 10px 12px;
+            white-space: normal;
         }
 
         .message-time {
@@ -218,6 +264,48 @@
         .message.received .message-time {
             color: #999;
             text-align: left;
+        }
+
+        .message.notification {
+            justify-content: center;
+        }
+
+        .message.notification .message-bubble {
+            max-width: min(56%, 420px);
+            align-items: flex-start;
+        }
+
+        .message.notification .message-content {
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+            min-width: 0;
+            padding: 10px 12px;
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            color: #8a5a00;
+            box-shadow: none;
+            white-space: normal;
+        }
+
+        .message.notification .message-time {
+            color: #ad6800;
+            text-align: right;
+        }
+
+        .notification-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #ad6800;
+        }
+
+        .notification-text {
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         .chat-input-area {
@@ -239,7 +327,7 @@
 
         .chat-send-btn {
             padding: 10px 30px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
             border: none;
             border-radius: 8px;
@@ -249,7 +337,7 @@
         }
 
         .chat-send-btn:hover {
-            background: #7c3aed;
+            background: var(--color-brand-hover);
         }
 
         .empty-chat {
@@ -292,6 +380,11 @@
         <div class="chat-panel">
             <div class="chat-header" id="chatHeader" style="display: none;">
                 <h3 id="chatPartner"></h3>
+                <div class="message-tabs">
+                    <button class="message-tab active" data-filter="all" onclick="setMessageFilter('all', event)">全部消息</button>
+                    <button class="message-tab" data-filter="chat" onclick="setMessageFilter('chat', event)">聊天消息</button>
+                    <button class="message-tab" data-filter="notification" onclick="setMessageFilter('notification', event)">流程通知</button>
+                </div>
             </div>
             <div class="chat-messages" id="chatMessages" style="display: none;"></div>
             <div class="empty-chat" id="emptyChat">
@@ -311,6 +404,8 @@
 
     <script>
         let currentConversationId = null;
+        let currentMessages = [];
+        let currentMessageFilter = 'all';
         let pendingConversationId = null;
         let autoOpened = false;
         let roleVerified = false;
@@ -404,12 +499,14 @@
                 const displayName = `${partnerName} · ${jobName}`;
                 const safeDisplayName = String(displayName).replace(/'/g, "\\'");
                 const time = formatTime(c.last_message_at || c.updated_at);
+                const unreadCount = Number(c.company_unread_count || 0);
                 return `
                     <div class="conversation-item" onclick="openChat(${c.id}, '${safeDisplayName}', event)">
                         <div class="conversation-item-header">
                             <span class="conversation-item-name">${escapeHtml(displayName)}</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span class="conversation-item-time">${time}</span>
+                                ${unreadCount > 0 ? `<span class="conversation-unread">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
                                 <button onclick="deleteConversation(${c.id}, event)" style="border: none; background: transparent; color: #999; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px;" title="删除会话">×</button>
                             </div>
                         </div>
@@ -433,6 +530,8 @@
         // 打开聊天
         function openChat(conversationId, partnerName, event) {
             currentConversationId = conversationId;
+            currentMessageFilter = 'all';
+            updateMessageFilterTabs();
             document.getElementById('chatPartner').textContent = partnerName;
             document.getElementById('chatHeader').style.display = 'block';
             document.getElementById('chatMessages').style.display = 'block';
@@ -484,6 +583,7 @@
 
                 if (currentConversationId === conversationId) {
                     currentConversationId = null;
+                    currentMessages = [];
                     document.getElementById('chatHeader').style.display = 'none';
                     document.getElementById('chatMessages').style.display = 'none';
                     document.getElementById('chatInput').style.display = 'none';
@@ -514,19 +614,63 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        renderMessages(data.messages);
+                        currentMessages = Array.isArray(data.messages) ? data.messages : [];
+                        renderMessages(currentMessages);
                     }
                 });
         }
 
+        function isNotificationMessage(message) {
+            const messageType = (message.message_type || '').toLowerCase();
+            const text = (message.content || '').trim();
+            return messageType === 'notification' || text.startsWith('【流程通知】') || text.startsWith('[流程通知]');
+        }
+
+        function setMessageFilter(filter, event) {
+            currentMessageFilter = filter;
+            updateMessageFilterTabs();
+            renderMessages(currentMessages);
+            if (event) {
+                event.preventDefault();
+            }
+        }
+
+        function updateMessageFilterTabs() {
+            document.querySelectorAll('.message-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.filter === currentMessageFilter);
+            });
+        }
+
         function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
-            if (messages.length === 0) {
+            const filteredMessages = messages.filter(m => {
+                const isNotification = isNotificationMessage(m);
+                if (currentMessageFilter === 'chat') return !isNotification;
+                if (currentMessageFilter === 'notification') return isNotification;
+                return true;
+            });
+
+            if (filteredMessages.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">暂无消息，发送第一条消息吧~</div>';
                 return;
             }
 
-            container.innerHTML = messages.map(m => {
+            container.innerHTML = filteredMessages.map(m => {
+                const isNotification = isNotificationMessage(m);
+                if (isNotification) {
+                    return `
+                        <div class="message notification">
+                            <div class="message-bubble">
+                                <div class="message-content">
+                                    <div class="notification-title">流程通知</div>
+                                    <div class="notification-text">${escapeHtml(m.content)}</div>
+                                </div>
+                                <div class="message-time">${formatTime(m.created_at)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 const isSelf = m.sender_type === 'company';
                 return `
                     <div class="message ${isSelf ? 'sent' : 'received'}">

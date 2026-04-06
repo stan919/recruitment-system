@@ -1,8 +1,8 @@
 """
-数据可视化模块 - 生成 5 个核心图表
+数据可视化模块 - 生成 6 个核心图表
 """
 from pyecharts import options as opts
-from pyecharts.charts import Map, Bar, Pie, WordCloud, Boxplot
+from pyecharts.charts import Map, Bar, Pie, WordCloud
 from pyecharts.globals import ThemeType
 import os
 
@@ -133,9 +133,55 @@ class JobVisualizer:
         bar_chart.render(filename)
         print(f"✓ 柱状图已保存：{filename}")
         return filename
+
+    def create_salary_boxplot(self):
+        """3. 城市薪资分位图（P25/P50/P75）"""
+        print("生成图表：城市薪资分位图")
+
+        city_data = self.analyzer.get_city_distribution(12)
+        city_labels = []
+        p25_values = []
+        p50_values = []
+        p75_values = []
+
+        for city in city_data.index:
+            city_df = self.analyzer.df[self.analyzer.df['city'] == city]
+            values = city_df['avg_salary'].dropna().astype(float)
+            if len(values) < 8:
+                continue
+            city_labels.append(str(city))
+            p25_values.append(round(float(values.quantile(0.25)), 2))
+            p50_values.append(round(float(values.quantile(0.50)), 2))
+            p75_values.append(round(float(values.quantile(0.75)), 2))
+
+        if not city_labels:
+            city_labels = ['样本不足']
+            p25_values = [0]
+            p50_values = [0]
+            p75_values = [0]
+
+        chart = (
+            Bar(init_opts=opts.InitOpts(theme=ThemeType.LIGHT, width="100%", height="500px"))
+            .add_xaxis(city_labels)
+            .add_yaxis("P25", p25_values, category_gap="42%")
+            .add_yaxis("P50(中位)", p50_values, category_gap="42%")
+            .add_yaxis("P75", p75_values, category_gap="42%")
+            .set_global_opts(
+                title_opts=opts.TitleOpts(is_show=False),
+                tooltip_opts=opts.TooltipOpts(trigger="axis"),
+                legend_opts=opts.LegendOpts(pos_top="3%"),
+                xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=25)),
+                yaxis_opts=opts.AxisOpts(name="薪资（元/月）"),
+            )
+        )
+
+        filename = f"{self.output_dir}/salary_boxplot.html"
+        chart.render(filename)
+        print(f"✓ 分位对比图已保存：{filename}")
+        return filename
     
     def create_education_pie(self):
-        """3. 学历要求分布（环形图）"""
+        """4. 学历要求分布（环形图）"""
         print("生成图表：学历要求分布")
         
         edu_data = self.analyzer.get_education_distribution()
@@ -164,7 +210,7 @@ class JobVisualizer:
         return filename
     
     def create_experience_pie(self):
-        """4. 经验要求分布（环形图）"""
+        """5. 经验要求分布（环形图）"""
         print("生成图表：经验要求分布")
         
         exp_data = self.analyzer.get_experience_distribution()
@@ -193,7 +239,7 @@ class JobVisualizer:
         return filename
     
     def create_skill_wordcloud(self):
-        """5. 技能关键词词云"""
+        """6. 技能关键词词云"""
         print("生成图表：技能关键词词云")
         
         skill_data = self.analyzer.get_skill_cloud(100)
@@ -224,9 +270,10 @@ class JobVisualizer:
         
         charts = []
         
-        # 生成 5 个核心图表
+        # 生成 6 个核心图表
         charts.append(self.create_city_map())
         charts.append(self.create_salary_bar())
+        charts.append(self.create_salary_boxplot())
         charts.append(self.create_education_pie())
         charts.append(self.create_experience_pie())
         charts.append(self.create_skill_wordcloud())

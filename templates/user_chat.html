@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
     <title>消息中心 - 职引未来</title>
     <style>
         * {
@@ -132,6 +133,19 @@
             white-space: nowrap;
         }
 
+        .conversation-unread {
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #ff4d4f;
+            color: #fff;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
         /* 聊天窗口 */
         .chat-panel {
             flex: 1;
@@ -153,6 +167,31 @@
             font-weight: 600;
         }
 
+        .message-tabs {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .message-tab {
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            color: #595959;
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .message-tab.active {
+            border-color: var(--color-brand);
+            background: rgba(15, 118, 110, 0.1);
+            color: var(--color-brand);
+            font-weight: 600;
+        }
+
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -171,10 +210,12 @@
         }
 
         .message.sent .message-bubble {
+            max-width: min(62%, 460px);
             align-items: flex-end;
         }
 
         .message.received .message-bubble {
+            max-width: min(72%, 560px);
             align-items: flex-start;
         }
 
@@ -201,7 +242,7 @@
         }
 
         .message.sent .message-content {
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
         }
 
@@ -218,6 +259,93 @@
         .message.received .message-time {
             color: #999;
             text-align: left;
+        }
+
+        .message.notification {
+            justify-content: center;
+        }
+
+        .message.notification .message-bubble {
+            max-width: min(56%, 420px);
+            align-items: flex-start;
+        }
+
+        .message.notification .message-content {
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+            min-width: 0;
+            padding: 10px 12px;
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            color: #8a5a00;
+            box-shadow: none;
+            white-space: normal;
+        }
+
+        .message.notification .message-time {
+            color: #ad6800;
+            text-align: right;
+        }
+
+        .notification-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #ad6800;
+        }
+
+        .notification-text {
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .notification-meta {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e8b86f;
+            display: grid;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .notification-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .notification-btn {
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .notification-btn.primary {
+            background: #0f766e;
+            color: #fff;
+        }
+
+        .notification-btn.ghost {
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            color: #595959;
+        }
+
+        .notification-confirmed {
+            display: inline-block;
+            font-size: 12px;
+            color: #0f766e;
+            background: #e6fffb;
+            border: 1px solid #87e8de;
+            border-radius: 999px;
+            padding: 2px 10px;
         }
 
         .chat-input-area {
@@ -239,7 +367,7 @@
 
         .chat-send-btn {
             padding: 10px 30px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
             border: none;
             border-radius: 8px;
@@ -249,7 +377,7 @@
         }
 
         .chat-send-btn:hover {
-            background: #7c3aed;
+            background: var(--color-brand-hover);
         }
 
         .empty-chat {
@@ -269,6 +397,87 @@
 
         .empty-chat p {
             text-align: center;
+        }
+
+        .job-inline-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+        }
+
+        .job-inline-modal.show {
+            display: flex;
+        }
+
+        .job-inline-dialog {
+            width: min(920px, 92vw);
+            height: min(78vh, 760px);
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e8e8e8;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .job-inline-header {
+            height: 54px;
+            padding: 0 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .job-inline-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f1f1f;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 12px;
+        }
+
+        .job-inline-close {
+            border: none;
+            background: #f5f5f5;
+            color: #595959;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .job-inline-body {
+            position: relative;
+            flex: 1;
+            background: #fafafa;
+        }
+
+        .job-inline-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+            background: #fff;
+        }
+
+        .job-inline-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8c8c8c;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -292,6 +501,11 @@
         <div class="chat-panel">
             <div class="chat-header" id="chatHeader" style="display: none;">
                 <h3 id="chatPartner"></h3>
+                <div class="message-tabs">
+                    <button class="message-tab active" data-filter="all" onclick="setMessageFilter('all', event)">全部消息</button>
+                    <button class="message-tab" data-filter="chat" onclick="setMessageFilter('chat', event)">聊天消息</button>
+                    <button class="message-tab" data-filter="notification" onclick="setMessageFilter('notification', event)">流程通知</button>
+                </div>
             </div>
             <div class="chat-messages" id="chatMessages" style="display: none;"></div>
             <div class="empty-chat" id="emptyChat">
@@ -309,8 +523,24 @@
         </div>
     </div>
 
+    <div id="jobInlineModal" class="job-inline-modal" onclick="handleJobModalMaskClick(event)">
+        <div class="job-inline-dialog">
+            <div class="job-inline-header">
+                <div id="jobInlineTitle" class="job-inline-title">职位详情</div>
+                <button class="job-inline-close" onclick="closeJobDetailModal()">关闭</button>
+            </div>
+            <div class="job-inline-body">
+                <div id="jobInlineLoading" class="job-inline-loading">加载职位详情中...</div>
+                <iframe id="jobInlineFrame" class="job-inline-frame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentConversationId = null;
+        let currentConversationMeta = null;
+        let currentMessages = [];
+        let currentMessageFilter = 'all';
         let pendingConversationId = null;
         let autoOpened = false;
         let roleVerified = false;
@@ -401,16 +631,23 @@
 
             list.innerHTML = conversations.map(c => {
                 const time = formatTime(c.last_message_at || c.updated_at);
+                const unreadCount = Number(c.user_unread_count || 0);
+                const previewText = c.last_message_content || c.job_name || '点击开始聊天';
+                const companyName = c.company_name || '企业';
+                const jobName = c.job_name || '未关联岗位';
+                const displayTitle = `${companyName} · ${jobName}`;
+                const safeDisplayTitle = String(displayTitle).replace(/'/g, "\\'");
                 return `
-                    <div class="conversation-item" onclick="openChat(${c.id}, '${escapeHtml(c.company_name)}', event)">
+                    <div class="conversation-item" onclick="openChat(${c.id}, '${safeDisplayTitle}', event)">
                         <div class="conversation-item-header">
-                            <span class="conversation-item-name">${escapeHtml(c.company_name)}</span>
+                            <span class="conversation-item-name">${escapeHtml(displayTitle)}</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span class="conversation-item-time">${time}</span>
+                                ${unreadCount > 0 ? `<span class="conversation-unread">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
                                 <button onclick="deleteConversation(${c.id}, event)" style="border: none; background: transparent; color: #999; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px;" title="删除会话">×</button>
                             </div>
                         </div>
-                        <div class="conversation-item-preview">${escapeHtml(c.job_name || '点击开始聊天')}</div>
+                        <div class="conversation-item-preview">${escapeHtml(previewText)}</div>
                     </div>
                 `;
             }).join('');
@@ -419,7 +656,9 @@
                 const target = conversations.find(c => c.id === pendingConversationId);
                 if (target) {
                     const item = list.querySelector(`.conversation-item[onclick^="openChat(${target.id},"]`);
-                    openChat(target.id, target.company_name || '企业', { currentTarget: item });
+                    const autoCompanyName = target.company_name || '企业';
+                    const autoJobName = target.job_name || '未关联岗位';
+                    openChat(target.id, `${autoCompanyName} · ${autoJobName}`, { currentTarget: item });
                     autoOpened = true;
                 }
             }
@@ -428,6 +667,8 @@
         // 打开聊天
         function openChat(conversationId, partnerName, event) {
             currentConversationId = conversationId;
+            currentMessageFilter = 'all';
+            updateMessageFilterTabs();
             document.getElementById('chatPartner').textContent = partnerName;
             document.getElementById('chatHeader').style.display = 'block';
             document.getElementById('chatMessages').style.display = 'block';
@@ -479,6 +720,8 @@
 
                 if (currentConversationId === conversationId) {
                     currentConversationId = null;
+                    currentConversationMeta = null;
+                    currentMessages = [];
                     document.getElementById('chatHeader').style.display = 'none';
                     document.getElementById('chatMessages').style.display = 'none';
                     document.getElementById('chatInput').style.display = 'none';
@@ -509,19 +752,224 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        renderMessages(data.messages);
+                        currentConversationMeta = data.conversation || null;
+                        currentMessages = Array.isArray(data.messages) ? data.messages : [];
+                        renderMessages(currentMessages);
                     }
                 });
         }
 
+        function isNotificationMessage(message) {
+            const messageType = (message.message_type || '').toLowerCase();
+            const text = (message.content || '').trim();
+            return messageType === 'notification' || text.startsWith('【流程通知】') || text.startsWith('[流程通知]');
+        }
+
+        function isInterviewNotification(message) {
+            if (!isNotificationMessage(message)) return false;
+            const text = (message.content || '').trim();
+            return Boolean(
+                message.interview_time ||
+                (message.interview_location || '').trim() ||
+                text.includes('面试')
+            );
+        }
+
+        function extractContactFromNotes(notes) {
+            if (!notes) return '';
+            const lines = String(notes).split('\n');
+            for (const item of lines) {
+                const line = item.trim();
+                const matched = line.match(/^(联系人|联系电话|联系方式)[:：]\s*(.+)$/);
+                if (matched && matched[2]) {
+                    return matched[2].trim();
+                }
+            }
+            return '';
+        }
+
+        function extractValueFromContent(content, pattern) {
+            if (!content) return '';
+            const matched = String(content).match(pattern);
+            if (!matched || !matched[1]) return '';
+            return matched[1].trim();
+        }
+
+        function extractInterviewTimeFromContent(content) {
+            return extractValueFromContent(content, /(?:面试时间|时间)[:：]\s*([^\n]+)/);
+        }
+
+        function extractInterviewLocationFromContent(content) {
+            return extractValueFromContent(content, /(?:面试地点|地点)[:：]\s*([^\n]+)/);
+        }
+
+        function extractInterviewContactFromContent(content) {
+            return extractValueFromContent(content, /(?:联系人|联系电话|联系方式|电话)[:：]\s*([^\n]+)/);
+        }
+
+        function isInterviewConfirmed(message) {
+            const notes = String(message.interview_notes || '');
+            return notes.includes('[INTERVIEW_CONFIRMED_BY_USER]') || notes.includes('候选人确认时间：');
+        }
+
+        function formatInterviewTime(timeStr) {
+            if (!timeStr) return '';
+            const date = new Date(timeStr);
+            if (Number.isNaN(date.getTime())) {
+                return String(timeStr);
+            }
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function setMessageFilter(filter, event) {
+            currentMessageFilter = filter;
+            updateMessageFilterTabs();
+            renderMessages(currentMessages);
+            if (event) {
+                event.preventDefault();
+            }
+        }
+
+        function updateMessageFilterTabs() {
+            document.querySelectorAll('.message-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.filter === currentMessageFilter);
+            });
+        }
+
+        function viewJobDetail(jobId, jobName) {
+            if (!jobId) {
+                alert('当前通知未关联职位');
+                return;
+            }
+            openJobDetailModal(jobId, jobName);
+        }
+
+        function openJobDetailModal(jobId, jobName) {
+            const modal = document.getElementById('jobInlineModal');
+            const frame = document.getElementById('jobInlineFrame');
+            const loading = document.getElementById('jobInlineLoading');
+            const title = document.getElementById('jobInlineTitle');
+
+            const titleJobName = jobName || (currentConversationMeta && currentConversationMeta.job_name) || '';
+            title.textContent = titleJobName ? `职位详情 · ${titleJobName}` : '职位详情';
+
+            loading.style.display = 'flex';
+            loading.textContent = '加载职位详情中...';
+            frame.style.display = 'none';
+            frame.src = `/job/${jobId}?embedded=1`;
+
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            frame.onload = function() {
+                loading.style.display = 'none';
+                frame.style.display = 'block';
+            };
+
+            frame.onerror = function() {
+                frame.style.display = 'none';
+                loading.style.display = 'flex';
+                loading.textContent = '职位详情加载失败，请稍后重试';
+            };
+        }
+
+        function closeJobDetailModal() {
+            const modal = document.getElementById('jobInlineModal');
+            const frame = document.getElementById('jobInlineFrame');
+            const loading = document.getElementById('jobInlineLoading');
+
+            modal.classList.remove('show');
+            frame.src = 'about:blank';
+            frame.style.display = 'none';
+            loading.style.display = 'flex';
+            loading.textContent = '加载职位详情中...';
+            document.body.style.overflow = '';
+        }
+
+        function handleJobModalMaskClick(event) {
+            if (event.target && event.target.id === 'jobInlineModal') {
+                closeJobDetailModal();
+            }
+        }
+
+        function confirmInterview(messageId) {
+            if (!messageId || !currentConversationId) return;
+            fetch(`/api/chat/messages/${messageId}/confirm-interview`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message || '确认失败，请稍后重试');
+                    return;
+                }
+                loadMessages(currentConversationId);
+                loadConversations();
+            })
+            .catch(error => {
+                console.error('确认面试失败:', error);
+                alert('确认失败，请检查网络连接');
+            });
+        }
+
         function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
-            if (messages.length === 0) {
+            const filteredMessages = messages.filter(m => {
+                const isNotification = isNotificationMessage(m);
+                if (currentMessageFilter === 'chat') return !isNotification;
+                if (currentMessageFilter === 'notification') return isNotification;
+                return true;
+            });
+
+            if (filteredMessages.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">暂无消息，发送第一条消息吧~</div>';
                 return;
             }
 
-            container.innerHTML = messages.map(m => {
+            container.innerHTML = filteredMessages.map(m => {
+                const isNotification = isNotificationMessage(m);
+                if (isNotification) {
+                    const interviewTimeRaw = m.interview_time || extractInterviewTimeFromContent(m.content);
+                    const interviewTime = formatInterviewTime(interviewTimeRaw);
+                    const interviewLocation = (m.interview_location || '').trim() || extractInterviewLocationFromContent(m.content);
+                    const interviewContact = extractContactFromNotes(m.interview_notes) || extractInterviewContactFromContent(m.content);
+                    const interviewMessage = isInterviewNotification(m);
+                    const interviewConfirmed = isInterviewConfirmed(m);
+                    const jobId = m.interview_job_id || (currentConversationMeta && currentConversationMeta.job_id);
+                    const hasAction = interviewMessage || Boolean(jobId);
+                    return `
+                        <div class="message notification">
+                            <div class="message-bubble">
+                                <div class="message-content">
+                                    <div class="notification-title">流程通知</div>
+                                    <div class="notification-text">${escapeHtml(m.content)}</div>
+                                    ${interviewMessage ? `
+                                        <div class="notification-meta">
+                                            ${interviewTime ? `<div>面试时间：${escapeHtml(interviewTime)}</div>` : ''}
+                                            ${interviewLocation ? `<div>面试地点：${escapeHtml(interviewLocation)}</div>` : ''}
+                                            ${interviewContact ? `<div>联系电话：${escapeHtml(interviewContact)}</div>` : ''}
+                                        </div>
+                                    ` : ''}
+                                    ${hasAction ? `
+                                        <div class="notification-actions">
+                                            ${interviewMessage ? (!interviewConfirmed ? `<button class="notification-btn primary" onclick="confirmInterview(${m.id})">确认面试</button>` : '<span class="notification-confirmed">已确认面试</span>') : ''}
+                                            ${jobId ? `<button class="notification-btn ghost" onclick="viewJobDetail(${jobId}, '${escapeHtml((currentConversationMeta && currentConversationMeta.job_name) || '')}')">查看职位详情</button>` : ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="message-time">${formatTime(m.created_at)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 const isSelf = m.sender_type === 'user';
                 return `
                     <div class="message ${isSelf ? 'sent' : 'received'}">
@@ -602,6 +1050,15 @@
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('jobInlineModal');
+                if (modal && modal.classList.contains('show')) {
+                    closeJobDetailModal();
+                }
             }
         });
 

@@ -1,0 +1,17 @@
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9f9fb;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --color-brand: #8b5cf6;
+    --color-brand-hover: #7c3aed;
+    --color-brand-rgb: 139, 92, 246;
+    --color-brand-hover-rgb: 124, 58, 237;
+    --color-brand-contrast: #ffffff;
+    --border-light: #ececec;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-main);
+}

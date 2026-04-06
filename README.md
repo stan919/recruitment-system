@@ -3,8 +3,8 @@
 ## 项目简介
 本项目旨在解决高校毕业生在求职初期面临的"信息过载但价值密度低"的痛点，通过可视化技术将复杂的招聘数据转化为直观的决策依据。
 
-**最新版本**: v1.0.0  
-**更新时间**: 2026-04-02
+**最新版本**: v1.0.3  
+**更新时间**: 2026-04-05
 
 ## 功能特性
 
@@ -103,14 +103,15 @@ python app.py
 ├── generate_mock_data.py    # 模拟数据生成
 ├── import_data.py           # 数据导入工具
 ├── run_production.py        # 生产环境启动脚本
-├── test_optimization.py     # 全功能测试脚本
+├── comprehensive_test.py    # 综合功能测试脚本
 ├── templates/               # HTML 模板
 │   ├── home.html           # 主页
 │   ├── login.html          # 登录页
 │   ├── register.html       # 注册页
 │   ├── profile.html        # 个人中心
 │   ├── applications.html   # 投递记录
-│   ├── chat.html           # 聊天页面
+│   ├── user_chat.html      # 用户聊天页
+│   ├── company_chat.html   # 企业聊天页
 │   ├── job_search.html     # 职位搜索
 │   ├── job_detail.html     # 职位详情
 │   ├── insights.html       # 数据洞察
@@ -129,6 +130,24 @@ python app.py
 ├── requirements.txt        # Python 依赖
 └── README.md               # 本文档
 ```
+
+## 数据文件说明
+
+### `jobs_data_public.csv` 与 `jobs_data_30k.csv` 的区别
+
+| 文件名 | 规模 | 字段数量 | 主要用途 |
+|---|---:|---:|---|
+| `jobs_data_public.csv` | 2,000 行 | 13 列 | 轻量演示、快速导入、开发调试 |
+| `jobs_data_30k.csv` | 30,000 行 | 17 列 | 压测、统计分析、接近生产规模的数据验证 |
+
+`jobs_data_30k.csv` 相比 `jobs_data_public.csv` 额外包含以下字段：
+- `industry`
+- `company_size`
+- `is_campus`
+- `publish_date`
+
+如果你只是本地快速跑通功能，建议优先使用 `jobs_data_public.csv`；
+如果要观察筛选、分页、统计、可视化在大数据量下的表现，使用 `jobs_data_30k.csv` 更合适。
 
 ## API 文档
 
@@ -177,7 +196,7 @@ python app.py
 
 ### 运行全功能测试
 ```bash
-python test_optimization.py
+python comprehensive_test.py
 ```
 
 测试覆盖：
@@ -186,6 +205,9 @@ python test_optimization.py
 - ✅ 登录注册验证
 - ✅ 职位搜索 API
 - ✅ 密码强度验证（8 位以上）
+- ✅ 会话态用户信息与登出流程
+
+说明：历史上存在多个功能重复的脚本（`full_test.py`、`test_optimization.py`），当前已统一为 `comprehensive_test.py`，避免维护重复测试。
 
 ## 安全特性
 
@@ -233,28 +255,6 @@ A: 检查浏览器控制台是否有 JavaScript 错误，清除缓存后重试
 ### Q: 如何重置管理员密码？
 A: 重新运行 `python init_admin.py` 会覆盖原密码
 
-## 更新日志
+## 项目总览总结
 
-### v1.0.0 (2026-04-02)
-- ✨ 新增：密码强度验证（8 位以上）
-- ✨ 新增：XSS 防护（markupsafe）
-- ✨ 新增：文件上传大小限制（10MB）
-- ✨ 优化：数据库连接池性能提升
-- ✨ 优化：统一会话管理
-- 🐛 修复：代码重复问题
-- 🐛 修复：冗余导入清理
-- ✅ 测试：8/8 全功能测试通过
-
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-## 许可证
-
-本项目仅供学习和研究使用
-
-## 联系方式
-
-如有问题，请通过以下方式联系：
-- Email: support@example.com
-- GitHub Issues: [提交 Issue](https://github.com/your-repo/issues)
+本项目已形成完整的求职平台主链路：普通用户可完成注册登录、职位搜索、简历上传、在线投递与消息沟通；企业端可进行岗位与投递处理；管理员端可完成用户与职位治理、内容安全和审计导出。当前代码以 `app.py` 为统一入口，测试以 `comprehensive_test.py` 为单一综合脚本，文档保持面向快速部署与核心能力说明。

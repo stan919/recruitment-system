@@ -34,13 +34,13 @@ def load_env():
                     # 只设置未存在的环境变量（命令行优先级更高）
                     if key not in os.environ:
                         os.environ[key] = value
-                        print(f"✅ 已加载环境变量：{key}")
+                        print(f"已加载环境变量：{key}")
         
-        print("\n✅ 环境变量加载完成")
+        print("\n环境变量加载完成")
         _env_loaded = True  # 标记已加载
     else:
-        print("⚠️  未找到 .env 文件，使用默认配置")
-        print("💡 建议运行：python setup_env.py 创建配置文件")
+        print("未找到 .env 文件，使用默认配置")
+        print("建议运行：python setup_env.py 创建配置文件")
         _env_loaded = True
 
 # 自动加载

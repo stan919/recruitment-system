@@ -1,18 +1,21 @@
-"""
+﻿"""
 职引未来 - 高校毕业生就业服务平台
 极简版 - 仅保留主页和登录注册功能
 """
 # 必须在最前面加载环境变量
 import load_env
 
-from flask import Flask, render_template, jsonify, request, session, redirect, url_for, Response
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for, send_file, Response
 from flask_cors import CORS
-from flask_wtf.csrf import CSRFProtect
 from markupsafe import escape
 from datetime import timedelta, datetime
-from collections import defaultdict
+from collections import defaultdict, Counter
 import config
-import os
+import json
+import math
+import re
+import zipfile
+import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from werkzeug.utils import secure_filename
 
@@ -20,14 +23,14 @@ from werkzeug.utils import secure_filename
 from models_user import User, get_session as UserSession, Base as UserBase
 from models_job import JobPosition
 from models_resume import Resume, JobApplication, get_session as ResumeSession, init_db as init_resume_db
-from models_company import Company, AuditLog, get_session as CompanySession, init_db as init_company_db
+from models_company import Company, AuditLog, init_db as init_company_db
 from auth import AuthManager
 
 # 构建数据库 URL
 DATABASE_URL = f"mysql+pymysql://{config.DATABASE_CONFIG['user']}:{config.DATABASE_CONFIG['password']}@{config.DATABASE_CONFIG['host']}:{config.DATABASE_CONFIG['port']}/{config.DATABASE_CONFIG['database']}?charset=utf8mb4"
 
 # 创建数据库引擎（单例模式）
-from sqlalchemy import create_engine, and_, inspect, text
+from sqlalchemy import create_engine, and_, inspect, text, func
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 engine = create_engine(
@@ -49,6 +52,8 @@ log_dir = 'logs'
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
+SENSITIVE_WORDS_FILE = os.path.join(log_dir, 'sensitive_words.json')
+
 # 配置日志处理器
 file_handler = RotatingFileHandler(
     os.path.join(log_dir, 'app.log'),
@@ -67,9 +72,11 @@ console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
 
 app = Flask(__name__)
+APP_VERSION = '1.0.3'
 app.config['SECRET_KEY'] = config.FLASK_CONFIG['SECRET_KEY']
 app.config['DEBUG'] = config.FLASK_CONFIG['DEBUG']
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制文件大小为 16MB
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 # 添加日志配置
 if app.config['DEBUG']:
@@ -91,9 +98,9 @@ try:
     UserBase.metadata.create_all(engine)
     init_resume_db()
     init_company_db()
-    print("数据库表初始化完成")
+    app.logger.info("数据库表初始化完成")
 except Exception as e:
-    print(f"数据库初始化警告：{e}")
+    app.logger.warning("数据库初始化警告：%s", e)
 
 
 def ensure_database_compatibility():
@@ -148,7 +155,7 @@ def ensure_database_compatibility():
             with engine.begin() as conn:
                 for stmt in alter_sql:
                     conn.execute(text(stmt))
-            print(f"数据库兼容性修复完成，共执行 {len(alter_sql)} 条 DDL")
+            app.logger.info("数据库兼容性修复完成，共执行 %s 条 DDL", len(alter_sql))
 
         # 旧数据回填：将历史申请中为空的快照字段补齐并固定，避免后续受简历改动影响
         if db_inspector.has_table('job_applications') and db_inspector.has_table('resumes'):
@@ -167,16 +174,60 @@ def ensure_database_compatibility():
                         OR ja.applicant_email IS NULL
                 """))
     except Exception as e:
-        print(f"数据库兼容性修复警告：{e}")
+        app.logger.warning("数据库兼容性修复警告：%s", e)
 
 
 ensure_database_compatibility()
+
+
+def load_sensitive_words():
+    """从本地文件加载敏感词列表。"""
+    if not os.path.exists(SENSITIVE_WORDS_FILE):
+        return []
+
+    try:
+        with open(SENSITIVE_WORDS_FILE, 'r', encoding='utf-8') as f:
+            words = json.load(f)
+        if not isinstance(words, list):
+            return []
+        return words
+    except Exception:
+        return []
+
+
+def save_sensitive_words(words):
+    """将敏感词列表保存到本地文件。"""
+    try:
+        with open(SENSITIVE_WORDS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(words, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception:
+        return False
 
 
 # 速率限制 - 记录登录尝试
 login_attempts = defaultdict(list)
 RATE_LIMIT_WINDOW = 300  # 5 分钟
 MAX_LOGIN_ATTEMPTS = 10  # 最多 10 次尝试
+MAX_TRACKED_LOGIN_KEYS = 5000  # 内存中最多保留的限流键数量
+MAX_CHAT_MESSAGE_LENGTH = 2000
+MAX_COMPANY_NAME_LENGTH = 200
+MAX_JOB_NAME_LENGTH = 100
+ALLOWED_CHAT_MESSAGE_TYPES = {'text'}
+INTERVIEW_CONFIRMATION_MARKER = '[INTERVIEW_CONFIRMED_BY_USER]'
+
+# 管理控制台统计缓存，降低重复 count 查询带来的首屏延迟
+ADMIN_DASHBOARD_CACHE = {
+    'expires_at': None,
+    'payload': None
+}
+ADMIN_DASHBOARD_CACHE_TTL_SECONDS = 20
+
+
+def invalidate_admin_dashboard_cache():
+    """管理员控制台统计缓存失效。"""
+    ADMIN_DASHBOARD_CACHE['expires_at'] = None
+    ADMIN_DASHBOARD_CACHE['payload'] = None
 
 # ==================== 工具函数 ====================
 
@@ -186,6 +237,9 @@ def get_db_session():
     db_session = SessionLocal()
     try:
         yield db_session
+    except Exception:
+        db_session.rollback()
+        raise
     finally:
         db_session.close()
 
@@ -209,6 +263,106 @@ def get_redirect_by_session_role():
     return '/'
 
 
+def coerce_bool(value):
+    """将请求参数中的布尔值安全归一化。"""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+    return False
+
+
+def get_client_ip():
+    """尽可能获取真实客户端 IP。"""
+    forwarded_for = (request.headers.get('X-Forwarded-For') or '').strip()
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+
+    real_ip = (request.headers.get('X-Real-IP') or '').strip()
+    return real_ip or (request.remote_addr or 'unknown')
+
+
+def build_login_attempt_key(username, client_ip):
+    """构造登录限流键：用户名 + IP。"""
+    return f"{username.lower()}|{client_ip}"
+
+
+def cleanup_login_attempts(now):
+    """清理过期限流记录并控制字典大小。"""
+    for key in list(login_attempts.keys()):
+        recent = [
+            ts for ts in login_attempts[key]
+            if (now - ts).total_seconds() < RATE_LIMIT_WINDOW
+        ]
+        if recent:
+            login_attempts[key] = recent
+        else:
+            login_attempts.pop(key, None)
+
+    if len(login_attempts) > MAX_TRACKED_LOGIN_KEYS:
+        overflow = len(login_attempts) - MAX_TRACKED_LOGIN_KEYS
+        oldest_keys = sorted(
+            login_attempts.keys(),
+            key=lambda k: login_attempts[k][-1] if login_attempts[k] else now
+        )[:overflow]
+        for key in oldest_keys:
+            login_attempts.pop(key, None)
+
+
+def extract_docx_preview_html(file_path):
+    """提取 docx 文本并转换为轻量 HTML 预览。"""
+    namespace = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+
+    with zipfile.ZipFile(file_path, 'r') as archive:
+        xml_content = archive.read('word/document.xml')
+
+    root = ET.fromstring(xml_content)
+    paragraphs = []
+
+    for paragraph in root.findall('.//w:p', namespace):
+        chunks = []
+        for node in paragraph.findall('.//w:t', namespace):
+            if node.text:
+                chunks.append(node.text)
+
+        line = ''.join(chunks).strip()
+        if line:
+            paragraphs.append(f'<p>{escape(line)}</p>')
+
+    if not paragraphs:
+        return '<p>文档内容为空</p>'
+
+    return ''.join(paragraphs)
+
+
+def extract_doc_preview_html(file_path):
+    """使用 mammoth 将 doc/docx 转换为 HTML。"""
+    import mammoth
+
+    with open(file_path, 'rb') as word_file:
+        result = mammoth.convert_to_html(word_file)
+
+    return (result.value or '').strip() or '<p>文档内容为空</p>'
+
+
+@app.before_request
+def enforce_admin_session_mode():
+    """限制管理后台仅允许“超级管理员登录态”访问。"""
+    path = request.path or ''
+    if path == '/admin' or path.startswith('/api/admin/'):
+        if 'user_id' not in session:
+            if path == '/admin':
+                return redirect('/login')
+            return jsonify({'success': False, 'message': '未登录'}), 401
+
+        if not session.get('is_admin', False):
+            if path == '/admin':
+                return redirect('/login?message=请使用超级管理员方式登录')
+            return jsonify({'success': False, 'message': '请使用超级管理员方式登录'}), 403
+
+
 # ==================== 认证相关 API ====================
 
 @app.route('/health')
@@ -217,7 +371,7 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'version': '1.0.0'
+        'version': APP_VERSION
     })
 
 @app.route('/login')
@@ -235,48 +389,53 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def api_login():
     """用户登录 API"""
-    data = request.get_json()
-    username = data.get('username', '')
-    password = data.get('password', '')
-    is_company = data.get('is_company', False)
-    is_admin = data.get('is_admin', False)
-    remember = data.get('remember', False)
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    is_company = coerce_bool(data.get('is_company', False))
+    is_admin = coerce_bool(data.get('is_admin', False))
+    remember = coerce_bool(data.get('remember', False))
+
+    if is_company and is_admin:
+        return jsonify({'success': False, 'message': '请只选择一种登录方式'}), 400
     
     if not username or not password:
         return jsonify({'success': False, 'message': '请输入用户名和密码'}), 400
     
     # 速率限制检查
     now = datetime.now()
-    # 清理过期的记录
-    login_attempts[username] = [t for t in login_attempts[username] if (now - t).total_seconds() < RATE_LIMIT_WINDOW]
+    cleanup_login_attempts(now)
+    client_ip = get_client_ip()
+    rate_key = build_login_attempt_key(username, client_ip)
     
     # 检查是否超过限制
-    if len(login_attempts[username]) >= MAX_LOGIN_ATTEMPTS:
+    if len(login_attempts.get(rate_key, [])) >= MAX_LOGIN_ATTEMPTS:
         return jsonify({'success': False, 'message': '尝试次数过多，请稍后再试'}), 429
     
     user, error = AuthManager.authenticate(username, password)
     
     if user:
         # 登录成功后清空该账号的失败计数，避免误触发限流
-        login_attempts.pop(username, None)
+        login_attempts.pop(rate_key, None)
 
-        # 如果是企业登录，检查是否为企业管埋员
+        # 如果是企业登录，检查是否为企业管理员
         if is_company and not user.is_company_admin:
             return jsonify({'success': False, 'message': '该账号不是企业管理员'}), 401
         
-        # 如果是管理员登录，检查是否为超级管埋员
+        # 如果是管理员登录，检查是否为超级管理员
         if is_admin and not user.is_admin:
             return jsonify({'success': False, 'message': '该账号不是超级管理员'}), 401
+
+        # 超级管理员账号必须通过“超级管理员登录”入口进入后台
+        if user.is_admin and not is_admin:
+            return jsonify({'success': False, 'message': '请使用超级管理员方式登录'}), 401
         
         session['user_id'] = user.id
         session['username'] = user.username
         session['email'] = user.email
         session['is_company'] = is_company
         session['is_admin'] = is_admin
-        
-        if remember:
-            session.permanent = True
-            app.permanent_session_lifetime = timedelta(days=30)
+        session.permanent = remember
         
         # 根据登录类型重定向到不同页面
         if is_admin:
@@ -294,14 +453,14 @@ def api_login():
         })
     else:
         # 仅对失败登录计数
-        login_attempts[username].append(now)
+        login_attempts[rate_key].append(now)
         return jsonify({'success': False, 'message': error or '登录失败'}), 401
 
 
 @app.route('/api/register', methods=['POST'])
 def api_register():
     """用户注册 API"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
     email = data.get('email', '').strip()
     phone = data.get('phone', '').strip()
@@ -355,13 +514,16 @@ def api_user():
 @app.route('/')
 def index():
     """首页 - 展示宣传主页"""
+    if session.get('is_admin'):
+        return redirect('/admin')
+
     # 获取热门职位（用于搜索）
     jobs = []
     try:
         with get_db_session() as db_session:
             jobs = db_session.query(JobPosition).filter_by(status='active').limit(20).all()
     except Exception as e:
-        print(f"获取职位失败：{e}")
+        app.logger.warning("获取首页职位失败：%s", e)
     
     return render_template('home.html', jobs=jobs)
 
@@ -378,6 +540,545 @@ def insights():
     return render_template('insights.html')
 
 
+@app.route('/api/insights/professions')
+def insights_professions():
+    """获取可筛选的专业列表。"""
+    options = [
+        {'key': key, 'name': value}
+        for key, value in config.PROFESSION_KEYWORDS.items()
+    ]
+    return jsonify({'success': True, 'professions': options})
+
+
+@app.route('/api/insights/profession-data')
+def insights_profession_data():
+    """按专业返回数据洞察图表所需数据。"""
+    profession = request.args.get('profession', '').strip()
+    keyword_text = get_profession_keyword(profession)
+
+    if not profession or not keyword_text:
+        return jsonify({'success': False, 'message': '专业参数无效'}), 400
+
+    def percentile(values, p):
+        if not values:
+            return 0.0
+        arr = sorted(values)
+        idx = (len(arr) - 1) * p
+        lo = math.floor(idx)
+        hi = math.ceil(idx)
+        if lo == hi:
+            return float(arr[int(idx)])
+        return float(arr[lo] * (hi - idx) + arr[hi] * (idx - lo))
+
+    def avg_salary(min_salary, max_salary):
+        nums = [
+            float(v)
+            for v in [min_salary, max_salary]
+            if isinstance(v, (int, float)) and v > 0
+        ]
+        if not nums:
+            return None
+        return sum(nums) / len(nums)
+
+    # 技能过滤词：显式排除“非技能类描述词”
+    blocked_exact = {
+        '薪资', '经验', '学历', '待遇', '要求', '应届生', '大专', '硕士', '本科', '以下',
+        '运营', '人力', '市场', '专员', '分析师', '岗位', '职位', '工作', '相关', '优先', '不限'
+    }
+    blocked_contains = {
+        '薪资', '经验', '学历', '待遇', '应届', '大专', '硕士', '本科', '以下',
+        '专员', '分析师', '运营', '人力', '市场', '招聘', '岗位', '职位'
+    }
+
+    def build_mock_payload(profession_key):
+        """当 ai / ba 无真实数据时，返回可视化模拟数据兜底。"""
+        if profession_key == 'ai':
+            city_distribution = [
+                {'city': '北京', 'count': 720},
+                {'city': '上海', 'count': 650},
+                {'city': '深圳', 'count': 610},
+                {'city': '杭州', 'count': 520},
+                {'city': '广州', 'count': 430},
+                {'city': '成都', 'count': 310}
+            ]
+            salary_by_city = [
+                {'city': '北京', 'avg': 28300.0},
+                {'city': '上海', 'avg': 27100.0},
+                {'city': '深圳', 'avg': 26600.0},
+                {'city': '杭州', 'avg': 25200.0},
+                {'city': '广州', 'avg': 23600.0},
+                {'city': '成都', 'avg': 21400.0}
+            ]
+            salary_quantiles = [
+                {'city': '北京', 'p25': 22000.0, 'p50': 28000.0, 'p75': 34000.0},
+                {'city': '上海', 'p25': 21000.0, 'p50': 27000.0, 'p75': 33000.0},
+                {'city': '深圳', 'p25': 20500.0, 'p50': 26500.0, 'p75': 32200.0},
+                {'city': '杭州', 'p25': 19000.0, 'p50': 25000.0, 'p75': 30500.0},
+                {'city': '广州', 'p25': 17800.0, 'p50': 23500.0, 'p75': 29200.0},
+                {'city': '成都', 'p25': 16000.0, 'p50': 21200.0, 'p75': 26800.0}
+            ]
+            education_distribution = [
+                {'name': '本科', 'value': 1420},
+                {'name': '硕士', 'value': 1090},
+                {'name': '大专', 'value': 560},
+                {'name': '博士', 'value': 170}
+            ]
+            experience_distribution = [
+                {'name': '不限', 'value': 460},
+                {'name': '应届生', 'value': 350},
+                {'name': '1-3 年', 'value': 1120},
+                {'name': '3-5 年', 'value': 910},
+                {'name': '5-10 年', 'value': 400}
+            ]
+            skill_cloud = [
+                {'name': 'Python', 'value': 980},
+                {'name': '机器学习', 'value': 930},
+                {'name': '深度学习', 'value': 860},
+                {'name': 'PyTorch', 'value': 790},
+                {'name': 'TensorFlow', 'value': 740},
+                {'name': 'NLP', 'value': 670},
+                {'name': '计算机视觉', 'value': 640},
+                {'name': '大模型', 'value': 620},
+                {'name': 'LLM', 'value': 590},
+                {'name': '特征工程', 'value': 560},
+                {'name': '模型部署', 'value': 520},
+                {'name': '数据挖掘', 'value': 490},
+                {'name': 'Linux', 'value': 450},
+                {'name': 'SQL', 'value': 430},
+                {'name': '算法', 'value': 400}
+            ]
+        elif profession_key == 'ba':
+            city_distribution = [
+                {'city': '上海', 'count': 680},
+                {'city': '北京', 'count': 590},
+                {'city': '深圳', 'count': 520},
+                {'city': '广州', 'count': 470},
+                {'city': '杭州', 'count': 430},
+                {'city': '南京', 'count': 390}
+            ]
+            salary_by_city = [
+                {'city': '上海', 'avg': 17800.0},
+                {'city': '北京', 'avg': 17200.0},
+                {'city': '深圳', 'avg': 16800.0},
+                {'city': '广州', 'avg': 15400.0},
+                {'city': '杭州', 'avg': 14900.0},
+                {'city': '南京', 'avg': 13800.0}
+            ]
+            salary_quantiles = [
+                {'city': '上海', 'p25': 13200.0, 'p50': 17600.0, 'p75': 22200.0},
+                {'city': '北京', 'p25': 12800.0, 'p50': 17000.0, 'p75': 21500.0},
+                {'city': '深圳', 'p25': 12400.0, 'p50': 16600.0, 'p75': 20900.0},
+                {'city': '广州', 'p25': 11600.0, 'p50': 15100.0, 'p75': 19500.0},
+                {'city': '杭州', 'p25': 11200.0, 'p50': 14600.0, 'p75': 18800.0},
+                {'city': '南京', 'p25': 10400.0, 'p50': 13600.0, 'p75': 17500.0}
+            ]
+            education_distribution = [
+                {'name': '本科', 'value': 1480},
+                {'name': '大专', 'value': 920},
+                {'name': '硕士', 'value': 440},
+                {'name': '不限', 'value': 240}
+            ]
+            experience_distribution = [
+                {'name': '不限', 'value': 560},
+                {'name': '应届生', 'value': 420},
+                {'name': '1-3 年', 'value': 1150},
+                {'name': '3-5 年', 'value': 720},
+                {'name': '5-10 年', 'value': 230}
+            ]
+            skill_cloud = [
+                {'name': '数据分析', 'value': 920},
+                {'name': '商业分析', 'value': 860},
+                {'name': '财务报表', 'value': 800},
+                {'name': 'PowerBI', 'value': 740},
+                {'name': 'Excel', 'value': 700},
+                {'name': '项目管理', 'value': 660},
+                {'name': '战略规划', 'value': 610},
+                {'name': '流程优化', 'value': 580},
+                {'name': '成本控制', 'value': 540},
+                {'name': '预算管理', 'value': 500},
+                {'name': 'SQL', 'value': 460},
+                {'name': '沟通协调', 'value': 430},
+                {'name': '跨部门协作', 'value': 390},
+                {'name': '运营管理', 'value': 350},
+                {'name': '市场洞察', 'value': 320}
+            ]
+        else:
+            city_distribution = [
+                {'city': '北京', 'count': 720},
+                {'city': '上海', 'count': 680},
+                {'city': '深圳', 'count': 610},
+                {'city': '广州', 'count': 520},
+                {'city': '杭州', 'count': 470},
+                {'city': '成都', 'count': 410}
+            ]
+            salary_by_city = [
+                {'city': '北京', 'avg': 19600.0},
+                {'city': '上海', 'avg': 19100.0},
+                {'city': '深圳', 'avg': 18600.0},
+                {'city': '广州', 'avg': 17100.0},
+                {'city': '杭州', 'avg': 16700.0},
+                {'city': '成都', 'avg': 15300.0}
+            ]
+            salary_quantiles = [
+                {'city': '北京', 'p25': 13800.0, 'p50': 19200.0, 'p75': 24600.0},
+                {'city': '上海', 'p25': 13600.0, 'p50': 18700.0, 'p75': 23900.0},
+                {'city': '深圳', 'p25': 13200.0, 'p50': 18300.0, 'p75': 23400.0},
+                {'city': '广州', 'p25': 12100.0, 'p50': 16800.0, 'p75': 21600.0},
+                {'city': '杭州', 'p25': 11800.0, 'p50': 16400.0, 'p75': 21100.0},
+                {'city': '成都', 'p25': 10900.0, 'p50': 15000.0, 'p75': 19800.0}
+            ]
+            education_distribution = [
+                {'name': '本科', 'value': 1550},
+                {'name': '大专', 'value': 900},
+                {'name': '硕士', 'value': 620},
+                {'name': '不限', 'value': 340}
+            ]
+            experience_distribution = [
+                {'name': '不限', 'value': 500},
+                {'name': '应届生', 'value': 420},
+                {'name': '1-3 年', 'value': 1260},
+                {'name': '3-5 年', 'value': 890},
+                {'name': '5-10 年', 'value': 340}
+            ]
+            skill_cloud = [
+                {'name': 'Python', 'value': 680},
+                {'name': 'Java', 'value': 640},
+                {'name': 'SQL', 'value': 620},
+                {'name': '数据分析', 'value': 580},
+                {'name': '项目管理', 'value': 560},
+                {'name': 'Excel', 'value': 540},
+                {'name': '机器学习', 'value': 510},
+                {'name': 'PowerBI', 'value': 470},
+                {'name': '算法', 'value': 440},
+                {'name': '产品规划', 'value': 410}
+            ]
+
+        return {
+            'total_jobs': sum(i['count'] for i in city_distribution),
+            'city_distribution': city_distribution,
+            'salary_by_city': salary_by_city,
+            'salary_quantiles': salary_quantiles,
+            'education_distribution': education_distribution,
+            'experience_distribution': experience_distribution,
+            'skill_cloud': skill_cloud,
+            'is_mock': True
+        }
+
+    try:
+        with get_db_session() as db_session:
+            jobs = db_session.query(JobPosition).filter(
+                JobPosition.status == 'active',
+                (
+                    JobPosition.job_name.like(f'%{keyword_text}%') |
+                    JobPosition.skill_tags.like(f'%{keyword_text}%') |
+                    JobPosition.description.like(f'%{keyword_text}%')
+                )
+            ).limit(5000).all()
+
+        city_counter = Counter()
+        city_salaries = defaultdict(list)
+        education_counter = Counter()
+        experience_counter = Counter()
+        skill_counter = Counter()
+
+        for job in jobs:
+            city = (job.city or '未知').strip() or '未知'
+            education = (job.education or '不限').strip() or '不限'
+            experience = (job.experience or '不限').strip() or '不限'
+
+            city_counter[city] += 1
+            education_counter[education] += 1
+            experience_counter[experience] += 1
+
+            salary = avg_salary(job.min_salary, job.max_salary)
+            if salary is not None:
+                city_salaries[city].append(salary)
+
+            # 严格以技能字段为主进行热词统计
+            skill_text = (job.skill_tags or '').strip()
+            if not skill_text:
+                continue
+
+            parts = re.split(r'[，,、；;|/\n\t]+', skill_text)
+            for token in parts:
+                term = token.strip()
+                if not term or len(term) < 2 or len(term) > 40:
+                    continue
+                if term in config.STOP_WORDS:
+                    continue
+                if re.fullmatch(r'[0-9.\-]+', term):
+                    continue
+
+                lower_term = term.lower()
+                if term in blocked_exact or lower_term in blocked_exact:
+                    continue
+                if any(block in term for block in blocked_contains) or any(block in lower_term for block in blocked_contains):
+                    continue
+
+                skill_counter[term] += 1
+
+        if len(jobs) == 0:
+            mock_payload = build_mock_payload(profession)
+            return jsonify({
+                'success': True,
+                'profession': {
+                    'key': profession,
+                    'name': keyword_text
+                },
+                **mock_payload
+            })
+
+        top_city_counts = city_counter.most_common(12)
+        city_distribution = [
+            {'city': city, 'count': count}
+            for city, count in top_city_counts
+        ]
+
+        salary_by_city = []
+        salary_quantiles = []
+        for city, _ in top_city_counts:
+            values = city_salaries.get(city, [])
+            if not values:
+                continue
+
+            salary_by_city.append({
+                'city': city,
+                'avg': round(sum(values) / len(values), 2)
+            })
+
+            if len(values) >= 8:
+                salary_quantiles.append({
+                    'city': city,
+                    'p25': round(percentile(values, 0.25), 2),
+                    'p50': round(percentile(values, 0.50), 2),
+                    'p75': round(percentile(values, 0.75), 2)
+                })
+
+        education_distribution = [
+            {'name': name, 'value': value}
+            for name, value in education_counter.most_common()
+        ]
+        experience_distribution = [
+            {'name': name, 'value': value}
+            for name, value in experience_counter.most_common()
+        ]
+        skill_cloud = [
+            {'name': name, 'value': value}
+            for name, value in skill_counter.most_common(80)
+        ]
+
+        return jsonify({
+            'success': True,
+            'profession': {
+                'key': profession,
+                'name': keyword_text
+            },
+            'total_jobs': len(jobs),
+            'city_distribution': city_distribution,
+            'salary_by_city': salary_by_city,
+            'salary_quantiles': salary_quantiles,
+            'education_distribution': education_distribution,
+            'experience_distribution': experience_distribution,
+            'skill_cloud': skill_cloud,
+            'is_mock': False
+        })
+    except Exception as e:
+        app.logger.warning("加载专业洞察数据失败：%s", e)
+        mock_payload = build_mock_payload(profession)
+        return jsonify({
+            'success': True,
+            'profession': {
+                'key': profession,
+                'name': keyword_text
+            },
+            **mock_payload
+        })
+
+
+@app.route('/api/insights/overall-skill-cloud')
+def insights_overall_skill_cloud():
+    """全部专业视角：返回全局技能词云数据（动态计算）。"""
+
+    blocked_exact = {
+        '薪资', '经验', '学历', '待遇', '要求', '应届生', '大专', '硕士', '本科', '以下',
+        '运营', '人力', '市场', '专员', '分析师', '岗位', '职位', '工作', '相关', '优先', '不限'
+    }
+    blocked_contains = {
+        '薪资', '经验', '学历', '待遇', '应届', '大专', '硕士', '本科', '以下',
+        '专员', '分析师', '运营', '人力', '市场', '招聘', '岗位', '职位'
+    }
+
+    fallback_cloud = [
+        {'name': 'Python', 'value': 680},
+        {'name': 'Java', 'value': 640},
+        {'name': 'SQL', 'value': 620},
+        {'name': '数据分析', 'value': 580},
+        {'name': '项目管理', 'value': 560},
+        {'name': 'Excel', 'value': 540},
+        {'name': '机器学习', 'value': 510},
+        {'name': 'PowerBI', 'value': 470},
+        {'name': '算法', 'value': 440},
+        {'name': '产品规划', 'value': 410}
+    ]
+
+    try:
+        with get_db_session() as db_session:
+            jobs = db_session.query(JobPosition).filter(
+                JobPosition.status == 'active'
+            ).limit(8000).all()
+
+        skill_counter = Counter()
+
+        for job in jobs:
+            skill_text = (job.skill_tags or '').strip()
+            if not skill_text:
+                continue
+
+            parts = re.split(r'[，,、；;|/\n\t]+', skill_text)
+            for token in parts:
+                term = token.strip()
+                if not term or len(term) < 2 or len(term) > 40:
+                    continue
+                if term in config.STOP_WORDS:
+                    continue
+                if re.fullmatch(r'[0-9.\-]+', term):
+                    continue
+
+                lower_term = term.lower()
+                if term in blocked_exact or lower_term in blocked_exact:
+                    continue
+                if any(block in term for block in blocked_contains) or any(block in lower_term for block in blocked_contains):
+                    continue
+
+                skill_counter[term] += 1
+
+        cloud = [
+            {'name': name, 'value': value}
+            for name, value in skill_counter.most_common(100)
+        ]
+
+        if not cloud:
+            cloud = fallback_cloud
+
+        return jsonify({'success': True, 'skill_cloud': cloud})
+    except Exception as e:
+        app.logger.warning("加载全局技能词云失败：%s", e)
+        return jsonify({'success': True, 'skill_cloud': fallback_cloud})
+
+
+@app.route('/api/insights/overall-data')
+def insights_overall_data():
+    """全部专业视角：返回省份岗位分布与经验要求分布。"""
+
+    city_province_map = {
+        '北京': '北京',
+        '上海': '上海',
+        '天津': '天津',
+        '重庆': '重庆',
+        '广州': '广东',
+        '深圳': '广东',
+        '佛山': '广东',
+        '东莞': '广东',
+        '珠海': '广东',
+        '杭州': '浙江',
+        '宁波': '浙江',
+        '温州': '浙江',
+        '南京': '江苏',
+        '苏州': '江苏',
+        '无锡': '江苏',
+        '常州': '江苏',
+        '成都': '四川',
+        '武汉': '湖北',
+        '西安': '陕西',
+        '长沙': '湖南',
+        '郑州': '河南',
+        '合肥': '安徽',
+        '青岛': '山东',
+        '济南': '山东',
+        '厦门': '福建',
+        '福州': '福建',
+        '南昌': '江西',
+        '沈阳': '辽宁',
+        '大连': '辽宁',
+        '长春': '吉林',
+        '哈尔滨': '黑龙江'
+    }
+
+    fallback_payload = {
+        'province_distribution': [
+            {'name': '广东', 'count': 920},
+            {'name': '北京', 'count': 860},
+            {'name': '上海', 'count': 830},
+            {'name': '浙江', 'count': 780},
+            {'name': '江苏', 'count': 740},
+            {'name': '四川', 'count': 510},
+            {'name': '湖北', 'count': 430},
+            {'name': '陕西', 'count': 390}
+        ],
+        'experience_distribution': [
+            {'name': '不限', 'value': 500},
+            {'name': '应届生', 'value': 420},
+            {'name': '1-3 年', 'value': 1260},
+            {'name': '3-5 年', 'value': 890},
+            {'name': '5-10 年', 'value': 340}
+        ]
+    }
+
+    def normalize_province(city_text):
+        city = (city_text or '').strip()
+        if not city:
+            return '未知'
+        for city_name, province_name in city_province_map.items():
+            if city_name in city:
+                return province_name
+
+        if city in {'北京', '上海', '天津', '重庆'}:
+            return city
+        if city in {'北京市', '上海市', '天津市', '重庆市'}:
+            return city[:2]
+        if city.endswith('省'):
+            return city[:-1]
+        if city.endswith('市') and len(city) <= 4:
+            return city[:-1]
+        return city
+
+    try:
+        with get_db_session() as db_session:
+            jobs = db_session.query(JobPosition).filter(
+                JobPosition.status == 'active'
+            ).limit(10000).all()
+
+        province_counter = Counter()
+        experience_counter = Counter()
+
+        for job in jobs:
+            province = normalize_province(job.city)
+            experience = (job.experience or '不限').strip() or '不限'
+            province_counter[province] += 1
+            experience_counter[experience] += 1
+
+        province_distribution = [
+            {'name': name, 'count': count}
+            for name, count in province_counter.most_common(15)
+        ]
+        experience_distribution = [
+            {'name': name, 'value': value}
+            for name, value in experience_counter.most_common()
+        ]
+
+        if not province_distribution or not experience_distribution:
+            return jsonify({'success': True, **fallback_payload})
+
+        return jsonify({
+            'success': True,
+            'province_distribution': province_distribution,
+            'experience_distribution': experience_distribution
+        })
+    except Exception as e:
+        app.logger.warning("加载全部专业聚合数据失败：%s", e)
+        return jsonify({'success': True, **fallback_payload})
+
+
 @app.route('/jobs/search')
 def job_search():
     """职位搜索页面"""
@@ -392,65 +1093,60 @@ def job_search():
     jobs = []
     if keyword or city or profession or min_salary or max_salary:
         try:
-            db_session = SessionLocal()
-            
-            # 构建查询条件
-            conditions = []
-            
-            # 关键词搜索
-            if keyword:
-                conditions.append(
-                    (JobPosition.job_name.like(f'%{keyword}%')) |
-                    (JobPosition.company_name.like(f'%{keyword}%')) |
-                    (JobPosition.description.like(f'%{keyword}%')) |
-                    (JobPosition.skill_tags.like(f'%{keyword}%'))
-                )
-            
-            # 城市筛选
-            if city:
-                actual_city = get_actual_city(city)
-                conditions.append(JobPosition.city == actual_city)
-            
-            # 专业方向筛选（通过技能标签）
-            if profession:
-                keyword_text = get_profession_keyword(profession)
-                if keyword_text:
+            with get_db_session() as db_session:
+                # 构建查询条件
+                conditions = []
+
+                # 关键词搜索
+                if keyword:
                     conditions.append(
-                        (JobPosition.skill_tags.like(f'%{keyword_text}%')) |
-                        (JobPosition.job_name.like(f'%{keyword_text}%'))
+                        (JobPosition.job_name.like(f'%{keyword}%')) |
+                        (JobPosition.company_name.like(f'%{keyword}%')) |
+                        (JobPosition.description.like(f'%{keyword}%')) |
+                        (JobPosition.skill_tags.like(f'%{keyword}%'))
                     )
-            
-            # 薪资范围
-            if min_salary:
-                conditions.append(JobPosition.min_salary >= min_salary)
-            if max_salary:
-                conditions.append(JobPosition.max_salary <= max_salary)
-            
-            # 查询职位
-            query = db_session.query(JobPosition).filter(JobPosition.status == 'active')
-            if conditions:
-                query = query.filter(and_(*conditions))
-            
-            jobs = query.order_by(JobPosition.id.desc()).limit(100).all()
-            
-            # 转换为字典
-            jobs = [{
-                'id': job.id,
-                'job_name': job.job_name,
-                'company_name': job.company_name,
-                'city': job.city,
-                'education': job.education,
-                'experience': job.experience,
-                'min_salary': job.min_salary,
-                'max_salary': job.max_salary,
-                'skill_tags': job.skill_tags,
-            } for job in jobs]
-            
-            db_session.close()
+
+                # 城市筛选
+                if city:
+                    actual_city = get_actual_city(city)
+                    conditions.append(JobPosition.city == actual_city)
+
+                # 专业方向筛选（通过技能标签）
+                if profession:
+                    keyword_text = get_profession_keyword(profession)
+                    if keyword_text:
+                        conditions.append(
+                            (JobPosition.skill_tags.like(f'%{keyword_text}%')) |
+                            (JobPosition.job_name.like(f'%{keyword_text}%'))
+                        )
+
+                # 薪资范围
+                if min_salary:
+                    conditions.append(JobPosition.min_salary >= min_salary)
+                if max_salary:
+                    conditions.append(JobPosition.max_salary <= max_salary)
+
+                # 查询职位
+                query = db_session.query(JobPosition).filter(JobPosition.status == 'active')
+                if conditions:
+                    query = query.filter(and_(*conditions))
+
+                jobs = query.order_by(JobPosition.id.desc()).limit(100).all()
+
+                # 转换为字典
+                jobs = [{
+                    'id': job.id,
+                    'job_name': job.job_name,
+                    'company_name': job.company_name,
+                    'city': job.city,
+                    'education': job.education,
+                    'experience': job.experience,
+                    'min_salary': job.min_salary,
+                    'max_salary': job.max_salary,
+                    'skill_tags': job.skill_tags,
+                } for job in jobs]
         except Exception as e:
-            print(f"获取职位失败：{e}")
-        finally:
-            db_session.close()
+            app.logger.warning("获取职位失败：%s", e)
     
     return render_template('job_search.html', jobs=jobs)
 
@@ -471,123 +1167,118 @@ def search_jobs():
     experience = request.args.get('experience', '').strip()
     min_salary = request.args.get('min_salary', type=int)
     max_salary = request.args.get('max_salary', type=int)
+
+    if min_salary and max_salary and min_salary > max_salary:
+        return jsonify({'success': False, 'message': '最低薪资不能高于最高薪资'}), 400
     
     try:
-        db_session = SessionLocal()
-        
-        # 构建查询条件
-        conditions = []
-        
-        # 关键词搜索（职位名、公司名、描述、技能）
-        if keyword:
-            conditions.append(
-                (JobPosition.job_name.like(f'%{keyword}%')) |
-                (JobPosition.company_name.like(f'%{keyword}%')) |
-                (JobPosition.description.like(f'%{keyword}%')) |
-                (JobPosition.skill_tags.like(f'%{keyword}%'))
-            )
-        
-        # 城市筛选
-        if city:
-            actual_city = get_actual_city(city)
-            conditions.append(JobPosition.city == actual_city)
-        
-        # 专业方向筛选（通过技能标签）
-        if profession:
-            keyword_text = get_profession_keyword(profession)
-            if keyword_text:
+        with get_db_session() as db_session:
+            # 构建查询条件
+            conditions = []
+
+            # 关键词搜索（职位名、公司名、描述、技能）
+            if keyword:
                 conditions.append(
-                    (JobPosition.skill_tags.like(f'%{keyword_text}%')) |
-                    (JobPosition.job_name.like(f'%{keyword_text}%'))
+                    (JobPosition.job_name.like(f'%{keyword}%')) |
+                    (JobPosition.company_name.like(f'%{keyword}%')) |
+                    (JobPosition.description.like(f'%{keyword}%')) |
+                    (JobPosition.skill_tags.like(f'%{keyword}%'))
                 )
-        
-        # 学历要求
-        if education:
-            conditions.append(JobPosition.education == education)
-        
-        # 经验要求
-        if experience:
-            conditions.append(JobPosition.experience == experience)
-        
-        # 薪资范围
-        if min_salary:
-            conditions.append(JobPosition.min_salary >= min_salary)
-        if max_salary:
-            conditions.append(JobPosition.max_salary <= max_salary)
-        
-        # 查询职位
-        query = db_session.query(JobPosition).filter(JobPosition.status == 'active')
-        if conditions:
-            query = query.filter(and_(*conditions))
-        
-        jobs = query.order_by(JobPosition.id.desc()).limit(100).all()
-        
-        result = [{
-            'id': job.id,
-            'job_name': job.job_name,
-            'company_name': job.company_name,
-            'city': job.city,
-            'education': job.education,
-            'experience': job.experience,
-            'min_salary': job.min_salary,
-            'max_salary': job.max_salary,
-            'skill_keywords': job.skill_tags,
-        } for job in jobs]
-        
-        db_session.close()
+
+            # 城市筛选
+            if city:
+                actual_city = get_actual_city(city)
+                conditions.append(JobPosition.city == actual_city)
+
+            # 专业方向筛选（通过技能标签）
+            if profession:
+                keyword_text = get_profession_keyword(profession)
+                if keyword_text:
+                    conditions.append(
+                        (JobPosition.skill_tags.like(f'%{keyword_text}%')) |
+                        (JobPosition.job_name.like(f'%{keyword_text}%'))
+                    )
+
+            # 学历要求
+            if education:
+                conditions.append(JobPosition.education == education)
+
+            # 经验要求
+            if experience:
+                conditions.append(JobPosition.experience == experience)
+
+            # 薪资范围
+            if min_salary:
+                conditions.append(JobPosition.min_salary >= min_salary)
+            if max_salary:
+                conditions.append(JobPosition.max_salary <= max_salary)
+
+            # 查询职位
+            query = db_session.query(JobPosition).filter(JobPosition.status == 'active')
+            if conditions:
+                query = query.filter(and_(*conditions))
+
+            jobs = query.order_by(JobPosition.id.desc()).limit(100).all()
+
+            result = [{
+                'id': job.id,
+                'job_name': job.job_name,
+                'company_name': job.company_name,
+                'city': job.city,
+                'education': job.education,
+                'experience': job.experience,
+                'min_salary': job.min_salary,
+                'max_salary': job.max_salary,
+                'skill_keywords': job.skill_tags,
+            } for job in jobs]
+
         return jsonify({'success': True, 'jobs': result, 'total': len(result)})
         
-    except Exception as e:
-        print(f"搜索职位失败：{e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-    finally:
-        db_session.close()
+    except Exception:
+        app.logger.exception("搜索职位失败")
+        return jsonify({'success': False, 'message': '搜索失败，请稍后重试'}), 500
 
 
 @app.route('/api/jobs/<int:job_id>')
 def get_job_detail(job_id):
     """获取单个职位详情 API"""
     try:
-        db_session = SessionLocal()
-        
-        job = db_session.query(JobPosition).filter_by(id=job_id).first()
-        
-        if not job:
-            return jsonify({'success': False, 'message': '职位不存在'}), 404
+        with get_db_session() as db_session:
+            job = db_session.query(JobPosition).filter_by(id=job_id).first()
 
-        # 非活跃职位默认不对普通访问者暴露，仅管理员/企业模式可查看
-        if job.status != 'active' and not (session.get('is_admin') or session.get('is_company')):
-            return jsonify({'success': False, 'message': '职位不存在'}), 404
-        
-        result = {
-            'id': job.id,
-            'job_name': job.job_name,
-            'company_name': job.company_name,
-            'min_salary': job.min_salary,
-            'max_salary': job.max_salary,
-            'salary_text': job.salary_text,
-            'city': job.city,
-            'district': job.district,
-            'experience': job.experience,
-            'education': job.education,
-            'skill_tags': job.skill_tags,
-            'description': job.description,
-            'industry': job.industry,
-            'company_size': job.company_size,
-            'source': job.source,
-            'is_campus': bool(job.is_campus),
-            'publish_date': job.publish_date,
-            'crawl_time': job.crawl_time.strftime('%Y-%m-%d %H:%M:%S') if job.crawl_time else None
-        }
-        
-        db_session.close()
+            if not job:
+                return jsonify({'success': False, 'message': '职位不存在'}), 404
+
+            # 非活跃职位默认不对普通访问者暴露，仅管理员/企业模式可查看
+            if job.status != 'active' and not (session.get('is_admin') or session.get('is_company')):
+                return jsonify({'success': False, 'message': '职位不存在'}), 404
+
+            result = {
+                'id': job.id,
+                'job_name': job.job_name,
+                'company_name': job.company_name,
+                'min_salary': job.min_salary,
+                'max_salary': job.max_salary,
+                'salary_text': job.salary_text,
+                'city': job.city,
+                'district': job.district,
+                'experience': job.experience,
+                'education': job.education,
+                'skill_tags': job.skill_tags,
+                'description': job.description,
+                'industry': job.industry,
+                'company_size': job.company_size,
+                'source': job.source,
+                'is_campus': bool(job.is_campus),
+                'publish_date': job.publish_date,
+                'crawl_time': job.crawl_time.strftime('%Y-%m-%d %H:%M:%S') if job.crawl_time else None
+            }
+
         return jsonify({'success': True, 'job': result})
         
-    except Exception as e:
-        print(f"获取职位详情失败：{e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-    finally:
-        db_session.close()
+    except Exception:
+        app.logger.exception("获取职位详情失败")
+        return jsonify({'success': False, 'message': '获取职位详情失败，请稍后重试'}), 500
 
 
 @app.route('/applications')
@@ -663,7 +1354,7 @@ def account_settings():
     if 'user_id' not in session:
         return jsonify({'success': False, 'message': '请先登录'}), 401
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
     email = data.get('email', '').strip()
     phone = data.get('phone', '').strip()
@@ -713,12 +1404,22 @@ def account_settings():
             
             # 更新密码
             user.password_hash = generate_password_hash(new_password)
+
+        parsed_graduation_year = None
+        if graduation_year not in (None, ''):
+            try:
+                parsed_graduation_year = int(graduation_year)
+            except (TypeError, ValueError):
+                return jsonify({'success': False, 'message': '毕业年份格式无效'}), 400
+
+            if parsed_graduation_year < 1900 or parsed_graduation_year > 2100:
+                return jsonify({'success': False, 'message': '毕业年份超出有效范围'}), 400
         
         # 更新用户信息
         user.username = username
         user.email = email
         user.phone = phone if phone else None
-        user.graduation_year = int(graduation_year) if graduation_year else None
+        user.graduation_year = parsed_graduation_year
         user.education = education if education else None
         
         user_session.commit()
@@ -729,8 +1430,8 @@ def account_settings():
         
         return jsonify({'success': True, 'message': '保存成功'})
         
-    except Exception as e:
-        print(f"保存账户设置失败：{e}")
+    except Exception:
+        app.logger.exception("保存账户设置失败")
         return jsonify({'success': False, 'message': '保存失败，请重试'}), 500
     finally:
         user_session.close()
@@ -748,7 +1449,7 @@ def get_resume():
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
     resume_session = ResumeSession()
     try:
@@ -757,8 +1458,8 @@ def get_resume():
             return jsonify({'success': True, 'resume': resume.to_dict()})
         else:
             return jsonify({'success': True, 'resume': None})
-    except Exception as e:
-        print(f"获取简历失败：{e}")
+    except Exception:
+        app.logger.exception("获取简历失败")
         return jsonify({'success': False, 'message': '获取简历失败'}), 500
     finally:
         resume_session.close()
@@ -774,9 +1475,9 @@ def save_resume():
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     resume_session = ResumeSession()
     try:
         resume = resume_session.query(Resume).filter_by(user_id=session['user_id']).first()
@@ -809,9 +1510,9 @@ def save_resume():
         resume_session.commit()
         
         return jsonify({'success': True, 'message': '简历保存成功', 'resume': resume.to_dict()})
-    except Exception as e:
+    except Exception:
         resume_session.rollback()
-        print(f"保存简历失败：{e}")
+        app.logger.exception("保存简历失败")
         return jsonify({'success': False, 'message': '保存失败'}), 500
     finally:
         resume_session.close()
@@ -827,7 +1528,7 @@ def upload_resume():
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
     if 'file' not in request.files:
         return jsonify({'success': False, 'message': '未选择文件'}), 400
@@ -866,6 +1567,8 @@ def upload_resume():
         return jsonify({'success': False, 'message': '无效的 PDF 文件'}), 400
     elif ext in ['docx'] and not file_bytes.startswith(b'PK'):
         return jsonify({'success': False, 'message': '无效的 Word 文件'}), 400
+    elif ext == 'doc' and not file_bytes.startswith(b'\xD0\xCF\x11\xE0'):
+        return jsonify({'success': False, 'message': '无效的 Word 文件'}), 400
     
     # 创建上传目录
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -899,9 +1602,7 @@ def upload_resume():
         return jsonify({'success': True, 'message': '上传成功', 'filename': original_filename})
     except Exception as e:
         resume_session.rollback()
-        print(f"上传简历失败：{e}")
-        import traceback
-        traceback.print_exc()
+        app.logger.exception("上传简历失败")
         return jsonify({'success': False, 'message': '上传失败'}), 500
     finally:
         resume_session.close()
@@ -925,7 +1626,7 @@ def delete_resume_attachment():
             try:
                 os.remove(resume.attachment_path)
             except Exception as e:
-                print(f"删除文件失败：{e}")
+                app.logger.warning(f"删除文件失败：{e}")
         
         # 更新数据库
         resume.has_attachment = 0
@@ -937,7 +1638,7 @@ def delete_resume_attachment():
         return jsonify({'success': True, 'message': '删除成功'})
     except Exception as e:
         resume_session.rollback()
-        print(f"删除简历失败：{e}")
+        app.logger.exception("删除简历失败")
         return jsonify({'success': False, 'message': '删除失败'}), 500
     finally:
         resume_session.close()
@@ -960,28 +1661,39 @@ def preview_resume_attachment():
         if not os.path.exists(resume.attachment_path):
             return jsonify({'error': '文件不存在'}), 404
         
-        # 读取文件并返回
-        with open(resume.attachment_path, 'rb') as f:
-            file_data = f.read()
-        
+        attachment_type = (resume.attachment_type or '').lower()
+
+        # docx 优先返回可直接内嵌展示的 HTML，降低对前端组件依赖
+        if attachment_type == 'docx':
+            try:
+                html_content = extract_docx_preview_html(resume.attachment_path)
+                return Response(html_content, mimetype='text/html; charset=utf-8')
+            except Exception:
+                app.logger.exception('DOCX 转 HTML 预览失败，回退到原始文件流')
+
+        if attachment_type == 'doc':
+            try:
+                html_content = extract_doc_preview_html(resume.attachment_path)
+                return Response(html_content, mimetype='text/html; charset=utf-8')
+            except Exception:
+                app.logger.exception('DOC 转 HTML 预览失败，回退到原始文件流')
+
         # 根据文件类型设置 MIME
-        if resume.attachment_type == 'pdf':
+        if attachment_type == 'pdf':
             mime_type = 'application/pdf'
-        elif resume.attachment_type in ['doc', 'docx']:
-            mime_type = 'application/msword' if resume.attachment_type == 'doc' else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        elif attachment_type in ['doc', 'docx']:
+            mime_type = 'application/msword' if attachment_type == 'doc' else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         else:
             mime_type = 'application/octet-stream'
-        
-        from flask import Response
-        return Response(
-            file_data,
+
+        return send_file(
+            resume.attachment_path,
             mimetype=mime_type,
-            headers={
-                'Content-Disposition': 'inline; filename="resume.pdf"'
-            }
+            as_attachment=False,
+            download_name=resume.attachment_name or 'resume.pdf'
         )
     except Exception as e:
-        print(f"预览简历失败：{e}")
+        app.logger.exception("预览简历失败")
         return jsonify({'error': '预览失败'}), 500
     finally:
         resume_session.close()
@@ -991,30 +1703,40 @@ def preview_resume_attachment():
 def download_resume_by_id(resume_id):
     """根据 ID 下载简历（用于企业管理员）"""
     if 'user_id' not in session:
-        return redirect('/login')
-    
-    resume_session = ResumeSession()
+        return jsonify({'error': '请先登录'}), 401
+
     try:
-        resume = resume_session.query(Resume).filter_by(id=resume_id).first()
-        
-        if not resume or not resume.attachment_path:
-            return jsonify({'error': '简历不存在'}), 404
-        
-        # 检查文件是否存在
-        if not os.path.exists(resume.attachment_path):
-            return jsonify({'error': '文件不存在'}), 404
-        
-        from flask import send_file
-        return send_file(
-            resume.attachment_path,
-            as_attachment=True,
-            download_name=resume.attachment_name or 'resume.pdf'
-        )
+        with get_db_session() as db_session:
+            user = db_session.query(User).filter_by(id=session['user_id']).first()
+            if not user or not user.is_company_admin or not user.company_name:
+                return jsonify({'error': '无权限'}), 403
+
+            # 仅允许下载当前企业收到的投递简历
+            related_application = db_session.query(JobApplication).filter_by(
+                resume_id=resume_id,
+                company_name=user.company_name
+            ).order_by(JobApplication.applied_at.desc()).first()
+
+            if not related_application:
+                return jsonify({'error': '无权限访问该简历'}), 403
+
+            resume = db_session.query(Resume).filter_by(id=resume_id).first()
+
+            if not resume or not resume.attachment_path:
+                return jsonify({'error': '简历不存在'}), 404
+
+            # 检查文件是否存在
+            if not os.path.exists(resume.attachment_path):
+                return jsonify({'error': '文件不存在'}), 404
+
+            return send_file(
+                resume.attachment_path,
+                as_attachment=True,
+                download_name=resume.attachment_name or 'resume.pdf'
+            )
     except Exception as e:
-        print(f"下载简历失败：{e}")
+        app.logger.exception("下载简历失败（企业管理员）")
         return jsonify({'error': '下载失败'}), 500
-    finally:
-        resume_session.close()
 
 
 @app.route('/api/resume/attachment/download')
@@ -1027,7 +1749,7 @@ def download_resume_attachment():
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'error': '未注册或者账号密码错误'}), 403
+            return jsonify({'error': '无权限：仅普通用户可访问'}), 403
     
     resume_session = ResumeSession()
     try:
@@ -1040,21 +1762,16 @@ def download_resume_attachment():
         if not os.path.exists(resume.attachment_path):
             return jsonify({'error': '文件不存在'}), 404
         
-        # 读取文件并返回
-        with open(resume.attachment_path, 'rb') as f:
-            file_data = f.read()
-        
-        # 获取原始文件名
-        file_name = os.path.basename(resume.attachment_path)
-        
-        from flask import Response, send_file
+        # 优先使用用户上传时的原始文件名
+        file_name = resume.attachment_name or os.path.basename(resume.attachment_path)
+
         return send_file(
             resume.attachment_path,
             as_attachment=True,
             download_name=file_name
         )
     except Exception as e:
-        print(f"下载简历失败：{e}")
+        app.logger.exception("下载简历失败（用户附件）")
         return jsonify({'error': '下载失败'}), 500
     finally:
         resume_session.close()
@@ -1070,9 +1787,9 @@ def submit_application():
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     job_id = data.get('job_id')
     job_name = data.get('job_name', '')
     company_name = data.get('company_name', '')
@@ -1082,6 +1799,13 @@ def submit_application():
     
     if not job_id:
         return jsonify({'success': False, 'message': '职位信息不完整'}), 400
+
+    try:
+        job_id = int(job_id)
+        if job_id <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'message': '职位参数无效'}), 400
     
     resume_session = ResumeSession()
     try:
@@ -1110,9 +1834,9 @@ def submit_application():
         resume_session.commit()
         
         return jsonify({'success': True, 'message': '申请提交成功'})
-    except Exception as e:
+    except Exception:
         resume_session.rollback()
-        print(f"提交申请失败：{e}")
+        app.logger.exception("提交申请失败")
         return jsonify({'success': False, 'message': '提交失败'}), 500
     finally:
         resume_session.close()
@@ -1128,7 +1852,7 @@ def get_applications():
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
     resume_session = ResumeSession()
     try:
@@ -1138,8 +1862,8 @@ def get_applications():
         
         result = [app.to_dict() for app in applications]
         return jsonify({'success': True, 'applications': result, 'total': len(result)})
-    except Exception as e:
-        print(f"获取投递记录失败：{e}")
+    except Exception:
+        app.logger.exception("获取投递记录失败")
         return jsonify({'success': False, 'message': '获取失败'}), 500
     finally:
         resume_session.close()
@@ -1155,7 +1879,7 @@ def get_application_detail(app_id):
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
     resume_session = ResumeSession()
     try:
@@ -1168,8 +1892,8 @@ def get_application_detail(app_id):
             return jsonify({'success': False, 'message': '申请不存在'}), 404
         
         return jsonify({'success': True, 'application': application.to_dict()})
-    except Exception as e:
-        print(f"获取申请详情失败：{e}")
+    except Exception:
+        app.logger.exception("获取申请详情失败")
         return jsonify({'success': False, 'message': '获取失败'}), 500
     finally:
         resume_session.close()
@@ -1185,7 +1909,7 @@ def withdraw_application(app_id):
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
     resume_session = ResumeSession()
     try:
@@ -1206,9 +1930,9 @@ def withdraw_application(app_id):
         resume_session.commit()
         
         return jsonify({'success': True, 'message': '申请已撤回'})
-    except Exception as e:
+    except Exception:
         resume_session.rollback()
-        print(f"撤回申请失败：{e}")
+        app.logger.exception("撤回申请失败")
         return jsonify({'success': False, 'message': '撤回失败'}), 500
     finally:
         resume_session.close()
@@ -1224,9 +1948,9 @@ def update_application(app_id):
     with get_db_session() as db_session:
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if user and (user.is_company_admin or user.is_admin):
-            return jsonify({'success': False, 'message': '未注册或者账号密码错误'}), 403
+            return jsonify({'success': False, 'message': '无权限：仅普通用户可访问'}), 403
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     
     resume_session = ResumeSession()
     try:
@@ -1257,9 +1981,9 @@ def update_application(app_id):
         resume_session.commit()
         
         return jsonify({'success': True, 'message': '修改成功'})
-    except Exception as e:
+    except Exception:
         resume_session.rollback()
-        print(f"更新申请失败：{e}")
+        app.logger.exception("更新申请失败")
         return jsonify({'success': False, 'message': '修改失败'}), 500
     finally:
         resume_session.close()
@@ -1292,7 +2016,7 @@ def company_panel():
 
 @app.route('/company/settings')
 def company_settings_page():
-    """企业设置页面"""
+    """兼容旧入口：回到企业后台内嵌设置页。"""
     if 'user_id' not in session:
         return redirect('/login')
     
@@ -1300,8 +2024,8 @@ def company_settings_page():
         user = db_session.query(User).filter_by(id=session['user_id']).first()
         if not user or not user.is_company_admin:
             return redirect('/login')
-        
-        return render_template('company_settings.html')
+
+        return redirect('/company?tab=settings')
 
 
 @app.route('/api/company/settings')
@@ -1370,7 +2094,7 @@ def update_company_settings():
             return jsonify({'success': False, 'message': '无权限'}), 403
         
         company_name = user.company_name
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         
         # 查找或创建公司记录
         company = db_session.query(Company).filter_by(company_name=company_name).first()
@@ -1469,20 +2193,21 @@ def company_dashboard():
         
         company_name = user.company_name
         
-        # 统计数据
-        total = db_session.query(JobApplication).filter_by(company_name=company_name).count()
-        pending = db_session.query(JobApplication).filter_by(
-            company_name=company_name,
-            status='submitted'
-        ).count()
-        interview = db_session.query(JobApplication).filter_by(
-            company_name=company_name,
-            status='interview'
-        ).count()
-        offer = db_session.query(JobApplication).filter_by(
-            company_name=company_name,
-            status='offer'
-        ).count()
+        # 统计数据（单次分组查询，减少重复 count）
+        grouped_status = db_session.query(
+            JobApplication.status,
+            func.count(JobApplication.id)
+        ).filter_by(
+            company_name=company_name
+        ).group_by(
+            JobApplication.status
+        ).all()
+
+        status_map = {status: count for status, count in grouped_status}
+        total = sum(status_map.values())
+        pending = status_map.get('submitted', 0)
+        interview = status_map.get('interview', 0)
+        offer = status_map.get('offer', 0)
         
         return jsonify({
             'success': True,
@@ -1513,12 +2238,24 @@ def company_applications():
             company_name=company_name
         ).order_by(JobApplication.applied_at.desc()).limit(200).all()
         
+        resume_ids = {app.resume_id for app in applications if app.resume_id}
+        user_ids = {app.user_id for app in applications if app.user_id}
+
+        resume_map = {}
+        if resume_ids:
+            resumes = db_session.query(Resume).filter(Resume.id.in_(resume_ids)).all()
+            resume_map = {resume.id: resume for resume in resumes}
+
+        user_map = {}
+        if user_ids:
+            applicants = db_session.query(User).filter(User.id.in_(user_ids)).all()
+            user_map = {applicant.id: applicant for applicant in applicants}
+
         result = []
         for app in applications:
-            # 获取求职者信息
-            resume = db_session.query(Resume).filter_by(id=app.resume_id).first()
-            applicant = db_session.query(User).filter_by(id=app.user_id).first()
-            
+            resume = resume_map.get(app.resume_id)
+            applicant = user_map.get(app.user_id)
+
             app_data = {
                 'id': app.id,
                 'user_id': app.user_id,
@@ -1556,6 +2293,8 @@ def company_jobs():
         # 获取分页参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
         
         # 获取该公司的所有职位（分页）
         jobs_query = db_session.query(JobPosition).filter_by(
@@ -1565,13 +2304,21 @@ def company_jobs():
         total = jobs_query.count()
         jobs = jobs_query.offset((page - 1) * per_page).limit(per_page).all()
         
+        job_ids = [job.id for job in jobs]
+        application_count_map = {}
+        if job_ids:
+            count_rows = db_session.query(
+                JobApplication.job_id,
+                func.count(JobApplication.id)
+            ).filter(
+                JobApplication.job_id.in_(job_ids)
+            ).group_by(
+                JobApplication.job_id
+            ).all()
+            application_count_map = {job_id: count for job_id, count in count_rows}
+
         result = []
         for job in jobs:
-            # 统计每个职位的投递数
-            app_count = db_session.query(JobApplication).filter_by(
-                job_id=job.id
-            ).count()
-            
             result.append({
                 'id': job.id,
                 'job_name': job.job_name,
@@ -1581,7 +2328,7 @@ def company_jobs():
                 'education': job.education,
                 'experience': job.experience,
                 'status': job.status,
-                'application_count': app_count
+                'application_count': application_count_map.get(job.id, 0)
             })
         
         return jsonify({
@@ -1605,11 +2352,23 @@ def company_update_application_status(app_id):
         if not user or not user.is_company_admin or not user.company_name:
             return jsonify({'success': False, 'message': '无权限'}), 403
         
-        data = request.get_json()
-        new_status = data.get('status', '')
+        data = request.get_json(silent=True) or {}
+        new_status = (data.get('status', '') or '').strip().lower()
+        interview_context = extract_interview_context_from_request(data) if new_status == 'interview' else {}
         
         if new_status not in ['submitted', 'viewed', 'interview', 'offer', 'rejected']:
             return jsonify({'success': False, 'message': '无效的状态'}), 400
+
+        if new_status == 'interview':
+            interview_time_text = (interview_context.get('interview_time_text') or '').strip()
+            interview_location = (interview_context.get('interview_location') or '').strip()
+            interview_contact = (interview_context.get('interview_contact') or '').strip()
+
+            if not interview_time_text or not interview_location or not interview_contact:
+                return jsonify({
+                    'success': False,
+                    'message': '发起面试需一次性填写完整：面试时间、面试地点、联系电话'
+                }), 400
         
         application = db_session.query(JobApplication).filter_by(id=app_id).first()
         
@@ -1620,10 +2379,38 @@ def company_update_application_status(app_id):
         if application.company_name != user.company_name:
             return jsonify({'success': False, 'message': '无权限修改'}), 403
         
+        old_status = (application.status or '').strip().lower()
         application.status = new_status
+
+        should_notify = old_status != new_status
+        if new_status == 'interview':
+            # 面试安排可能发生补充或变更：即使状态未变化，也应重新推送最新时间/地点/联系电话。
+            should_notify = True
+        if not should_notify and new_status == 'rejected':
+            # 企业端重复点击“拒绝”时也触发一次通知，避免前端误以为未生效。
+            should_notify = True
+
+        notification_payload = None
+        if should_notify:
+            notification_payload = build_application_notification_payload(
+                db_session,
+                application,
+                interview_context=interview_context
+            )
+
         db_session.commit()
+
+        notification_pushed = False
+        if notification_payload:
+            notification_pushed = push_application_status_notification(notification_payload, user.id)
+            if not notification_pushed:
+                app.logger.warning('状态已更新但通知写入失败: app_id=%s', app_id)
         
-        return jsonify({'success': True, 'message': '状态已更新'})
+        return jsonify({
+            'success': True,
+            'message': '状态已更新',
+            'notification_pushed': notification_pushed
+        })
 
 
 @app.route('/api/company/statistics')
@@ -1645,6 +2432,8 @@ def company_statistics():
         # 获取分页参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
         
         # 本周和月初时间
         week_start = now - timedelta(days=now.weekday())
@@ -1657,25 +2446,37 @@ def company_statistics():
         
         # 统计数据
         total = len(all_apps)
-        week_new = sum(1 for app in all_apps if app.applied_at and app.applied_at >= week_start)
-        month_new = sum(1 for app in all_apps if app.applied_at and app.applied_at >= month_start)
-        
-        # 状态统计
+        week_new = 0
+        month_new = 0
         status_count = {
-            'submitted': sum(1 for app in all_apps if app.status == 'submitted'),
-            'viewed': sum(1 for app in all_apps if app.status == 'viewed'),
-            'interview': sum(1 for app in all_apps if app.status == 'interview'),
-            'offer': sum(1 for app in all_apps if app.status == 'offer'),
-            'rejected': sum(1 for app in all_apps if app.status == 'rejected')
+            'submitted': 0,
+            'viewed': 0,
+            'interview': 0,
+            'offer': 0,
+            'rejected': 0
         }
-        
-        # 平均处理时长（从 submitted 到 viewed/interview/offer/rejected）
-        processed_apps = [app for app in all_apps if app.status != 'submitted' and app.applied_at]
-        avg_process_days = 0
-        if processed_apps:
+        apps_by_job = defaultdict(list)
+        processed_days_total = 0
+        processed_count = 0
+
+        for app in all_apps:
+            if app.applied_at and app.applied_at >= week_start:
+                week_new += 1
+            if app.applied_at and app.applied_at >= month_start:
+                month_new += 1
+
+            if app.status in status_count:
+                status_count[app.status] += 1
+
+            if app.job_id is not None:
+                apps_by_job[app.job_id].append(app)
+
             # 简化计算，假设处理时间为当前时间减去申请时间
-            total_days = sum((now - app.applied_at).days for app in processed_apps)
-            avg_process_days = round(total_days / len(processed_apps)) if processed_apps else 0
+            if app.status != 'submitted' and app.applied_at:
+                processed_days_total += (now - app.applied_at).days
+                processed_count += 1
+
+        avg_process_days = round(processed_days_total / processed_count) if processed_count > 0 else 0
         
         # 简历完善率
         resume_ids = set(app.resume_id for app in all_apps if app.resume_id)
@@ -1692,7 +2493,7 @@ def company_statistics():
         
         job_stats = []
         for job in jobs:
-            job_apps = [app for app in all_apps if app.job_id == job.id]
+            job_apps = apps_by_job.get(job.id, [])
             job_total = len(job_apps)
             job_submitted = sum(1 for app in job_apps if app.status == 'submitted')
             job_interview = sum(1 for app in job_apps if app.status == 'interview')
@@ -1748,27 +2549,43 @@ def admin_dashboard():
     """管理员控制台 - 数据统计"""
     if 'user_id' not in session:
         return jsonify({'success': False, 'message': '未登录'}), 401
-    
+
+    now = datetime.now()
+    cache_payload = ADMIN_DASHBOARD_CACHE.get('payload')
+    cache_expires_at = ADMIN_DASHBOARD_CACHE.get('expires_at')
+    if cache_payload and cache_expires_at and now < cache_expires_at:
+        return jsonify(cache_payload)
+
     with get_db_session() as db_session:
-        user = db_session.query(User).filter_by(id=session['user_id']).first()
-        if not user or not user.is_admin:
-            return jsonify({'success': False, 'message': '无权限'}), 403
-        
-        # 统计数据
+        # 统计数据（减少查询次数）
         total_users = db_session.query(User).filter(User.is_admin == False).count()
-        total_jobs = db_session.query(JobPosition).count()
         total_applications = db_session.query(JobApplication).count()
-        pending_jobs = db_session.query(JobPosition).filter(JobPosition.status == 'pending').count()
-        
-        return jsonify({
+
+        grouped_jobs = db_session.query(
+            JobPosition.status,
+            func.count(JobPosition.id)
+        ).group_by(
+            JobPosition.status
+        ).all()
+        status_map = {status: count for status, count in grouped_jobs}
+        total_jobs = sum(status_map.values())
+        pending_jobs = status_map.get('pending', 0)
+
+        payload = {
             'success': True,
+            'admin_username': session.get('username', 'admin'),
             'stats': {
                 'total_users': total_users,
                 'total_jobs': total_jobs,
                 'total_applications': total_applications,
                 'pending_jobs': pending_jobs
             }
-        })
+        }
+
+        ADMIN_DASHBOARD_CACHE['payload'] = payload
+        ADMIN_DASHBOARD_CACHE['expires_at'] = now + timedelta(seconds=ADMIN_DASHBOARD_CACHE_TTL_SECONDS)
+
+        return jsonify(payload)
 
 
 @app.route('/api/admin/users')
@@ -1832,13 +2649,13 @@ def admin_update_user_status(user_id):
         if not admin or not admin.is_admin:
             return jsonify({'success': False, 'message': '无权限'}), 403
         
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         target_user = db_session.query(User).filter_by(id=user_id).first()
         
         if not target_user:
             return jsonify({'success': False, 'message': '用户不存在'}), 404
         
-        target_user.is_active = data.get('is_active', True)
+        target_user.is_active = coerce_bool(data.get('is_active', True))
         db_session.commit()
         
         return jsonify({'success': True, 'message': '操作成功'})
@@ -1858,6 +2675,8 @@ def admin_jobs():
         # 获取分页参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 30, type=int)
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
         status = request.args.get('status', '')
         
         # 查询
@@ -1870,7 +2689,9 @@ def admin_jobs():
         
         # 分页查询（限制 500 条）
         offset = (page - 1) * per_page
-        jobs = query.order_by(JobPosition.id.desc()).limit(min(per_page, 500 - offset)).offset(offset).all()
+        remaining = max(0, 500 - offset)
+        page_limit = min(per_page, remaining)
+        jobs = query.order_by(JobPosition.id.desc()).limit(page_limit).offset(offset).all() if page_limit > 0 else []
         
         return jsonify({
             'success': True,
@@ -1902,7 +2723,7 @@ def admin_audit_job(job_id):
         if not admin or not admin.is_admin:
             return jsonify({'success': False, 'message': '无权限'}), 403
         
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         job = db_session.query(JobPosition).filter_by(id=job_id).first()
         
         if not job:
@@ -1921,6 +2742,7 @@ def admin_audit_job(job_id):
                 job.description = (job.description or '') + f'\n\n【审核驳回原因】{safe_reason}'
         
         db_session.commit()
+        invalidate_admin_dashboard_cache()
         
         return jsonify({'success': True, 'message': '审核完成'})
 
@@ -1937,13 +2759,16 @@ def admin_applications():
             return jsonify({'success': False, 'message': '无权限'}), 403
         
         applications = db_session.query(JobApplication).order_by(JobApplication.id.desc()).limit(100).all()
+        user_ids = list({app.user_id for app in applications if app.user_id is not None})
+        users = db_session.query(User).filter(User.id.in_(user_ids)).all() if user_ids else []
+        user_map = {u.id: u.username for u in users}
         
         return jsonify({
             'success': True,
             'applications': [{
                 'id': app.id,
                 'user_id': app.user_id,
-                'user_name': db_session.query(User).filter_by(id=app.user_id).first().username if db_session.query(User).filter_by(id=app.user_id).first() else '未知',
+                'user_name': user_map.get(app.user_id, '未知'),
                 'job_id': app.job_id,
                 'job_name': app.job_name,
                 'company_name': app.company_name,
@@ -1966,7 +2791,7 @@ def admin_update_password():
         if not user or not user.is_admin:
             return jsonify({'success': False, 'message': '无权限'}), 403
         
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         password = data.get('password', '')
         
         if not password or len(password) < 8:
@@ -1994,42 +2819,41 @@ def admin_companies():
         # 获取分页参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 30, type=int)
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
         
-        # 只按公司名分组，获取唯一公司列表（限制 500 条）
-        companies = db_session.query(
-            JobPosition.company_name
+        base_query = db_session.query(
+            JobPosition.company_name.label('company_name'),
+            func.max(JobPosition.industry).label('industry'),
+            func.max(JobPosition.city).label('city'),
+            func.count(JobPosition.id).label('job_count')
         ).filter(
             JobPosition.company_name.isnot(None),
             JobPosition.company_name != ''
-        ).distinct().limit(500).all()
-        
-        # 总数
-        total = len(companies)
-        
-        # 手动分页
-        start_idx = (page - 1) * per_page
-        end_idx = start_idx + per_page
-        companies_page = companies[start_idx:end_idx]
-        
+        ).group_by(
+            JobPosition.company_name
+        ).order_by(
+            JobPosition.company_name.asc()
+        )
+
+        # 总数（限制最多 500 条）
+        total = min(base_query.count(), 500)
+
+        # 分页查询（限制 500 条）
+        offset = (page - 1) * per_page
+        remaining = max(0, 500 - offset)
+        page_limit = min(per_page, remaining)
+
+        companies_page = base_query.offset(offset).limit(page_limit).all() if page_limit > 0 else []
+
         company_list = []
-        for company_tuple in companies_page:
-            company_name = company_tuple[0]
-            if company_name:
-                # 获取该公司的所有职位
-                jobs = db_session.query(JobPosition).filter_by(
-                    company_name=company_name
-                ).all()
-                
-                # 取第一个职位的行业和城市作为代表
-                industry = jobs[0].industry if jobs and jobs[0].industry else '未设置'
-                city = jobs[0].city if jobs and jobs[0].city else '未设置'
-                
-                company_list.append({
-                    'company_name': company_name,
-                    'industry': industry,
-                    'city': city,
-                    'job_count': len(jobs)
-                })
+        for company_row in companies_page:
+            company_list.append({
+                'company_name': company_row.company_name,
+                'industry': company_row.industry or '未设置',
+                'city': company_row.city or '未设置',
+                'job_count': int(company_row.job_count or 0)
+            })
         
         return jsonify({
             'success': True,
@@ -2085,16 +2909,34 @@ def admin_sensitive_words():
             return jsonify({'success': False, 'message': '无权限'}), 403
         
         if request.method == 'POST':
-            data = request.get_json()
-            # TODO: 创建敏感词表并保存
-            return jsonify({'success': True, 'message': '敏感词已添加'})
-        
-        # 返回敏感词列表（暂时返回示例数据）
-        words = [
-            {'id': 1, 'word': '测试敏感词 1', 'type': '违禁词', 'created_at': '2026-01-01'},
-            {'id': 2, 'word': '测试敏感词 2', 'type': '广告词', 'created_at': '2026-01-02'}
-        ]
-        
+            data = request.get_json(silent=True) or {}
+            word = str(data.get('word', '')).strip()
+            word_type = str(data.get('type', '违禁词')).strip() or '违禁词'
+
+            if not word:
+                return jsonify({'success': False, 'message': '敏感词不能为空'}), 400
+            if len(word) > 100:
+                return jsonify({'success': False, 'message': '敏感词长度不能超过 100'}), 400
+
+            words = load_sensitive_words()
+            if any(item.get('word') == word and item.get('type') == word_type for item in words):
+                return jsonify({'success': False, 'message': '该敏感词已存在'}), 409
+
+            next_id = max([item.get('id', 0) for item in words], default=0) + 1
+            new_item = {
+                'id': next_id,
+                'word': word,
+                'type': word_type,
+                'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            words.append(new_item)
+
+            if not save_sensitive_words(words):
+                return jsonify({'success': False, 'message': '保存失败，请稍后重试'}), 500
+
+            return jsonify({'success': True, 'message': '敏感词已添加', 'word': new_item})
+
+        words = sorted(load_sensitive_words(), key=lambda item: item.get('id', 0), reverse=True)
         return jsonify({'success': True, 'words': words})
 
 
@@ -2109,18 +2951,41 @@ def admin_batch_audit():
         if not user or not user.is_admin:
             return jsonify({'success': False, 'message': '无权限'}), 403
         
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         job_ids = data.get('job_ids', [])
         result = data.get('result', 'approved')
-        reason = data.get('reason', '')
-        
+        reason = str(data.get('reason', '')).strip()
+
+        if not isinstance(job_ids, list) or not job_ids:
+            return jsonify({'success': False, 'message': '请提供需要审核的职位 ID 列表'}), 400
+
+        if result not in ['approved', 'rejected']:
+            return jsonify({'success': False, 'message': '审核结果参数无效'}), 400
+
+        normalized_job_ids = []
         for job_id in job_ids:
-            job = db_session.query(JobPosition).filter_by(id=job_id).first()
-            if job:
-                job.status = 'active' if result == 'approved' else 'rejected'
+            try:
+                normalized_job_ids.append(int(job_id))
+            except (TypeError, ValueError):
+                continue
+
+        if not normalized_job_ids:
+            return jsonify({'success': False, 'message': '职位 ID 列表无效'}), 400
+
+        unique_job_ids = list(set(normalized_job_ids))
+        jobs = db_session.query(JobPosition).filter(JobPosition.id.in_(unique_job_ids)).all()
+
+        for job in jobs:
+            job.status = 'active' if result == 'approved' else 'rejected'
+            if result == 'rejected' and reason:
+                safe_reason = str(escape(reason))
+                job.description = (job.description or '') + f'\n\n【审核驳回原因】{safe_reason}'
+
+        updated_count = len(jobs)
         
         db_session.commit()
-        return jsonify({'success': True, 'message': f'批量审核完成，共{len(job_ids)}个职位'})
+        invalidate_admin_dashboard_cache()
+        return jsonify({'success': True, 'message': f'批量审核完成，成功更新 {updated_count} 个职位'})
 
 
 # ==================== 数据导出功能 ====================
@@ -2208,10 +3073,19 @@ def admin_export_applications():
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow(['ID', '求职者姓名', '手机号（脱敏）', '职位名称', '公司', '状态', '投递时间'])
+        fallback_user_ids = {
+            app.user_id for app in applications
+            if app.user_id and (not app.applicant_name or not app.applicant_phone)
+        }
+        fallback_user_map = {}
+        if fallback_user_ids:
+            fallback_users = db_session.query(User).filter(User.id.in_(fallback_user_ids)).all()
+            fallback_user_map = {u.id: u for u in fallback_users}
+
         for app in applications:
             # 优先使用申请快照，避免历史导出受用户资料后续修改影响
             need_user_fallback = not app.applicant_name or not app.applicant_phone
-            applicant_user = db_session.query(User).filter_by(id=app.user_id).first() if need_user_fallback else None
+            applicant_user = fallback_user_map.get(app.user_id) if need_user_fallback else None
 
             applicant_phone = app.applicant_phone or (applicant_user.phone if applicant_user else '')
             masked_phone = ''
@@ -2281,7 +3155,7 @@ def admin_settings():
             })
         
         elif request.method == 'PUT':
-            data = request.get_json()
+            data = request.get_json(silent=True) or {}
             # 保存配置（暂时只返回成功）
             return jsonify({'success': True, 'message': '设置已保存'})
 
@@ -2311,7 +3185,301 @@ from models_chat import Conversation, Message, get_session, init_db as init_chat
 try:
     init_chat_db()
 except Exception as e:
-    print(f"聊天数据库初始化警告：{e}")
+    app.logger.warning("聊天数据库初始化警告：%s", e)
+
+
+def parse_interview_datetime(raw_value):
+    """将前端传入的面试时间归一化为 datetime 与可读文本。"""
+    if raw_value in (None, ''):
+        return None, ''
+
+    if isinstance(raw_value, datetime):
+        value = raw_value
+        return value, value.strftime('%Y-%m-%d %H:%M')
+
+    value_text = str(raw_value).strip()
+    if not value_text:
+        return None, ''
+
+    normalized_text = value_text.replace('T', ' ').rstrip('Z').strip()
+    format_candidates = [
+        '%Y-%m-%d %H:%M',
+        '%Y/%m/%d %H:%M',
+        '%Y-%m-%d %H:%M:%S',
+        '%Y/%m/%d %H:%M:%S',
+        '%Y-%m-%d %H:%M:%S.%f',
+        '%Y/%m/%d %H:%M:%S.%f'
+    ]
+
+    for fmt in format_candidates:
+        try:
+            parsed = datetime.strptime(normalized_text, fmt)
+            return parsed, parsed.strftime('%Y-%m-%d %H:%M')
+        except ValueError:
+            continue
+
+    try:
+        parsed = datetime.fromisoformat(value_text.replace('Z', '+00:00'))
+        if parsed.tzinfo is not None:
+            parsed = parsed.replace(tzinfo=None)
+        return parsed, parsed.strftime('%Y-%m-%d %H:%M')
+    except ValueError:
+        app.logger.warning('面试时间解析失败，按原文展示: %s', value_text)
+        return None, value_text[:60]
+
+
+def extract_interview_context_from_request(data):
+    """从请求体提取面试通知字段。"""
+    interview_time, interview_time_text = parse_interview_datetime(data.get('interview_time'))
+    interview_location = (data.get('interview_location') or '').strip()[:255]
+    interview_contact = (data.get('interview_contact') or '').strip()[:80]
+
+    return {
+        'interview_time': interview_time,
+        'interview_time_text': interview_time_text,
+        'interview_location': interview_location,
+        'interview_contact': interview_contact
+    }
+
+
+def build_interview_notes(contact, source_notes=None):
+    """合并并规范化面试备注字段。"""
+    notes = []
+    if source_notes:
+        notes.append(str(source_notes).strip())
+    if contact:
+        notes.append(f'联系电话：{contact}')
+
+    merged = '\n'.join([part for part in notes if part])
+    return merged[:1000] if merged else None
+
+
+def build_application_notification_payload(db_session, application, interview_context=None):
+    """构建通知快照，避免跨会话读取 ORM 对象导致通知丢失。"""
+    user_id = application.user_id
+
+    if not user_id and application.resume_id:
+        related_resume = db_session.query(Resume).filter_by(id=application.resume_id).first()
+        if related_resume and related_resume.user_id:
+            user_id = related_resume.user_id
+
+    if not user_id and application.applicant_email:
+        related_user = db_session.query(User).filter_by(email=application.applicant_email).first()
+        if related_user:
+            user_id = related_user.id
+
+    if not user_id and application.applicant_phone:
+        related_user = db_session.query(User).filter_by(phone=application.applicant_phone).first()
+        if related_user:
+            user_id = related_user.id
+
+    if not user_id:
+        app.logger.warning('状态通知跳过：无法定位候选人 user_id，app_id=%s', application.id)
+        return None
+
+    company_name = (application.company_name or '').strip()
+    if not company_name:
+        app.logger.warning('状态通知跳过：company_name 为空，app_id=%s', application.id)
+        return None
+
+    payload = {
+        'app_id': application.id,
+        'user_id': int(user_id),
+        'company_name': company_name,
+        'job_id': application.job_id,
+        'job_name': (application.job_name or '').strip(),
+        'status': (application.status or '').strip().lower(),
+        'interview_time': None,
+        'interview_time_text': '',
+        'interview_location': '',
+        'interview_contact': ''
+    }
+
+    if payload['status'] == 'interview':
+        context = interview_context or {}
+        payload['interview_time'] = context.get('interview_time')
+        payload['interview_time_text'] = (context.get('interview_time_text') or '').strip()
+        payload['interview_location'] = (context.get('interview_location') or '').strip()
+        payload['interview_contact'] = (context.get('interview_contact') or '').strip()
+
+    return payload
+
+
+def build_application_status_notification_content(payload):
+    """根据投递状态生成流程通知文案。"""
+    status = (payload.get('status') or '').strip().lower()
+    job_name = (payload.get('job_name') or '该岗位').strip() or '该岗位'
+    company_name = (payload.get('company_name') or '企业').strip() or '企业'
+
+    if status == 'interview':
+        detail_lines = []
+        interview_time_text = (payload.get('interview_time_text') or '').strip()
+        interview_location = (payload.get('interview_location') or '').strip()
+        interview_contact = (payload.get('interview_contact') or '').strip()
+
+        if interview_time_text:
+            detail_lines.append(f'面试时间：{interview_time_text}')
+        if interview_location:
+            detail_lines.append(f'面试地点：{interview_location}')
+        if interview_contact:
+            detail_lines.append(f'联系电话：{interview_contact}')
+
+        detail_suffix = '\n' + '\n'.join(detail_lines) if detail_lines else '\n请留意后续安排。'
+        return f"【流程通知】{company_name}：你投递的“{job_name}”已进入面试阶段。{detail_suffix}"
+
+    status_text_map = {
+        'viewed': '已被查看。',
+        'offer': '已进入录用阶段，恭喜你。',
+        'rejected': '未通过本次筛选，感谢你的投递。',
+        'submitted': '状态已更新。'
+    }
+
+    status_text = status_text_map.get(status)
+    if not status_text:
+        return None
+
+    return f"【流程通知】{company_name}：你投递的“{job_name}”{status_text}"
+
+
+def ensure_notification_conversation(chat_session, payload, company_operator_id):
+    """为投递状态通知准备会话，不存在则自动创建。"""
+    user_id = payload.get('user_id')
+    company_name = (payload.get('company_name') or '').strip()
+    job_id = payload.get('job_id')
+    job_name = payload.get('job_name')
+
+    if not user_id or not company_name:
+        return None
+
+    conversation_query = chat_session.query(Conversation).filter(
+        Conversation.user_id == user_id,
+        Conversation.company_name == company_name
+    )
+
+    if job_id:
+        conversation_query = conversation_query.filter(Conversation.job_id == job_id)
+
+    conversation = conversation_query.order_by(Conversation.updated_at.desc()).first()
+
+    if conversation:
+        if not conversation.is_active:
+            conversation.is_active = True
+        if not conversation.job_id and job_id:
+            conversation.job_id = job_id
+        if not conversation.job_name and job_name:
+            conversation.job_name = job_name
+        if not conversation.company_id and company_operator_id:
+            conversation.company_id = company_operator_id
+        return conversation
+
+    conversation = Conversation(
+        user_id=user_id,
+        company_id=company_operator_id or 0,
+        company_name=company_name,
+        job_id=job_id,
+        job_name=job_name,
+        is_active=True
+    )
+    chat_session.add(conversation)
+    chat_session.flush()
+    return conversation
+
+
+def push_application_status_notification(payload, company_operator_id):
+    """将投递状态变更写入消息中心通知。"""
+    notification_content = build_application_status_notification_content(payload)
+    if not notification_content:
+        return False
+
+    chat_session = get_session()
+    try:
+        conversation = ensure_notification_conversation(chat_session, payload, company_operator_id)
+        if not conversation:
+            return False
+
+        now = datetime.now()
+
+        notification_message = Message(
+            conversation_id=conversation.id,
+            sender_type='company',
+            sender_id=company_operator_id or 0,
+            message_type='notification',
+            content=notification_content,
+            interview_job_id=payload.get('job_id'),
+            interview_time=payload.get('interview_time'),
+            interview_location=(payload.get('interview_location') or '')[:255] or None,
+            interview_notes=build_interview_notes(
+                payload.get('interview_contact'),
+                payload.get('interview_notes')
+            ),
+            created_at=now
+        )
+
+        chat_session.add(notification_message)
+
+        conversation.updated_at = now
+        conversation.last_message_at = now
+        conversation.last_message_content = notification_content
+        conversation.user_unread_count = (conversation.user_unread_count or 0) + 1
+        conversation.company_unread_count = 0
+
+        chat_session.commit()
+        return True
+    except Exception:
+        chat_session.rollback()
+        app.logger.exception("写入状态通知失败，尝试文本兜底: app_id=%s", payload.get('app_id'))
+        return push_application_status_notification_as_text(
+            payload,
+            company_operator_id,
+            notification_content
+        )
+    finally:
+        chat_session.close()
+
+
+def push_application_status_notification_as_text(payload, company_operator_id, notification_content):
+    """通知消息写入失败时，退化为普通文本消息，保证用户可见。"""
+    chat_session = get_session()
+    try:
+        conversation = ensure_notification_conversation(chat_session, payload, company_operator_id)
+        if not conversation:
+            return False
+
+        now = datetime.now()
+        fallback_content = notification_content.replace('【流程通知】', '[流程通知] ')
+
+        fallback_message = Message(
+            conversation_id=conversation.id,
+            sender_type='company',
+            sender_id=company_operator_id or 0,
+            message_type='text',
+            content=fallback_content,
+            interview_job_id=payload.get('job_id'),
+            interview_time=payload.get('interview_time'),
+            interview_location=(payload.get('interview_location') or '')[:255] or None,
+            interview_notes=build_interview_notes(
+                payload.get('interview_contact'),
+                payload.get('interview_notes')
+            ),
+            created_at=now
+        )
+
+        chat_session.add(fallback_message)
+
+        conversation.updated_at = now
+        conversation.last_message_at = now
+        conversation.last_message_content = fallback_content
+        conversation.user_unread_count = (conversation.user_unread_count or 0) + 1
+        conversation.company_unread_count = 0
+
+        chat_session.commit()
+        return True
+    except Exception:
+        chat_session.rollback()
+        app.logger.exception("文本兜底通知也写入失败: app_id=%s", payload.get('app_id'))
+        return False
+    finally:
+        chat_session.close()
 
 
 @app.route('/api/chat/conversations', methods=['GET'])
@@ -2343,45 +3511,99 @@ def get_conversations():
                     Conversation.is_active == True
                 ).order_by(Conversation.updated_at.desc()).all()
 
+            if not conversations:
+                return jsonify({'success': True, 'conversations': []})
+
+            conversation_user_ids = {conv.user_id for conv in conversations if conv.user_id}
+            conversation_company_names = {conv.company_name for conv in conversations if conv.company_name}
+            conversation_ids = [conv.id for conv in conversations]
+
+            related_applications = []
+            if conversation_user_ids and conversation_company_names:
+                related_applications = db_session.query(JobApplication).filter(
+                    JobApplication.user_id.in_(conversation_user_ids),
+                    JobApplication.company_name.in_(conversation_company_names)
+                ).order_by(JobApplication.applied_at.asc()).all()
+
+            latest_application_by_key = {}
+            latest_application_by_company = {}
+            earliest_application_by_company = {}
+            for application in related_applications:
+                key = (application.user_id, application.company_name, application.job_id)
+                company_key = (application.user_id, application.company_name)
+
+                latest_application_by_key[key] = application
+                latest_application_by_company[company_key] = application
+                earliest_application_by_company.setdefault(company_key, application)
+
+            resume_ids = {app.resume_id for app in related_applications if app.resume_id}
+            resume_name_map = {}
+            if resume_ids:
+                resumes = db_session.query(Resume).filter(Resume.id.in_(resume_ids)).all()
+                resume_name_map = {
+                    resume.id: resume.name
+                    for resume in resumes
+                    if resume and resume.name
+                }
+
+            applicant_name_map = {}
+            if conversation_user_ids:
+                applicants = db_session.query(User).filter(User.id.in_(conversation_user_ids)).all()
+                applicant_name_map = {
+                    applicant.id: applicant.username
+                    for applicant in applicants
+                    if applicant and applicant.username
+                }
+
+            latest_message_map = {}
+            if conversation_ids:
+                latest_message_ids = [
+                    row.max_message_id
+                    for row in chat_session.query(
+                        func.max(Message.id).label('max_message_id')
+                    ).filter(
+                        Message.conversation_id.in_(conversation_ids)
+                    ).group_by(
+                        Message.conversation_id
+                    ).all()
+                    if row.max_message_id
+                ]
+
+                if latest_message_ids:
+                    latest_messages = chat_session.query(Message).filter(Message.id.in_(latest_message_ids)).all()
+                    latest_message_map = {
+                        message.conversation_id: message
+                        for message in latest_messages
+                    }
+
             result = []
             for conv in conversations:
                 conv_data = conv.to_dict()
 
-                # 企业端会话列表优先显示对应申请记录中的“申请时姓名快照”
-                application_query = db_session.query(JobApplication).filter_by(
-                    user_id=conv.user_id,
-                    company_name=conv.company_name
-                )
-
                 if conv.job_id:
-                    matched_application = application_query.filter_by(job_id=conv.job_id).order_by(JobApplication.applied_at.desc()).first()
+                    matched_application = latest_application_by_key.get((conv.user_id, conv.company_name, conv.job_id))
                 else:
                     # 无职位绑定时，取最早申请以保持会话展示名称稳定
-                    matched_application = application_query.order_by(JobApplication.applied_at.asc()).first()
+                    matched_application = earliest_application_by_company.get((conv.user_id, conv.company_name))
 
                 if not matched_application:
-                    matched_application = application_query.order_by(JobApplication.applied_at.desc()).first()
+                    matched_application = latest_application_by_company.get((conv.user_id, conv.company_name))
 
                 applicant_name = None
                 if matched_application and matched_application.applicant_name:
                     applicant_name = matched_application.applicant_name
 
                 if not applicant_name and matched_application and matched_application.resume_id:
-                    related_resume = db_session.query(Resume).filter_by(id=matched_application.resume_id).first()
-                    if related_resume and related_resume.name:
-                        applicant_name = related_resume.name
+                    applicant_name = resume_name_map.get(matched_application.resume_id)
 
                 if not applicant_name:
-                    applicant = db_session.query(User).filter_by(id=conv.user_id).first()
-                    applicant_name = applicant.username if applicant else f"用户{conv.user_id}"
+                    applicant_name = applicant_name_map.get(conv.user_id, f"用户{conv.user_id}")
 
                 conv_data['user_name'] = applicant_name
 
                 # 兼容旧数据：若会话表未维护最后一条消息，则从消息表兜底读取
                 if not conv_data.get('last_message_content') or not conv_data.get('last_message_at'):
-                    last_message = chat_session.query(Message).filter_by(
-                        conversation_id=conv.id
-                    ).order_by(Message.created_at.desc()).first()
+                    last_message = latest_message_map.get(conv.id)
                     if last_message:
                         if not conv_data.get('last_message_content'):
                             conv_data['last_message_content'] = last_message.content
@@ -2397,8 +3619,8 @@ def get_conversations():
 
             return jsonify({'success': True, 'conversations': result})
     
-    except Exception as e:
-        print(f"获取会话列表失败：{e}")
+    except Exception:
+        app.logger.exception("获取会话列表失败")
         return jsonify({'success': False, 'message': '获取失败'}), 500
     finally:
         chat_session.close()
@@ -2421,6 +3643,12 @@ def create_conversation():
     except (TypeError, ValueError):
         return jsonify({'success': False, 'message': '职位参数无效'}), 400
 
+    if company_name and len(company_name) > MAX_COMPANY_NAME_LENGTH:
+        return jsonify({'success': False, 'message': '公司名称长度超出限制'}), 400
+
+    if job_name and len(job_name) > MAX_JOB_NAME_LENGTH:
+        return jsonify({'success': False, 'message': '职位名称长度超出限制'}), 400
+
     chat_session = get_session()
     try:
         with get_db_session() as db_session:
@@ -2435,6 +3663,8 @@ def create_conversation():
                     return jsonify({'success': False, 'message': '当前不是企业登录状态'}), 403
                 try:
                     chat_user_id = int(target_user_id) if target_user_id else session['user_id']
+                    if chat_user_id <= 0:
+                        raise ValueError
                 except (TypeError, ValueError):
                     return jsonify({'success': False, 'message': '用户参数无效'}), 400
                 company_name = company_name or (user.company_name or '').strip()
@@ -2498,9 +3728,9 @@ def create_conversation():
             chat_session.add(conversation)
             chat_session.commit()
             return jsonify({'success': True, 'conversation': conversation.to_dict(), 'created': True})
-    except Exception as e:
+    except Exception:
         chat_session.rollback()
-        print(f"创建会话失败：{e}")
+        app.logger.exception("创建会话失败")
         return jsonify({'success': False, 'message': '创建失败'}), 500
     finally:
         chat_session.close()
@@ -2541,15 +3771,17 @@ def get_messages(conversation_id):
                     conversation.user_unread_count = 0
                     chat_session.commit()
 
+            conversation_data = conversation.to_dict()
+
         messages = chat_session.query(Message).filter_by(
             conversation_id=conversation_id
         ).order_by(Message.created_at.asc()).all()
         
         result = [msg.to_dict() for msg in messages]
-        return jsonify({'success': True, 'messages': result})
+        return jsonify({'success': True, 'messages': result, 'conversation': conversation_data})
     
-    except Exception as e:
-        print(f"获取消息失败：{e}")
+    except Exception:
+        app.logger.exception("获取消息失败")
         return jsonify({'success': False, 'message': '获取失败'}), 500
     finally:
         chat_session.close()
@@ -2559,6 +3791,94 @@ def get_messages(conversation_id):
 def get_conversation_detail(conversation_id):
     """兼容企业端旧接口：返回会话消息列表。"""
     return get_messages(conversation_id)
+
+
+@app.route('/api/chat/messages/<int:message_id>/confirm-interview', methods=['POST'])
+def confirm_interview_notification(message_id):
+    """候选人在流程通知中确认面试。"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': '请先登录'}), 401
+
+    chat_session = get_session()
+    try:
+        with get_db_session() as db_session:
+            user = db_session.query(User).filter_by(id=session['user_id']).first()
+            if not user or not user.is_active:
+                return jsonify({'success': False, 'message': '用户不存在'}), 404
+
+            if session.get('is_company') or session.get('is_admin') or user.is_company_admin:
+                return jsonify({'success': False, 'message': '仅求职者可确认面试'}), 403
+
+        target_message = chat_session.query(Message).filter_by(id=message_id).first()
+        if not target_message:
+            return jsonify({'success': False, 'message': '通知不存在'}), 404
+
+        conversation = chat_session.query(Conversation).filter_by(id=target_message.conversation_id).first()
+        if not conversation or not conversation.is_active:
+            return jsonify({'success': False, 'message': '会话不存在'}), 404
+
+        if conversation.user_id != session['user_id']:
+            return jsonify({'success': False, 'message': '无权操作该通知'}), 403
+
+        message_type = (target_message.message_type or '').strip().lower()
+        content_text = (target_message.content or '').strip()
+        has_interview_hint = bool(
+            target_message.interview_time
+            or (target_message.interview_location or '').strip()
+            or ('面试' in content_text)
+        )
+
+        if message_type != 'notification' and '流程通知' not in content_text:
+            return jsonify({'success': False, 'message': '当前消息不是流程通知'}), 400
+
+        if not has_interview_hint:
+            return jsonify({'success': False, 'message': '该通知不是面试通知'}), 400
+
+        existing_notes = (target_message.interview_notes or '').strip()
+        if INTERVIEW_CONFIRMATION_MARKER in existing_notes:
+            return jsonify({'success': True, 'message': '你已确认过该面试'})
+
+        now = datetime.now()
+        confirmation_text = '我已确认参加面试，感谢安排。'
+
+        if target_message.interview_time:
+            confirmation_text += f"（时间：{target_message.interview_time.strftime('%Y-%m-%d %H:%M')}）"
+        if target_message.interview_location:
+            confirmation_text += f"（地点：{target_message.interview_location}）"
+
+        confirmation_note = f"{INTERVIEW_CONFIRMATION_MARKER}:{now.isoformat()}\n候选人确认时间：{now.strftime('%Y-%m-%d %H:%M')}"
+        target_message.interview_notes = '\n'.join(
+            [segment for segment in [existing_notes, confirmation_note] if segment]
+        )[:1000]
+        target_message.updated_at = now
+
+        confirm_message = Message(
+            conversation_id=conversation.id,
+            sender_type='user',
+            sender_id=session['user_id'],
+            message_type='text',
+            content=confirmation_text,
+            interview_job_id=target_message.interview_job_id,
+            interview_time=target_message.interview_time,
+            interview_location=target_message.interview_location,
+            created_at=now
+        )
+        chat_session.add(confirm_message)
+
+        conversation.updated_at = now
+        conversation.last_message_at = now
+        conversation.last_message_content = confirmation_text
+        conversation.company_unread_count = (conversation.company_unread_count or 0) + 1
+        conversation.user_unread_count = 0
+
+        chat_session.commit()
+        return jsonify({'success': True, 'message': '面试确认已发送'})
+    except Exception:
+        chat_session.rollback()
+        app.logger.exception('确认面试失败: message_id=%s', message_id)
+        return jsonify({'success': False, 'message': '确认失败，请稍后重试'}), 500
+    finally:
+        chat_session.close()
 
 
 @app.route('/api/chat/conversations/<int:conversation_id>', methods=['DELETE'])
@@ -2595,9 +3915,9 @@ def delete_conversation(conversation_id):
             chat_session.commit()
 
             return jsonify({'success': True, 'message': '会话已删除'})
-    except Exception as e:
+    except Exception:
         chat_session.rollback()
-        print(f"删除会话失败：{e}")
+        app.logger.exception("删除会话失败")
         return jsonify({'success': False, 'message': '删除失败'}), 500
     finally:
         chat_session.close()
@@ -2612,10 +3932,23 @@ def send_message():
     data = request.get_json(silent=True) or {}
     conversation_id = data.get('conversation_id')
     content = data.get('content', '').strip()
-    message_type = (data.get('message_type') or 'text').strip()
+    message_type = (data.get('message_type') or 'text').strip().lower()
     
     if not conversation_id or not content:
         return jsonify({'success': False, 'message': '参数不完整'}), 400
+
+    if len(content) > MAX_CHAT_MESSAGE_LENGTH:
+        return jsonify({'success': False, 'message': '消息内容过长'}), 400
+
+    if message_type not in ALLOWED_CHAT_MESSAGE_TYPES:
+        return jsonify({'success': False, 'message': '消息类型无效'}), 400
+
+    try:
+        conversation_id = int(conversation_id)
+        if conversation_id <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'message': '会话参数无效'}), 400
     
     chat_session = get_session()
     try:
@@ -2668,9 +4001,9 @@ def send_message():
             
             return jsonify({'success': True, 'message': message.to_dict()})
     
-    except Exception as e:
+    except Exception:
         chat_session.rollback()
-        print(f"发送消息失败：{e}")
+        app.logger.exception("发送消息失败")
         return jsonify({'success': False, 'message': '发送失败'}), 500
     finally:
         chat_session.close()

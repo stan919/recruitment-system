@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.2/dist/docx-preview.min.js"></script>
     <title>投递记录 - 职引未来</title>
     <style>
         * {
@@ -45,7 +47,7 @@
         .logo-icon {
             width: 36px;
             height: 36px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -69,7 +71,7 @@
         }
 
         .nav-links a:hover {
-            color: #8b5cf6;
+            color: var(--color-brand);
         }
 
         /* 主内容区 */
@@ -204,7 +206,7 @@
             top: 24px;
             right: 100px;
             padding: 8px 16px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
             border: none;
             border-radius: 8px;
@@ -214,7 +216,7 @@
         }
 
         .chat-btn:hover {
-            background: #7c3aed;
+            background: var(--color-brand-hover);
             transform: translateY(-1px);
         }
 
@@ -231,7 +233,7 @@
 
         .btn-primary {
             padding: 12px 32px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-hover) 100%);
             color: white;
             border: none;
             border-radius: 12px;
@@ -356,7 +358,7 @@
         }
 
         .btn-save {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-hover) 100%);
             color: white;
         }
 
@@ -417,7 +419,7 @@
             justify-content: center;
             width: 28px;
             height: 28px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-hover) 100%);
             color: white;
             border-radius: 50%;
             font-size: 14px;
@@ -452,7 +454,7 @@
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
-            border-color: #8b5cf6;
+            border-color: var(--color-brand);
         }
         
         .form-group textarea {
@@ -471,7 +473,7 @@
         }
         
         .upload-area:hover {
-            border-color: #8b5cf6;
+            border-color: var(--color-brand);
             background: #f5f3ff;
         }
         
@@ -519,13 +521,112 @@
         .remove-file:hover {
             color: #dc2626;
         }
+
+        .resume-inline-preview {
+            margin-top: 12px;
+            display: none;
+        }
+
+        .resume-preview-card {
+            border: 1px solid #dedcf0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8f8ff;
+        }
+
+        .resume-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e8e6f6;
+            background: #f2f1fc;
+        }
+
+        .resume-preview-title {
+            font-size: 15px;
+            color: #2f2d3a;
+            font-weight: 600;
+            max-width: calc(100% - 90px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .resume-preview-close {
+            border: none;
+            background: transparent;
+            color: var(--color-brand);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .resume-preview-body {
+            height: 420px;
+            overflow: auto;
+            background: #fff;
+        }
+
+        .resume-preview-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .resume-preview-loading,
+        .resume-preview-error,
+        .resume-preview-tip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            text-align: center;
+            padding: 16px;
+            color: #5b5967;
+            font-size: 14px;
+        }
+
+        .resume-preview-error {
+            color: #c53030;
+        }
+
+        .resume-preview-word {
+            padding: 14px;
+            background: #fff;
+            min-height: 100%;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #2f2d3a;
+        }
+
+        .resume-preview-word table {
+            width: 100% !important;
+        }
+
+        .resume-preview-word p {
+            margin: 0 0 10px;
+        }
+
+        @media (max-width: 768px) {
+            .resume-preview-body {
+                height: 52vh;
+            }
+
+            .resume-preview-header {
+                padding: 10px 12px;
+            }
+
+            .resume-preview-title {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="logo">
-            <div class="logo-icon">职</div>
             职引未来
         </div>
         <div class="nav-links">
@@ -668,9 +769,10 @@
                         <span class="file-name" id="editFileName"></span>
                         <div style="display: flex; gap: 8px;">
                             <span class="remove-file" onclick="removeEditResume()">✕ 删除</span>
-                            <span class="remove-file" onclick="previewEditResume()" style="color: #8b5cf6;">👁 预览</span>
+                            <span class="remove-file" onclick="previewEditResume()" style="color: var(--color-brand);">👁 预览</span>
                         </div>
                     </div>
+                    <div id="editResumeInlinePreview" class="resume-inline-preview"></div>
                 </div>
 
                 <!-- 步骤 4：申请信息 -->
@@ -705,6 +807,37 @@
         // 当前查看的申请
         let currentApplicationId = null;
         let applicationsData = [];
+        let editResumePreviewBlobUrl = null;
+
+        function getResumeExtension(fileName) {
+            const parts = String(fileName || '').split('.');
+            return parts.length > 1 ? parts.pop().toLowerCase() : '';
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function revokeEditResumePreviewBlobUrl() {
+            if (editResumePreviewBlobUrl) {
+                URL.revokeObjectURL(editResumePreviewBlobUrl);
+                editResumePreviewBlobUrl = null;
+            }
+        }
+
+        function clearEditResumeInlinePreview() {
+            revokeEditResumePreviewBlobUrl();
+            const previewContainer = document.getElementById('editResumeInlinePreview');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+                previewContainer.innerHTML = '';
+            }
+        }
 
         // 加载投递记录
         function loadApplications() {
@@ -940,6 +1073,8 @@
                         document.getElementById('editFileInfo').style.display = 'none';
                         document.getElementById('editFileName').textContent = '';
                     }
+
+                    clearEditResumeInlinePreview();
                     
                     // 显示编辑弹窗
                     document.getElementById('editApplicationModal').style.display = 'flex';
@@ -954,6 +1089,7 @@
         // 关闭编辑弹窗
         function closeEditApplicationModal() {
             document.getElementById('editApplicationModal').style.display = 'none';
+            clearEditResumeInlinePreview();
         }
         
         // 保存修改
@@ -1067,6 +1203,7 @@
                 if (result.success) {
                     document.getElementById('editFileInfo').style.display = 'flex';
                     document.getElementById('editFileName').textContent = result.filename;
+                    clearEditResumeInlinePreview();
                 } else {
                     alert(result.message);
                 }
@@ -1087,6 +1224,7 @@
                     document.getElementById('editFileInfo').style.display = 'none';
                     document.getElementById('editFileName').textContent = '';
                     document.getElementById('editFileInput').value = '';
+                    clearEditResumeInlinePreview();
                 } else {
                     alert(result.message || '删除失败');
                 }
@@ -1097,58 +1235,72 @@
             });
         }
         
-        function previewEditResume() {
+        async function previewEditResume() {
             const fileName = document.getElementById('editFileName').textContent;
             if (!fileName) {
                 alert('没有可预览的简历');
                 return;
             }
-            
-            const ext = fileName.split('.').pop().toLowerCase();
-            if (ext === 'pdf') {
-                fetch('/api/resume/attachment/preview')
-                    .then(response => {
-                        if (response.ok) {
-                            return response.blob();
-                        }
-                        throw new Error('预览失败');
-                    })
-                    .then(blob => {
-                        const url = URL.createObjectURL(blob);
-                        showEditPreviewModal(url);
-                    })
-                    .catch(error => {
-                        console.error('预览失败:', error);
-                        alert('预览失败，请重试');
-                    });
-            } else {
-                window.location.href = '/api/resume/attachment/download';
-            }
-        }
-        
-        function showEditPreviewModal(url) {
-            const previewHTML = `
-                <div id="editPreviewModal" class="preview-modal" onclick="closeEditPreviewModal()" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:3000;display:flex;align-items:center;justify-content:center;">
-                    <div class="preview-content" onclick="event.stopPropagation()" style="background:white;width:90%;max-width:800px;height:90%;border-radius:8px;overflow:hidden;">
-                        <div class="preview-header" style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #eee;">
-                            <h3 style="margin:0;">简历预览</h3>
-                            <button class="close-btn" onclick="closeEditPreviewModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">✕ 关闭</button>
-                        </div>
-                        <div class="preview-body" style="height:calc(100% - 73px);">
-                            <iframe src="${url}" width="100%" height="100%" frameborder="0"></iframe>
-                        </div>
+
+            const ext = getResumeExtension(fileName);
+            const previewContainer = document.getElementById('editResumeInlinePreview');
+            previewContainer.style.display = 'block';
+            previewContainer.innerHTML = `
+                <div class="resume-preview-card">
+                    <div class="resume-preview-header">
+                        <div class="resume-preview-title">预览：${escapeHtml(fileName)}</div>
+                        <button type="button" class="resume-preview-close" onclick="clearEditResumeInlinePreview()">收起</button>
+                    </div>
+                    <div id="editResumePreviewBody" class="resume-preview-body">
+                        <div class="resume-preview-loading">正在加载预览...</div>
                     </div>
                 </div>
             `;
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = previewHTML;
-            document.body.appendChild(tempDiv);
-        }
-        
-        function closeEditPreviewModal() {
-            const modal = document.getElementById('editPreviewModal');
-            if (modal) {
-                modal.remove();
+            previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const previewBody = document.getElementById('editResumePreviewBody');
+
+            try {
+                const response = await fetch('/api/resume/attachment/preview');
+                if (!response.ok) {
+                    throw new Error('获取预览文件失败，请稍后重试');
+                }
+
+                const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+                if ((ext === 'docx' || ext === 'doc') && contentType.includes('text/html')) {
+                    const htmlContent = await response.text();
+                    previewBody.innerHTML = `<div class="resume-preview-word">${htmlContent}</div>`;
+                    return;
+                }
+
+                const blob = await response.blob();
+                if (ext === 'pdf') {
+                    revokeEditResumePreviewBlobUrl();
+                    editResumePreviewBlobUrl = URL.createObjectURL(blob);
+                    previewBody.innerHTML = `<iframe src="${editResumePreviewBlobUrl}#toolbar=0&navpanes=0"></iframe>`;
+                    return;
+                }
+
+                if (ext === 'docx') {
+                    if (!window.docx || typeof window.docx.renderAsync !== 'function') {
+                        throw new Error('Word 预览组件加载失败，请刷新页面后重试');
+                    }
+
+                    const arrayBuffer = await blob.arrayBuffer();
+                    previewBody.innerHTML = '<div id="editResumeWordPreview" class="resume-preview-word"></div>';
+                    const wordContainer = document.getElementById('editResumeWordPreview');
+                    await window.docx.renderAsync(arrayBuffer, wordContainer, null, {
+                        inWrapper: false,
+                        breakPages: false,
+                        ignoreWidth: true,
+                        ignoreHeight: true
+                    });
+                    return;
+                }
+
+                previewBody.innerHTML = '<div class="resume-preview-tip">暂不支持 .doc 在线预览，请将文件另存为 .docx 后上传</div>';
+            } catch (error) {
+                console.error('预览失败:', error);
+                previewBody.innerHTML = `<div class="resume-preview-error">${error.message || '预览失败，请稍后重试'}</div>`;
             }
         }
 

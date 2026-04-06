@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
     <title>个人中心 - 职引未来</title>
     <style>
         * {
@@ -45,7 +46,7 @@
         .logo-icon {
             width: 36px;
             height: 36px;
-            background: #8b5cf6;
+            background: var(--color-brand);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -69,7 +70,7 @@
         }
 
         .nav-links a:hover {
-            color: #8b5cf6;
+            color: var(--color-brand);
         }
 
         /* 主内容区 */
@@ -263,7 +264,7 @@
 
         .form-group input:focus,
         .form-group select:focus {
-            border-color: #8b5cf6;
+            border-color: var(--color-brand);
         }
 
         .form-actions {
@@ -309,7 +310,6 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="logo">
-            <div class="logo-icon">职</div>
             职引未来
         </div>
         <div class="nav-links">

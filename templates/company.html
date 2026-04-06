@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
     <title>企业后台 - 职引未来</title>
     <style>
         * {
@@ -11,10 +12,23 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --c-bg: #f3f7f6;
+            --c-panel: #ffffff;
+            --c-text: #10231f;
+            --c-muted: #5f6f6a;
+            --c-border: #d9e4e2;
+            --c-accent: #0f766e;
+            --c-accent-dark: #0b5f59;
+            --c-soft: #ecf6f4;
+            --c-sidebar-top: #0e5f57;
+            --c-sidebar-bottom: #102029;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #f5f5f5;
-            color: #1a1a1a;
+            background-color: var(--c-bg);
+            color: var(--c-text);
         }
 
         /* 侧边栏 */
@@ -24,7 +38,7 @@
             top: 0;
             bottom: 0;
             width: 250px;
-            background: linear-gradient(180deg, #2c184d 0%, #1a1a1a 100%);
+            background: linear-gradient(180deg, var(--c-sidebar-top) 0%, var(--c-sidebar-bottom) 100%);
             color: white;
             padding: 20px 0;
             overflow-y: auto;
@@ -65,13 +79,13 @@
 
         .sidebar-menu a:hover,
         .sidebar-menu a.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(45, 212, 191, 0.18);
             color: white;
         }
 
         .chat-btn {
             padding: 8px 16px;
-            background: #8b5cf6;
+            background: var(--c-accent);
             color: white;
             border: none;
             border-radius: 8px;
@@ -82,7 +96,7 @@
         }
 
         .chat-btn:hover {
-            background: #7c3aed;
+            background: var(--c-accent-dark);
             transform: translateY(-1px);
         }
 
@@ -93,7 +107,7 @@
         }
 
         .top-bar {
-            background: white;
+            background: var(--c-panel);
             padding: 20px 30px;
             border-radius: 12px;
             margin-bottom: 20px;
@@ -101,6 +115,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--c-border);
         }
 
         .page-title {
@@ -116,7 +131,7 @@
 
         .logout-btn {
             padding: 8px 20px;
-            background: #1a1a1a;
+            background: #102029;
             color: white;
             border: none;
             border-radius: 8px;
@@ -133,10 +148,11 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--c-panel);
             padding: 24px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--c-border);
         }
 
         .stat-label {
@@ -148,20 +164,21 @@
         .stat-value {
             font-size: 32px;
             font-weight: 700;
-            color: #1a1a1a;
+            color: var(--c-text);
         }
 
         .stat-value.highlight {
-            color: #8b5cf6;
+            color: var(--c-accent);
         }
 
         /* 内容卡片 */
         .content-card {
-            background: white;
+            background: var(--c-panel);
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 20px;
+            border: 1px solid var(--c-border);
         }
 
         .card-header {
@@ -229,12 +246,12 @@
         }
 
         .btn-primary {
-            background: #8b5cf6;
+            background: var(--c-accent);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #7c3aed;
+            background: var(--c-accent-dark);
         }
 
         .btn-sm {
@@ -270,13 +287,13 @@
         }
 
         .pagination button.active {
-            background: #8b5cf6;
+            background: var(--c-accent);
             color: white;
-            border-color: #8b5cf6;
+            border-color: var(--c-accent);
         }
 
         .pagination button:disabled {
-            background: #f5f5f5;
+            background: var(--c-bg);
             color: #999;
             cursor: not-allowed;
         }
@@ -330,7 +347,7 @@
         }
 
         .close:hover {
-            color: #1a1a1a;
+            color: var(--c-text);
         }
 
         .modal-body {
@@ -349,7 +366,7 @@
 
         .detail-value {
             font-size: 15px;
-            color: #1a1a1a;
+            color: var(--c-text);
             font-weight: 500;
         }
 
@@ -365,7 +382,7 @@
             border-radius: 8px;
             border: none;
             color: #fff;
-            background: #6366f1;
+            background: var(--c-accent);
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -373,7 +390,7 @@
         }
 
         .action-buttons .action-btn:hover {
-            background: #4f46e5;
+            background: var(--c-accent-dark);
             transform: translateY(-1px);
         }
 
@@ -385,6 +402,151 @@
 
         .action-buttons .action-btn-cancel:hover {
             background: #e5e7eb;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-input,
+        .toolbar-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 36px;
+        }
+
+        .toolbar-input {
+            min-width: 240px;
+        }
+
+        .settings-layout {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .settings-section {
+            border: 1px solid #d4ece8;
+            border-radius: 12px;
+            padding: 16px;
+            background: #f8fcfb;
+        }
+
+        .settings-section h4 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: #0f5f59;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .settings-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .settings-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .settings-item label {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .settings-item input,
+        .settings-item select,
+        .settings-item textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .settings-item textarea {
+            resize: vertical;
+            min-height: 84px;
+        }
+
+        .toggle-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ececec;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #fff;
+            margin-bottom: 8px;
+        }
+
+        .toggle-line span {
+            font-size: 13px;
+            color: #374151;
+        }
+
+        .settings-actions {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 24px;
+            background: #102029;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1000px) {
+            .settings-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 210px;
+            }
+
+            .main-content {
+                margin-left: 210px;
+            }
+
+            .toolbar-input,
+            .toolbar-select {
+                width: 100%;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -438,7 +600,18 @@
         <div class="content-card" id="applicationsCard">
             <div class="card-header">
                 <h3 class="card-title">投递列表</h3>
-                <input type="text" placeholder="搜索求职者..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" oninput="searchApplications(this.value)">
+                <div class="toolbar">
+                    <select id="appStatusFilter" class="toolbar-select" onchange="applyApplicationFilters()">
+                        <option value="">全部状态</option>
+                        <option value="submitted">已提交</option>
+                        <option value="viewed">已查看</option>
+                        <option value="interview">面试中</option>
+                        <option value="offer">已录用</option>
+                        <option value="rejected">已拒绝</option>
+                    </select>
+                    <input id="appKeywordSearch" type="text" class="toolbar-input" placeholder="搜索求职者/手机号/职位" oninput="applyApplicationFilters()">
+                    <button class="btn btn-sm" onclick="loadApplications()">刷新</button>
+                </div>
             </div>
             <div class="table-responsive">
                 <table>
@@ -575,6 +748,11 @@
                 <div style="flex: 1; display: flex; flex-direction: column; background: #fafafa;">
                     <div id="chatHeader" style="padding: 20px; border-bottom: 1px solid #f0f0f0; background: white; display: none;">
                         <h3 id="chatPartner" style="margin: 0; font-size: 18px; font-weight: 600;"></h3>
+                        <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="message-tab-btn active" data-filter="all" onclick="setCompanyMessageFilter('all', event)" style="border: 1px solid #d9d9d9; background: white; color: #595959; border-radius: 999px; padding: 6px 14px; font-size: 13px; cursor: pointer;">全部消息</button>
+                            <button class="message-tab-btn" data-filter="chat" onclick="setCompanyMessageFilter('chat', event)" style="border: 1px solid #d9d9d9; background: white; color: #595959; border-radius: 999px; padding: 6px 14px; font-size: 13px; cursor: pointer;">聊天消息</button>
+                            <button class="message-tab-btn" data-filter="notification" onclick="setCompanyMessageFilter('notification', event)" style="border: 1px solid #d9d9d9; background: white; color: #595959; border-radius: 999px; padding: 6px 14px; font-size: 13px; cursor: pointer;">流程通知</button>
+                        </div>
                     </div>
                     <div id="chatMessages" style="flex: 1; padding: 20px; overflow-y: auto; display: none;"></div>
                     <div id="emptyChat" style="flex: 1; display: flex; align-items: center; justify-content: center; color: #999;">
@@ -588,7 +766,7 @@
                     <div id="chatInput" style="padding: 20px; background: white; border-top: 1px solid #f0f0f0; display: none;">
                         <textarea id="messageInput" placeholder="输入消息..." rows="3" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 12px; font-size: 14px; resize: none; font-family: inherit;"></textarea>
                         <div style="text-align: right; margin-top: 10px;">
-                            <button onclick="sendMessage()" style="padding: 10px 30px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">发送</button>
+                            <button onclick="sendMessage()" style="padding: 10px 30px; background: #0f766e; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">发送</button>
                         </div>
                     </div>
                 </div>
@@ -599,9 +777,115 @@
         <div class="content-card" id="settingsCard" style="display: none;">
             <div class="card-header">
                 <h3 class="card-title">公司设置</h3>
+                <button class="btn btn-sm btn-primary" onclick="saveAllCompanySettings()">保存全部</button>
             </div>
-            <div style="padding: 20px;">
-                <p style="color: #999; text-align: center; padding: 40px;">公司设置功能开发中...</p>
+            <div style="padding: 8px 2px 2px;">
+                <div class="settings-layout">
+                    <section class="settings-section">
+                        <h4>基础档案</h4>
+                        <div class="settings-grid">
+                            <div class="settings-item full">
+                                <label>公司名称</label>
+                                <input id="cs_company_name" type="text" placeholder="请输入公司名称">
+                            </div>
+                            <div class="settings-item">
+                                <label>公司简称</label>
+                                <input id="cs_short_name" type="text">
+                            </div>
+                            <div class="settings-item">
+                                <label>行业分类</label>
+                                <select id="cs_industry">
+                                    <option value="">请选择</option>
+                                    <option value="互联网">互联网/IT</option>
+                                    <option value="制造业">制造业</option>
+                                    <option value="金融">金融/银行</option>
+                                    <option value="教育">教育/培训</option>
+                                    <option value="医疗">医疗/健康</option>
+                                    <option value="零售">零售/电商</option>
+                                    <option value="服务业">服务业</option>
+                                    <option value="房地产">房地产/建筑</option>
+                                    <option value="传媒">传媒/广告</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="settings-item full">
+                                <label>企业简介</label>
+                                <textarea id="cs_description" placeholder="一句话与一段话说明你们是谁、在做什么"></textarea>
+                            </div>
+                            <div class="settings-item full">
+                                <label>招聘宣言</label>
+                                <textarea id="cs_recruitment_declaration" placeholder="展示团队风格与招聘理念"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-section">
+                        <h4>联系方式与品牌</h4>
+                        <div class="settings-grid">
+                            <div class="settings-item">
+                                <label>联系电话</label>
+                                <input id="cs_phone" type="text">
+                            </div>
+                            <div class="settings-item">
+                                <label>联系邮箱</label>
+                                <input id="cs_email" type="email">
+                            </div>
+                            <div class="settings-item full">
+                                <label>官网地址</label>
+                                <input id="cs_website" type="url" placeholder="https://">
+                            </div>
+                            <div class="settings-item full">
+                                <label>公司地址</label>
+                                <input id="cs_address" type="text">
+                            </div>
+                            <div class="toggle-line">
+                                <span>启用雇主品牌模块</span>
+                                <input id="cs_enable_employer_brand" type="checkbox" onchange="toggleEmployerBrandFields()">
+                            </div>
+                            <div class="settings-item full" id="brandVideoWrap" style="display: none;">
+                                <label>文化视频 URL</label>
+                                <input id="cs_culture_video_url" type="url" placeholder="https://">
+                            </div>
+                            <div class="settings-item full" id="brandStoryWrap" style="display: none;">
+                                <label>员工故事</label>
+                                <textarea id="cs_employee_stories" placeholder="可写 3~5 条员工成长故事"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-section">
+                        <h4>数据策略</h4>
+                        <div class="settings-grid">
+                            <div class="settings-item">
+                                <label>简历保存期限（天）</label>
+                                <input id="cs_resume_retention_days" type="number" min="30" value="365">
+                            </div>
+                            <div class="settings-item">
+                                <label>面试记录归档周期（天）</label>
+                                <input id="cs_interview_record_archive_days" type="number" min="30" value="180">
+                            </div>
+                            <div class="settings-item">
+                                <label>审计日志保留（天）</label>
+                                <input id="cs_audit_log_retention_days" type="number" min="7" value="90">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-section">
+                        <h4>合规与隐私</h4>
+                        <div class="toggle-line"><span>GDPR / 个保法合规模式</span><input id="cs_gdpr_compliance" type="checkbox"></div>
+                        <div class="toggle-line"><span>候选人同意书弹窗</span><input id="cs_consent_popup_enabled" type="checkbox"></div>
+                        <div class="toggle-line"><span>用户数据导出入口</span><input id="cs_data_export_enabled" type="checkbox"></div>
+                        <div class="toggle-line"><span>用户数据删除入口</span><input id="cs_data_deletion_enabled" type="checkbox"></div>
+                        <div class="toggle-line"><span>手机号脱敏</span><input id="cs_phone_mask_enabled" type="checkbox"></div>
+                        <div class="toggle-line"><span>邮箱脱敏</span><input id="cs_email_mask_enabled" type="checkbox"></div>
+                        <div class="toggle-line"><span>启用审计日志</span><input id="cs_audit_log_enabled" type="checkbox"></div>
+                    </section>
+                </div>
+                <div class="settings-actions">
+                    <button class="btn" onclick="resetCompanySettingsForm()">重置为默认</button>
+                    <button class="btn btn-primary" onclick="saveAllCompanySettings()">保存设置</button>
+                </div>
             </div>
         </div>
     </main>
@@ -627,13 +911,185 @@
         </div>
     </div>
 
+    <div id="interviewPresetModal" class="modal" onclick="handleInterviewPresetMaskClick(event)">
+        <div class="modal-content" style="max-width: 460px;">
+            <div class="modal-header">
+                <h3>面试信息设置</h3>
+                <span class="close" onclick="closeInterviewPresetModal(false)">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px; color: #4b5563; font-size: 14px;">面试时间</label>
+                    <select id="interviewDateSelect" class="toolbar-select" style="width: 100%;">
+                        <option value="">请选择</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label style="display: block; margin-bottom: 8px; color: #4b5563; font-size: 14px;">面试地点</label>
+                    <input id="interviewFixedLocation" type="text" value="腾讯科技有限公司" readonly style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 9px 10px; font-size: 14px; background: #f9fafb; color: #4b5563;">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label style="display: block; margin-bottom: 8px; color: #4b5563; font-size: 14px;">联系电话</label>
+                    <input id="interviewFixedContact" type="text" value="11111111111" readonly style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 9px 10px; font-size: 14px; background: #f9fafb; color: #4b5563;">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+                    <button class="btn" onclick="closeInterviewPresetModal(false)">取消</button>
+                    <button class="btn btn-primary" onclick="closeInterviewPresetModal(true)">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
     <script>
         let currentCompanyId = null;
         let currentUserId = null;  // 新增：当前登录用户的 ID
         let currentApplicationId = null;
         let applicationsData = [];
+        let companySettingsData = null;
+        let companySettingsLoaded = false;
         let jobsPagination = { page: 1, per_page: 20, total_pages: 1 };
         let statsPagination = { page: 1, per_page: 20, total_pages: 1 };
+
+        const STATUS_TEXT_MAP = {
+            submitted: '已提交',
+            viewed: '已查看',
+            interview: '面试中',
+            offer: '已录用',
+            rejected: '已拒绝'
+        };
+
+        const INTERVIEW_FIXED_LOCATION = '腾讯科技有限公司';
+        const INTERVIEW_FIXED_CONTACT = '11111111111';
+        let interviewPresetResolver = null;
+
+        function pad2(value) {
+            return String(value).padStart(2, '0');
+        }
+
+        function formatInterviewDateValue(date) {
+            return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())} 10:00`;
+        }
+
+        function formatInterviewDateLabel(prefix, date) {
+            const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+            return `${prefix}（${date.getMonth() + 1}月${date.getDate()}日 周${weekNames[date.getDay()]}）10:00`;
+        }
+
+        function buildInterviewDateOptions() {
+            const base = new Date();
+            base.setHours(10, 0, 0, 0);
+            const labels = ['当天', '明天', '后天'];
+
+            return labels.map((label, index) => {
+                const optionDate = new Date(base);
+                optionDate.setDate(base.getDate() + index);
+                return {
+                    value: formatInterviewDateValue(optionDate),
+                    label: formatInterviewDateLabel(label, optionDate)
+                };
+            });
+        }
+
+        function openInterviewPresetModal() {
+            const modal = document.getElementById('interviewPresetModal');
+            const dateSelect = document.getElementById('interviewDateSelect');
+            const locationInput = document.getElementById('interviewFixedLocation');
+            const contactInput = document.getElementById('interviewFixedContact');
+
+            const options = buildInterviewDateOptions();
+            dateSelect.innerHTML = options.map(item => `<option value="${item.value}">${item.label}</option>`).join('');
+            if (options.length > 0) {
+                dateSelect.value = options[0].value;
+            }
+
+            locationInput.value = INTERVIEW_FIXED_LOCATION;
+            contactInput.value = INTERVIEW_FIXED_CONTACT;
+
+            modal.style.display = 'flex';
+
+            return new Promise(resolve => {
+                interviewPresetResolver = resolve;
+            });
+        }
+
+        function closeInterviewPresetModal(confirmSubmit) {
+            const modal = document.getElementById('interviewPresetModal');
+            const dateSelect = document.getElementById('interviewDateSelect');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+
+            const resolver = interviewPresetResolver;
+            interviewPresetResolver = null;
+            if (!resolver) return;
+
+            if (!confirmSubmit) {
+                resolver(null);
+                return;
+            }
+
+            const interviewTime = (dateSelect && dateSelect.value ? dateSelect.value : '').trim();
+            if (!interviewTime) {
+                showToast('请选择面试时间');
+                resolver(null);
+                return;
+            }
+
+            resolver({
+                interview_time: interviewTime,
+                interview_location: INTERVIEW_FIXED_LOCATION,
+                interview_contact: INTERVIEW_FIXED_CONTACT
+            });
+        }
+
+        function handleInterviewPresetMaskClick(event) {
+            if (event.target && event.target.id === 'interviewPresetModal') {
+                closeInterviewPresetModal(false);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(window.__companyToastTimer);
+            window.__companyToastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+
+        function safeDateText(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return '-';
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        function maskPhone(phone) {
+            if (!phone) return '-';
+            const text = String(phone);
+            if (text.length < 7) return '****';
+            return text.slice(0, 3) + '****' + text.slice(-4);
+        }
+
+        function maskEmail(email) {
+            if (!email) return '-';
+            const text = String(email);
+            const parts = text.split('@');
+            if (parts.length !== 2) return text;
+            const prefix = parts[0];
+            if (prefix.length <= 2) return prefix.charAt(0) + '**@' + parts[1];
+            return prefix.slice(0, 2) + '***@' + parts[1];
+        }
+
+        function initTabFromUrl() {
+            const tab = new URLSearchParams(window.location.search).get('tab');
+            const allowTabs = ['applications', 'jobs', 'stats', 'chat', 'settings'];
+            if (tab && allowTabs.includes(tab)) {
+                switchTab(tab);
+            }
+        }
 
         // 检查登录状态
         async function checkAuth() {
@@ -652,7 +1108,8 @@
                 currentUserId = data.user.id;  // 获取当前用户 ID
                 window.currentCompany = data.user.company_name;  // 设置公司名称用于聊天
 
-                loadDashboard();
+                await loadDashboard();
+                initTabFromUrl();
             } catch (error) {
                 console.error('检查登录失败:', error);
                 window.location.href = '/login';
@@ -673,8 +1130,8 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    applicationsData = data.applications;
-                    renderApplications(applicationsData);
+                    applicationsData = data.applications || [];
+                    applyApplicationFilters();
                 } else {
                     document.getElementById('applicationsTable').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">暂无投递数据</td></tr>';
                 }
@@ -693,22 +1150,17 @@
                 return;
             }
 
-            const statusMap = {
-                'submitted': '已提交',
-                'viewed': '已查看',
-                'interview': '面试中',
-                'offer': '已录用',
-                'rejected': '已拒绝'
-            };
+            const phoneMaskEnabled = companySettingsData ? companySettingsData.phone_mask_enabled !== false : false;
+            const emailMaskEnabled = companySettingsData ? companySettingsData.email_mask_enabled === true : false;
 
             tbody.innerHTML = apps.map(app => `
                 <tr>
                     <td>${app.name || '未知'}</td>
-                    <td>${app.phone || '-'}</td>
-                    <td>${app.email || '-'}</td>
+                    <td>${phoneMaskEnabled ? maskPhone(app.phone) : (app.phone || '-')}</td>
+                    <td>${emailMaskEnabled ? maskEmail(app.email) : (app.email || '-')}</td>
                     <td>${app.job_name || '-'}</td>
-                    <td>${new Date(app.applied_at).toLocaleDateString('zh-CN')}</td>
-                    <td><span class="status-badge status-${app.status}">${statusMap[app.status] || app.status}</span></td>
+                    <td>${safeDateText(app.applied_at)}</td>
+                    <td><span class="status-badge status-${app.status}">${STATUS_TEXT_MAP[app.status] || app.status}</span></td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="viewDetail(${app.id})">查看详情</button>
                         <button class="btn btn-sm chat-btn" onclick="startChat(${app.user_id}, ${app.id})">发起聊天</button>
@@ -867,16 +1319,16 @@
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">当前状态</div>
-                    <div class="detail-value"><span class="status-badge status-${app.status}">${app.status}</span></div>
+                    <div class="detail-value"><span class="status-badge status-${app.status}">${STATUS_TEXT_MAP[app.status] || app.status}</span></div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">投递时间</div>
-                    <div class="detail-value">${new Date(app.applied_at).toLocaleString('zh-CN')}</div>
+                    <div class="detail-value">${app.applied_at ? new Date(app.applied_at).toLocaleString('zh-CN') : '-'}</div>
                 </div>
                 ${app.resume_url ? `
                 <div class="detail-row">
                     <div class="detail-label">简历附件</div>
-                    <div class="detail-value"><a href="${app.resume_url}" target="_blank" style="color: #8b5cf6;">下载简历</a></div>
+                    <div class="detail-value"><a href="${app.resume_url}" target="_blank" style="color: #0f766e;">下载简历</a></div>
                 </div>
                 ` : ''}
             `;
@@ -889,7 +1341,7 @@
         function startChat(userId, applicationId) {
             const app = applicationsData.find(a => a.id === applicationId);
             if (!app) {
-                alert('未找到申请信息');
+                showToast('未找到申请信息');
                 return;
             }
 
@@ -907,27 +1359,22 @@
             .then(r => r.json())
             .then(result => {
                 if (result.success && result.conversation) {
-                    window.location.href = '/chat/company?conversation_id=' + result.conversation.id;
+                    switchTab('chat');
+                    loadConversations();
+                    openChat(result.conversation.id, app.name || '求职者');
+                    showToast('已进入聊天会话');
                 } else {
-                    alert('创建会话失败：' + (result.message || '未知错误'));
+                    showToast('创建会话失败：' + (result.message || '未知错误'));
                 }
             })
             .catch(error => {
                 console.error('创建会话失败:', error);
-                alert('创建会话失败，请稍后重试');
+                showToast('创建会话失败，请稍后重试');
             });
         }
         
         function switchToChat() {
-            // 切换到聊天面板
-            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
-            document.querySelectorAll('.sidebar-menu a')[3].classList.add('active'); // 选中消息中心
-            
-            document.getElementById('applicationsCard').style.display = 'none';
-            document.getElementById('jobsCard').style.display = 'none';
-            document.getElementById('statsCard').style.display = 'none';
-            document.getElementById('chatCard').style.display = 'block';
-            document.getElementById('pageTitle').textContent = '消息中心';
+            switchTab('chat');
         }
 
         // 查看职位投递
@@ -936,11 +1383,11 @@
             const filteredApps = applicationsData.filter(app => app.job_id === jobId);
             
             if (filteredApps.length === 0) {
-                alert('该职位暂无投递记录');
+                showToast('该职位暂无投递记录');
                 return;
             }
             
-            alert(`职位：${jobName}\n共收到 ${filteredApps.length} 份投递\n\n功能开发中：可查看该职位的所有投递详情`);
+            showToast(`职位 ${jobName} 共收到 ${filteredApps.length} 份投递`);
         }
 
         // 关闭详情弹窗
@@ -949,34 +1396,48 @@
             currentApplicationId = null;
         }
 
+        async function collectInterviewNotificationFields() {
+            const result = await openInterviewPresetModal();
+            if (!result) {
+                return null;
+            }
+            return result;
+        }
+
         // 更新状态
         async function updateStatus(newStatus) {
             if (!currentApplicationId) return;
+
+            const payload = { status: newStatus };
+            if (newStatus === 'interview') {
+                const interviewFields = await collectInterviewNotificationFields();
+                if (!interviewFields) return;
+                Object.assign(payload, interviewFields);
+            }
 
             try {
                 const response = await fetch(`/api/company/application/${currentApplicationId}/status`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('状态已更新');
+                    showToast('状态已更新');
                     closeDetailModal();
                     await loadApplications();
                     await loadStats();
                 } else {
-                    alert(data.message || '更新失败');
+                    showToast(data.message || '更新失败');
                 }
             } catch (error) {
                 console.error('更新状态失败:', error);
-                alert('更新失败，请重试');
+                showToast('更新失败，请重试');
             }
         }
 
-        // 渲染分页控件
         function renderPagination(elementId, currentPage, totalPages, onPageChange) {
             const container = document.getElementById(elementId);
             if (totalPages <= 1) {
@@ -1017,61 +1478,29 @@
             container.innerHTML = html;
         }
 
-        // 渲染分页控件
-        function renderPagination(elementId, currentPage, totalPages, onPageChange) {
-            const container = document.getElementById(elementId);
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                return;
-            }
+        function applyApplicationFilters() {
+            const keyword = (document.getElementById('appKeywordSearch')?.value || '').trim();
+            const status = document.getElementById('appStatusFilter')?.value || '';
 
-            let html = '';
-            
-            // 上一页
-            html += `<button onclick="${onPageChange.name}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
-            
-            // 页码
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, currentPage + 2);
-            
-            if (startPage > 1) {
-                html += `<button onclick="${onPageChange.name}(1)">1</button>`;
-                if (startPage > 2) {
-                    html += `<span class="pagination-info">...</span>`;
-                }
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                html += `<button onclick="${onPageChange.name}(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
-            }
-            
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    html += `<span class="pagination-info">...</span>`;
-                }
-                html += `<button onclick="${onPageChange.name}(${totalPages})">${totalPages}</button>`;
-            }
-            
-            // 下一页
-            html += `<button onclick="${onPageChange.name}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
-            
-            container.innerHTML = html;
-        }
-
-        // 搜索投递
-        function searchApplications(keyword) {
-            if (!keyword) {
-                renderApplications(applicationsData);
-                return;
-            }
-
-            const filtered = applicationsData.filter(app => 
-                (app.name && app.name.includes(keyword)) ||
-                (app.phone && app.phone.includes(keyword)) ||
-                (app.job_name && app.job_name.includes(keyword))
-            );
+            const filtered = applicationsData.filter(app => {
+                if (status && app.status !== status) return false;
+                if (!keyword) return true;
+                return (
+                    (app.name && app.name.includes(keyword)) ||
+                    (app.phone && app.phone.includes(keyword)) ||
+                    (app.email && app.email.includes(keyword)) ||
+                    (app.job_name && app.job_name.includes(keyword))
+                );
+            });
 
             renderApplications(filtered);
+        }
+
+        // 兼容旧入口
+        function searchApplications(keyword) {
+            const input = document.getElementById('appKeywordSearch');
+            if (input) input.value = keyword || '';
+            applyApplicationFilters();
         }
 
         // 切换标签页
@@ -1096,18 +1525,21 @@
                 document.getElementById('jobsCard').style.display = 'none';
                 document.getElementById('statsCard').style.display = 'none';
                 document.getElementById('chatCard').style.display = 'none';
+                document.getElementById('settingsCard').style.display = 'none';
                 document.getElementById('pageTitle').textContent = '投递管理';
             } else if (tab === 'jobs') {
                 document.getElementById('applicationsCard').style.display = 'none';
                 document.getElementById('jobsCard').style.display = 'block';
                 document.getElementById('statsCard').style.display = 'none';
                 document.getElementById('chatCard').style.display = 'none';
+                document.getElementById('settingsCard').style.display = 'none';
                 document.getElementById('pageTitle').textContent = '在招职位';
             } else if (tab === 'stats') {
                 document.getElementById('applicationsCard').style.display = 'none';
                 document.getElementById('jobsCard').style.display = 'none';
                 document.getElementById('statsCard').style.display = 'block';
                 document.getElementById('chatCard').style.display = 'none';
+                document.getElementById('settingsCard').style.display = 'none';
                 document.getElementById('pageTitle').textContent = '数据统计';
                 loadDetailedStats();
             } else if (tab === 'chat') {
@@ -1119,7 +1551,148 @@
                 document.getElementById('pageTitle').textContent = '消息中心';
                 loadConversations();
             } else if (tab === 'settings') {
-                window.location.href = '/company/settings';
+                document.getElementById('applicationsCard').style.display = 'none';
+                document.getElementById('jobsCard').style.display = 'none';
+                document.getElementById('statsCard').style.display = 'none';
+                document.getElementById('chatCard').style.display = 'none';
+                document.getElementById('settingsCard').style.display = 'block';
+                document.getElementById('pageTitle').textContent = '公司设置';
+                loadCompanySettings();
+            }
+        }
+
+        function toggleEmployerBrandFields() {
+            const enabled = document.getElementById('cs_enable_employer_brand').checked;
+            document.getElementById('brandVideoWrap').style.display = enabled ? 'block' : 'none';
+            document.getElementById('brandStoryWrap').style.display = enabled ? 'block' : 'none';
+        }
+
+        function resetCompanySettingsForm() {
+            document.getElementById('cs_short_name').value = '';
+            document.getElementById('cs_industry').value = '';
+            document.getElementById('cs_phone').value = '';
+            document.getElementById('cs_email').value = '';
+            document.getElementById('cs_website').value = '';
+            document.getElementById('cs_address').value = '';
+            document.getElementById('cs_description').value = '';
+            document.getElementById('cs_recruitment_declaration').value = '';
+            document.getElementById('cs_enable_employer_brand').checked = false;
+            document.getElementById('cs_culture_video_url').value = '';
+            document.getElementById('cs_employee_stories').value = '';
+            document.getElementById('cs_resume_retention_days').value = 365;
+            document.getElementById('cs_interview_record_archive_days').value = 180;
+            document.getElementById('cs_audit_log_retention_days').value = 90;
+            document.getElementById('cs_gdpr_compliance').checked = false;
+            document.getElementById('cs_consent_popup_enabled').checked = true;
+            document.getElementById('cs_data_export_enabled').checked = true;
+            document.getElementById('cs_data_deletion_enabled').checked = true;
+            document.getElementById('cs_phone_mask_enabled').checked = true;
+            document.getElementById('cs_email_mask_enabled').checked = false;
+            document.getElementById('cs_audit_log_enabled').checked = true;
+            toggleEmployerBrandFields();
+        }
+
+        async function loadCompanySettings(force = false) {
+            if (companySettingsLoaded && !force) return;
+            try {
+                const response = await fetch('/api/company/settings');
+                const data = await response.json();
+                if (!data.success || !data.company) {
+                    showToast(data.message || '加载公司设置失败');
+                    return;
+                }
+
+                const c = data.company;
+                companySettingsData = c;
+                companySettingsLoaded = true;
+
+                document.getElementById('cs_company_name').value = c.company_name || '';
+                document.getElementById('cs_short_name').value = c.short_name || '';
+                document.getElementById('cs_industry').value = c.industry || '';
+                document.getElementById('cs_phone').value = c.phone || '';
+                document.getElementById('cs_email').value = c.email || '';
+                document.getElementById('cs_website').value = c.website || '';
+                document.getElementById('cs_address').value = c.address || '';
+                document.getElementById('cs_description').value = c.description || '';
+                document.getElementById('cs_recruitment_declaration').value = c.recruitment_declaration || c.recruitment_manifesto || '';
+                document.getElementById('cs_enable_employer_brand').checked = !!c.enable_employer_brand;
+                document.getElementById('cs_culture_video_url').value = c.culture_video_url || '';
+                document.getElementById('cs_employee_stories').value = c.employee_stories || '';
+                document.getElementById('cs_resume_retention_days').value = c.resume_retention_days || 365;
+                document.getElementById('cs_interview_record_archive_days').value = c.interview_record_archive_days || 180;
+                document.getElementById('cs_audit_log_retention_days').value = c.audit_log_retention_days || 90;
+                document.getElementById('cs_gdpr_compliance').checked = !!c.gdpr_compliance;
+                document.getElementById('cs_consent_popup_enabled').checked = c.consent_popup_enabled !== false;
+                document.getElementById('cs_data_export_enabled').checked = c.data_export_enabled !== false;
+                document.getElementById('cs_data_deletion_enabled').checked = c.data_deletion_enabled !== false;
+                document.getElementById('cs_phone_mask_enabled').checked = c.phone_mask_enabled !== false;
+                document.getElementById('cs_email_mask_enabled').checked = !!c.email_mask_enabled;
+                document.getElementById('cs_audit_log_enabled').checked = c.audit_log_enabled !== false;
+                toggleEmployerBrandFields();
+                applyApplicationFilters();
+            } catch (error) {
+                console.error('加载公司设置失败:', error);
+                showToast('加载公司设置失败');
+            }
+        }
+
+        async function saveAllCompanySettings() {
+            const companyName = (document.getElementById('cs_company_name').value || '').trim();
+            if (!companyName) {
+                showToast('公司名称不能为空');
+                return;
+            }
+
+            const toInt = (value, fallback) => {
+                const n = parseInt(value, 10);
+                return Number.isNaN(n) ? fallback : n;
+            };
+
+            const payload = {
+                company_name: companyName,
+                short_name: document.getElementById('cs_short_name').value.trim(),
+                industry: document.getElementById('cs_industry').value,
+                phone: document.getElementById('cs_phone').value.trim(),
+                email: document.getElementById('cs_email').value.trim(),
+                website: document.getElementById('cs_website').value.trim(),
+                address: document.getElementById('cs_address').value.trim(),
+                description: document.getElementById('cs_description').value.trim(),
+                recruitment_declaration: document.getElementById('cs_recruitment_declaration').value.trim(),
+                enable_employer_brand: document.getElementById('cs_enable_employer_brand').checked,
+                culture_video_url: document.getElementById('cs_culture_video_url').value.trim(),
+                employee_stories: document.getElementById('cs_employee_stories').value.trim(),
+                resume_retention_days: toInt(document.getElementById('cs_resume_retention_days').value, 365),
+                interview_record_archive_days: toInt(document.getElementById('cs_interview_record_archive_days').value, 180),
+                audit_log_retention_days: toInt(document.getElementById('cs_audit_log_retention_days').value, 90),
+                gdpr_compliance: document.getElementById('cs_gdpr_compliance').checked,
+                consent_popup_enabled: document.getElementById('cs_consent_popup_enabled').checked,
+                data_export_enabled: document.getElementById('cs_data_export_enabled').checked,
+                data_deletion_enabled: document.getElementById('cs_data_deletion_enabled').checked,
+                phone_mask_enabled: document.getElementById('cs_phone_mask_enabled').checked,
+                email_mask_enabled: document.getElementById('cs_email_mask_enabled').checked,
+                audit_log_enabled: document.getElementById('cs_audit_log_enabled').checked
+            };
+
+            try {
+                const response = await fetch('/api/company/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    showToast(result.message || '保存失败');
+                    return;
+                }
+
+                companySettingsData = result.company || payload;
+                companySettingsLoaded = true;
+                document.getElementById('companyNameDisplay').textContent = companySettingsData.company_name || companyName;
+                showToast('公司设置已保存');
+                applyApplicationFilters();
+            } catch (error) {
+                console.error('保存公司设置失败:', error);
+                showToast('保存失败，请稍后重试');
             }
         }
 
@@ -1146,6 +1719,8 @@
 
         // ========== 聊天功能 ==========
         let currentConversationId = null;
+        let currentCompanyMessages = [];
+        let currentCompanyMessageFilter = 'all';
 
         function loadConversations() {
             fetch('/api/chat/conversations')
@@ -1188,6 +1763,8 @@
 
         function openChat(conversationId, partnerName) {
             currentConversationId = conversationId;
+            currentCompanyMessageFilter = 'all';
+            updateCompanyMessageFilterTabs();
             document.getElementById('chatPartner').textContent = partnerName;
             document.getElementById('chatHeader').style.display = 'block';
             document.getElementById('chatMessages').style.display = 'block';
@@ -1218,6 +1795,7 @@
 
                 if (currentConversationId === conversationId) {
                     currentConversationId = null;
+                    currentCompanyMessages = [];
                     document.getElementById('chatHeader').style.display = 'none';
                     document.getElementById('chatMessages').style.display = 'none';
                     document.getElementById('chatInput').style.display = 'none';
@@ -1236,25 +1814,75 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        renderMessages(data.messages);
+                        currentCompanyMessages = Array.isArray(data.messages) ? data.messages : [];
+                        renderMessages(currentCompanyMessages);
                     }
                 });
         }
 
+        function isCompanyNotificationMessage(message) {
+            const messageType = (message.message_type || '').toLowerCase();
+            const text = (message.content || '').trim();
+            return messageType === 'notification' || text.startsWith('【流程通知】') || text.startsWith('[流程通知]');
+        }
+
+        function setCompanyMessageFilter(filter, event) {
+            currentCompanyMessageFilter = filter;
+            updateCompanyMessageFilterTabs();
+            renderMessages(currentCompanyMessages);
+            if (event) {
+                event.preventDefault();
+            }
+        }
+
+        function updateCompanyMessageFilterTabs() {
+            const tabs = document.querySelectorAll('.message-tab-btn');
+            tabs.forEach(tab => {
+                const isActive = tab.dataset.filter === currentCompanyMessageFilter;
+                tab.classList.toggle('active', isActive);
+                tab.style.borderColor = isActive ? '#0f766e' : '#d9d9d9';
+                tab.style.color = isActive ? '#0f766e' : '#595959';
+                tab.style.background = isActive ? 'rgba(15, 118, 110, 0.1)' : '#fff';
+                tab.style.fontWeight = isActive ? '600' : '400';
+            });
+        }
+
         function renderMessages(messages) {
             const container = document.getElementById('chatMessages');
-            if (messages.length === 0) {
+            const filteredMessages = messages.filter(m => {
+                const isNotification = isCompanyNotificationMessage(m);
+                if (currentCompanyMessageFilter === 'chat') return !isNotification;
+                if (currentCompanyMessageFilter === 'notification') return isNotification;
+                return true;
+            });
+
+            if (filteredMessages.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">暂无消息</div>';
                 return;
             }
 
-            container.innerHTML = messages.map(m => {
+            container.innerHTML = filteredMessages.map(m => {
+                const isNotification = isCompanyNotificationMessage(m);
+                if (isNotification) {
+                    return `
+                        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                            <div style="display: inline-flex; flex-direction: column; align-items: flex-start; max-width: min(56%, 420px); width: auto;">
+                                <div style="display: inline-block; width: auto; max-width: 100%; min-width: 0; padding: 10px 12px; border-radius: 12px; background: #fff7e6; border: 1px solid #ffd591; color: #8a5a00; box-shadow: none; white-space: normal;">
+                                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #ad6800;">流程通知</div>
+                                    <div style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;">${escapeHtml(m.content)}</div>
+                                </div>
+                                <div style="font-size: 12px; color: #ad6800; margin-top: 5px; text-align: right;">${formatTime(m.created_at)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 // 企业视角：sender_type='company' 是自己，sender_type='user' 是对方
                 const isSelf = m.sender_type === 'company';
                 return `
                     <div style="display: flex; margin-bottom: 20px; ${isSelf ? 'justify-content: flex-end' : ''}">
-                        <div style="display: inline-flex; flex-direction: column; align-items: ${isSelf ? 'flex-end' : 'flex-start'}; max-width: min(72%, 560px);">
-                            <div style="width: fit-content; max-width: 100%; min-width: 96px; padding: 12px 16px; border-radius: 12px; background: ${isSelf ? '#8b5cf6' : 'white'}; color: ${isSelf ? 'white' : 'black'}; box-shadow: 0 1px 3px rgba(0,0,0,0.1); white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;">
+                        <div style="display: inline-flex; flex-direction: column; align-items: ${isSelf ? 'flex-end' : 'flex-start'}; max-width: ${isSelf ? '280px' : 'min(72%, 560px)'};">
+                            <div style="width: ${isSelf ? 'auto' : 'fit-content'}; max-width: ${isSelf ? '280px' : '100%'}; min-width: ${isSelf ? '0' : '96px'}; padding: ${isSelf ? '10px 12px' : '12px 16px'}; border-radius: 12px; background: ${isSelf ? '#0f766e' : 'white'}; color: ${isSelf ? 'white' : 'black'}; box-shadow: 0 1px 3px rgba(0,0,0,0.1); white-space: ${isSelf ? 'normal' : 'pre-wrap'}; word-break: break-word; overflow-wrap: anywhere;">
                                 <div style="font-size: 14px; line-height: 1.6;">${escapeHtml(m.content)}</div>
                             </div>
                             <div style="font-size: 12px; ${isSelf ? 'color: rgba(255,255,255,0.7)' : 'color: #999'}; margin-top: 5px;">${formatTime(m.created_at)}</div>

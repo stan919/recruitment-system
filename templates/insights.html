@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
     <title>数据洞察 - 职引未来</title>
     <style>
         * {
@@ -13,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #ffffff;
+            background-color: #f8fafc;
             color: #1a1a1a;
             line-height: 1.6;
         }
@@ -38,22 +39,8 @@
             display: flex;
             align-items: center;
             font-size: 18px;
-            font-weight: 600;
+            font-weight: 700;
             color: #1a1a1a;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: #8b5cf6;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
         }
 
         .nav-links {
@@ -70,7 +57,7 @@
 
         .nav-links a:hover,
         .nav-links a.active {
-            color: #8b5cf6;
+            color: #2563eb;
         }
 
         /* 主内容区 */
@@ -82,55 +69,174 @@
 
         .page-header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 36px;
         }
 
         .page-title {
-            font-size: 36px;
-            font-weight: 700;
+            font-size: 44px;
+            font-weight: 800;
             margin-bottom: 12px;
             color: #1a1a1a;
         }
 
         .page-subtitle {
-            font-size: 16px;
+            font-size: 17px;
             color: #666;
+        }
+
+        .filter-bar {
+            max-width: 980px;
+            margin: 0 auto 20px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .filter-select {
+            min-width: 220px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+
+        .filter-tip {
+            font-size: 13px;
+            color: #64748b;
         }
 
         /* 图表容器 */
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-            gap: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+            gap: 22px;
             margin-bottom: 40px;
         }
 
         .chart-card {
             background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #f0f0f0;
-            padding: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border-radius: 16px;
+            border: 1px solid #e7edf5;
+            padding: 22px;
+            box-shadow: 0 6px 22px rgba(15, 23, 42, 0.04);
             transition: all 0.3s;
         }
 
         .chart-card:hover {
-            transform: translateY(-4px);
-            border-color: #e8e4ff;
-            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+            border-color: #dbeafe;
+            box-shadow: 0 10px 26px rgba(37, 99, 235, 0.08);
         }
 
         .chart-title {
             font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-weight: 700;
+            margin-bottom: 14px;
             color: #1a1a1a;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e9eef5;
         }
 
         .chart-content {
-            min-height: 500px;
+            min-height: 520px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #f1f5f9;
+        }
+
+        .chart-frame {
+            width: 100%;
+            border: none;
+            display: block;
+            min-height: 520px;
+        }
+
+        .chart-loading {
+            min-height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 14px;
+            background: linear-gradient(90deg, #f8fafc, #f1f5f9, #f8fafc);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+        }
+
+        .chart-empty {
+            min-height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            padding: 20px;
+            background: #f8fafc;
+        }
+
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+
+        .switch-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .switch-btn {
+            border: 1px solid #dbe2ef;
+            background: #fff;
+            color: #334155;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .switch-btn.active {
+            border-color: #93c5fd;
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        .skill-cloud {
+            min-height: 520px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px 10px;
+            padding: 14px;
+            background: #f8fafc;
+        }
+
+        .skill-word {
+            display: inline-block;
+            line-height: 1.2;
+            font-weight: 600;
+            transition: transform 0.15s ease;
+            cursor: default;
+            user-select: none;
+        }
+
+        .skill-word:hover {
+            transform: translateY(-1px) scale(1.04);
         }
 
         /* 响应式 */
@@ -150,6 +256,20 @@
             .page-title {
                 font-size: 28px;
             }
+
+            .chart-content,
+            .chart-frame,
+            .chart-loading {
+                min-height: 430px;
+            }
+
+            .filter-bar {
+                padding: 10px 12px;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -157,7 +277,6 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="logo">
-            <div class="logo-icon">职</div>
             职引未来
         </div>
         <div class="nav-links">
@@ -171,14 +290,22 @@
     <div class="container">
         <div class="page-header">
             <h1 class="page-title">数据洞察</h1>
-            <p class="page-subtitle">基于 500,000+ 条招聘数据的深度分析</p>
+            <p class="page-subtitle">基于岗位数据的城市、薪资、要求与技能结构分析</p>
+        </div>
+
+        <div class="filter-bar">
+            <span class="filter-label">专业筛选</span>
+            <select id="professionSelect" class="filter-select">
+                <option value="">全部专业（全局视角）</option>
+            </select>
+            <span id="professionTip" class="filter-tip">当前：全局市场视角</span>
         </div>
 
         <!-- 图表展示区 -->
         <div class="charts-grid">
             <!-- 图表 1: 全国岗位分布地图 -->
             <div class="chart-card">
-                <h3 class="chart-title"> 全国岗位分布</h3>
+                <h3 class="chart-title"> 全国岗位分布（按省聚合）</h3>
                 <div class="chart-content" id="city-map"></div>
             </div>
 
@@ -188,45 +315,381 @@
                 <div class="chart-content" id="salary-bar"></div>
             </div>
 
-            <!-- 图表 3: 学历要求分布 -->
+            <!-- 图表 3: 薪资分位对比 -->
             <div class="chart-card">
-                <h3 class="chart-title"> 学历要求分布</h3>
+                <h3 class="chart-title"> 薪资分位（P25/P50/P75）</h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">读法：P50 越高代表城市整体薪资中枢越高；P75-P25 差距越大，说明薪资分层越明显。</p>
+                <div class="chart-content" id="salary-boxplot"></div>
+            </div>
+
+            <!-- 图表 4: 要求结构分析（学历/经验切换） -->
+            <div class="chart-card">
+                <h3 class="chart-title"> 要求结构分析</h3>
+                <div class="switch-row">
+                    <button class="switch-btn active" onclick="switchRequirementChart('education')">学历要求</button>
+                    <button class="switch-btn" onclick="switchRequirementChart('experience')">经验要求</button>
+                </div>
                 <div class="chart-content" id="education-pie"></div>
+                <div class="chart-content" id="experience-pie" style="display: none;"></div>
             </div>
 
-            <!-- 图表 4: 经验要求分布 -->
-            <div class="chart-card">
-                <h3 class="chart-title"> 经验要求分布</h3>
-                <div class="chart-content" id="experience-pie"></div>
-            </div>
-
-            <!-- 图表 5: 技能词云 -->
+            <!-- 图表 6: 技能词云 -->
             <div class="chart-card" style="grid-column: 1 / -1;">
-                <h3 class="chart-title"> 技能需求热词</h3>
+                <h3 class="chart-title"> 技能需求热词（关键词频次）</h3>
                 <div class="chart-content" id="skill-wordcloud"></div>
             </div>
         </div>
     </div>
 
-    <!-- 加载图表 -->
+    <script src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+    <script src="https://assets.pyecharts.org/assets/v5/echarts-wordcloud.min.js"></script>
     <script>
-        // 使用 iframe 加载各个图表
-        function loadChart(containerId, chartFile) {
-            const iframe = document.createElement('iframe');
-            iframe.src = chartFile;
-            iframe.style.width = '100%';
-            iframe.style.height = '500px';
-            iframe.style.border = 'none';
-            document.getElementById(containerId).appendChild(iframe);
+        const chartInstances = {};
+        const staticChartMap = {
+            'salary-bar': '/static/charts/salary_bar.html',
+            'salary-boxplot': '/static/charts/salary_boxplot.html',
+            'education-pie': '/static/charts/education_pie.html'
+        };
+
+        function disposeChart(id) {
+            if (chartInstances[id]) {
+                chartInstances[id].dispose();
+                delete chartInstances[id];
+            }
         }
 
-        // 页面加载完成后加载所有图表
-        window.addEventListener('DOMContentLoaded', function() {
-            loadChart('city-map', '/static/charts/city_map.html');
-            loadChart('salary-bar', '/static/charts/salary_bar.html');
-            loadChart('education-pie', '/static/charts/education_pie.html');
-            loadChart('experience-pie', '/static/charts/experience_pie.html');
-            loadChart('skill-wordcloud', '/static/charts/skill_wordcloud.html');
+        function disposeAllCharts() {
+            Object.keys(chartInstances).forEach(disposeChart);
+        }
+
+        function showLoading(containerId, text = '图表加载中...') {
+            disposeChart(containerId);
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="chart-loading">${text}</div>`;
+        }
+
+        function showEmpty(containerId, text = '暂无数据') {
+            disposeChart(containerId);
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="chart-empty">${text}</div>`;
+        }
+
+        function loadStaticChart(containerId, chartFile) {
+            showLoading(containerId);
+            const container = document.getElementById(containerId);
+
+            const iframe = document.createElement('iframe');
+            iframe.src = chartFile;
+            iframe.className = 'chart-frame';
+            iframe.setAttribute('scrolling', 'no');
+
+            container.innerHTML = '';
+            container.appendChild(iframe);
+
+            iframe.addEventListener('load', function() {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 520);
+                    iframe.style.height = height + 'px';
+                } catch (e) {
+                    iframe.style.height = '520px';
+                }
+            });
+            iframe.addEventListener('error', function() {
+                showEmpty(containerId, '图表文件加载失败，请刷新重试。');
+            });
+        }
+
+        function createChart(containerId, option) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            disposeChart(containerId);
+            const chart = echarts.init(container);
+            chart.setOption(option, true);
+            chartInstances[containerId] = chart;
+            return chart;
+        }
+
+        function switchRequirementChart(type) {
+            const edu = document.getElementById('education-pie');
+            const exp = document.getElementById('experience-pie');
+            const buttons = document.querySelectorAll('.switch-btn');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (type === 'education') {
+                edu.style.display = 'block';
+                exp.style.display = 'none';
+                buttons[0].classList.add('active');
+                if (chartInstances['education-pie']) {
+                    setTimeout(() => chartInstances['education-pie'].resize(), 0);
+                }
+            } else {
+                edu.style.display = 'none';
+                exp.style.display = 'block';
+                buttons[1].classList.add('active');
+                if (chartInstances['experience-pie']) {
+                    setTimeout(() => chartInstances['experience-pie'].resize(), 0);
+                }
+            }
+        }
+
+        function loadDefaultCharts() {
+            disposeAllCharts();
+            document.getElementById('professionTip').textContent = '当前：全局市场视角';
+            switchRequirementChart('education');
+            Object.entries(staticChartMap).forEach(([id, path]) => loadStaticChart(id, path));
+            loadOverallConsistencyCharts();
+            loadOverallSkillCloud();
+        }
+
+        async function loadOverallConsistencyCharts() {
+            showLoading('city-map', '全国岗位分布加载中...');
+            showLoading('experience-pie', '经验要求分布加载中...');
+
+            try {
+                const resp = await fetch('/api/insights/overall-data');
+                const data = await resp.json();
+                if (!data.success) {
+                    throw new Error(data.message || '加载失败');
+                }
+
+                const provinceData = data.province_distribution || [];
+                const expData = data.experience_distribution || [];
+
+                if (!provinceData.length) {
+                    showEmpty('city-map', '暂无全国岗位分布数据');
+                } else {
+                    createChart('city-map', {
+                        tooltip: { trigger: 'axis' },
+                        grid: { left: 80, right: 20, top: 20, bottom: 30 },
+                        xAxis: { type: 'value', name: '岗位数' },
+                        yAxis: { type: 'category', data: provinceData.map(i => i.name), inverse: true },
+                        series: [{ type: 'bar', data: provinceData.map(i => i.count), itemStyle: { color: '#2563eb' } }]
+                    });
+                }
+
+                if (!expData.length) {
+                    showEmpty('experience-pie', '暂无经验要求分布数据');
+                } else {
+                    createChart('experience-pie', {
+                        tooltip: { trigger: 'axis' },
+                        grid: { left: 80, right: 20, top: 20, bottom: 30 },
+                        xAxis: { type: 'value', name: '岗位数' },
+                        yAxis: { type: 'category', data: expData.map(i => i.name), inverse: true },
+                        series: [{ type: 'bar', data: expData.map(i => i.value), itemStyle: { color: '#0f766e' } }]
+                    });
+                }
+            } catch (e) {
+                console.error('加载全部专业聚合图失败:', e);
+                showEmpty('city-map', '全国岗位分布加载失败，请稍后重试');
+                showEmpty('experience-pie', '经验要求分布加载失败，请稍后重试');
+            }
+        }
+
+        async function loadOverallSkillCloud() {
+            const containerId = 'skill-wordcloud';
+            showLoading(containerId, '技能词云加载中...');
+
+            try {
+                const resp = await fetch('/api/insights/overall-skill-cloud');
+                const data = await resp.json();
+                if (!data.success) {
+                    throw new Error(data.message || '加载失败');
+                }
+                renderSkillCloud(data.skill_cloud || []);
+            } catch (e) {
+                console.error('加载全局技能词云失败:', e);
+                showEmpty(containerId, '全局技能词云加载失败，请稍后重试');
+            }
+        }
+
+        async function loadProfessionOptions() {
+            const select = document.getElementById('professionSelect');
+            try {
+                const resp = await fetch('/api/insights/professions');
+                const data = await resp.json();
+                if (!data.success || !Array.isArray(data.professions)) return;
+
+                data.professions.forEach(item => {
+                    const op = document.createElement('option');
+                    op.value = item.key;
+                    op.textContent = item.name;
+                    select.appendChild(op);
+                });
+            } catch (e) {
+                console.error('加载专业选项失败:', e);
+            }
+        }
+
+        function renderSkillCloud(data) {
+            const containerId = 'skill-wordcloud';
+            if (!Array.isArray(data) || data.length === 0) {
+                showEmpty(containerId, '该专业暂无可视化技能词数据');
+                return;
+            }
+
+            const top = data.slice(0, 80);
+            try {
+                createChart(containerId, {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: p => `${p.name}: ${p.value}`
+                    },
+                    series: [{
+                        type: 'wordCloud',
+                        shape: 'circle',
+                        left: 'center',
+                        top: 'center',
+                        width: '95%',
+                        height: '95%',
+                        gridSize: 8,
+                        sizeRange: [16, 70],
+                        rotationRange: [-45, 45],
+                        rotationStep: 15,
+                        drawOutOfBound: false,
+                        layoutAnimation: true,
+                        textStyle: {
+                            color: () => {
+                                const palette = ['#1d4ed8', '#0f766e', '#0ea5e9', '#2563eb', '#0369a1', '#334155'];
+                                return palette[Math.floor(Math.random() * palette.length)];
+                            }
+                        },
+                        emphasis: {
+                            textStyle: {
+                                shadowBlur: 8,
+                                shadowColor: '#93c5fd'
+                            }
+                        },
+                        data: top
+                    }]
+                });
+            } catch (e) {
+                // 词云插件加载失败时，降级为条形图，避免展示异常布局
+                createChart(containerId, {
+                    tooltip: { trigger: 'axis' },
+                    grid: { left: 80, right: 20, top: 20, bottom: 30 },
+                    xAxis: { type: 'value', name: '频次' },
+                    yAxis: { type: 'category', data: top.slice(0, 20).map(i => i.name), inverse: true },
+                    series: [{ type: 'bar', data: top.slice(0, 20).map(i => i.value), itemStyle: { color: '#2563eb' } }]
+                });
+            }
+        }
+
+        function renderProfessionCharts(data) {
+            const cityData = data.city_distribution || [];
+            const salaryData = data.salary_by_city || [];
+            const quantData = data.salary_quantiles || [];
+            const eduData = data.education_distribution || [];
+            const expData = data.experience_distribution || [];
+
+            if (!cityData.length) {
+                showEmpty('city-map', '该专业暂无岗位分布数据');
+            } else {
+                createChart('city-map', {
+                    tooltip: { trigger: 'axis' },
+                    grid: { left: 80, right: 20, top: 20, bottom: 30 },
+                    xAxis: { type: 'value', name: '岗位数' },
+                    yAxis: { type: 'category', data: cityData.map(i => i.city), inverse: true },
+                    series: [{ type: 'bar', data: cityData.map(i => i.count), itemStyle: { color: '#2563eb' } }]
+                });
+            }
+
+            if (!salaryData.length) {
+                showEmpty('salary-bar', '该专业暂无薪资均值数据');
+            } else {
+                createChart('salary-bar', {
+                    tooltip: { trigger: 'axis' },
+                    grid: { left: 60, right: 20, top: 30, bottom: 50 },
+                    xAxis: { type: 'category', data: salaryData.map(i => i.city), axisLabel: { rotate: 25 } },
+                    yAxis: { type: 'value', name: '元/月' },
+                    series: [{ type: 'line', smooth: true, data: salaryData.map(i => i.avg), areaStyle: {}, itemStyle: { color: '#0ea5e9' } }]
+                });
+            }
+
+            if (!quantData.length) {
+                showEmpty('salary-boxplot', '该专业样本不足，暂无法计算分位');
+            } else {
+                createChart('salary-boxplot', {
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: ['P25', 'P50(中位)', 'P75'] },
+                    grid: { left: 60, right: 20, top: 40, bottom: 50 },
+                    xAxis: { type: 'category', data: quantData.map(i => i.city), axisLabel: { rotate: 25 } },
+                    yAxis: { type: 'value', name: '元/月' },
+                    series: [
+                        { name: 'P25', type: 'bar', data: quantData.map(i => i.p25), itemStyle: { color: '#0ea5e9' } },
+                        { name: 'P50(中位)', type: 'bar', data: quantData.map(i => i.p50), itemStyle: { color: '#2563eb' } },
+                        { name: 'P75', type: 'bar', data: quantData.map(i => i.p75), itemStyle: { color: '#1d4ed8' } }
+                    ]
+                });
+            }
+
+            if (!eduData.length) {
+                showEmpty('education-pie', '该专业暂无学历分布数据');
+            } else {
+                createChart('education-pie', {
+                    tooltip: { trigger: 'item' },
+                    legend: { top: '2%' },
+                    series: [{ type: 'pie', radius: ['45%', '70%'], data: eduData, label: { formatter: '{b}: {d}%' } }]
+                });
+            }
+
+            if (!expData.length) {
+                showEmpty('experience-pie', '该专业暂无经验分布数据');
+            } else {
+                createChart('experience-pie', {
+                    tooltip: { trigger: 'axis' },
+                    grid: { left: 80, right: 20, top: 20, bottom: 30 },
+                    xAxis: { type: 'value', name: '岗位数' },
+                    yAxis: { type: 'category', data: expData.map(i => i.name), inverse: true },
+                    series: [{ type: 'bar', data: expData.map(i => i.value), itemStyle: { color: '#0f766e' } }]
+                });
+            }
+
+            renderSkillCloud(data.skill_cloud || []);
+            switchRequirementChart('education');
+        }
+
+        async function loadProfessionInsights(professionKey) {
+            ['city-map', 'salary-bar', 'salary-boxplot', 'education-pie', 'experience-pie', 'skill-wordcloud'].forEach(id => showLoading(id));
+
+            try {
+                const resp = await fetch(`/api/insights/profession-data?profession=${encodeURIComponent(professionKey)}`);
+                const data = await resp.json();
+                if (!data.success) {
+                    throw new Error(data.message || '加载失败');
+                }
+
+                document.getElementById('professionTip').textContent = `当前：${data.profession.name}`;
+                renderProfessionCharts(data);
+            } catch (e) {
+                console.error('加载专业洞察失败:', e);
+                ['city-map', 'salary-bar', 'salary-boxplot', 'education-pie', 'experience-pie', 'skill-wordcloud']
+                    .forEach(id => showEmpty(id, '该专业数据加载失败，请稍后重试'));
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            Object.values(chartInstances).forEach(chart => {
+                if (chart && !chart.isDisposed()) {
+                    chart.resize();
+                }
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', async function() {
+            const select = document.getElementById('professionSelect');
+            await loadProfessionOptions();
+
+            select.addEventListener('change', function() {
+                const key = this.value;
+                if (!key) {
+                    loadDefaultCharts();
+                    return;
+                }
+                loadProfessionInsights(key);
+            });
+
+            loadDefaultCharts();
         });
     </script>
 </body>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/global.css">
     <title>公司设置 - 职引未来</title>
     <style>
         * {
@@ -96,7 +97,7 @@
         .form-textarea:focus,
         .form-select:focus {
             outline: none;
-            border-color: #8b5cf6;
+            border-color: var(--color-brand);
             box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
 
@@ -134,12 +135,12 @@
         }
 
         .btn-primary {
-            background: #8b5cf6;
+            background: var(--color-brand);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #7c3aed;
+            background: var(--color-brand-hover);
         }
 
         .btn-secondary {
@@ -170,7 +171,7 @@
         }
 
         .logo-upload:hover {
-            border-color: #8b5cf6;
+            border-color: var(--color-brand);
             background: #f9fafb;
         }
 
@@ -247,7 +248,7 @@
         }
 
         input:checked + .slider {
-            background-color: #8b5cf6;
+            background-color: var(--color-brand);
         }
 
         input:checked + .slider:before {
