@@ -15,6 +15,12 @@
     /* Skeleton defaults for resume AI component */
     --skeleton-base: rgba(0,0,0,0.04);
     --skeleton-accent: rgba(255,255,255,0.06);
+    --skeleton-radius-sm: 6px;
+    --skeleton-radius-md: 8px;
+    --skeleton-gap: 10px;
+    --skeleton-padding: 14px;
+    --skeleton-shimmer-duration: 1.2s;
+    --skeleton-fade-duration: 220ms;
     --bronze-gradient: linear-gradient(135deg, #C9A96E 0%, #D4B87A 50%, #A88B55 100%);
     --section-gap: 120px;
     --container-max: 1200px;
@@ -109,6 +115,6 @@ a, button { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 }
 
 /* Resume parsing skeleton moved from inline template; includes fade transitions */
-.resume-ai-parsing{opacity:0;transition:opacity 220ms ease}
+.resume-ai-parsing{opacity:0;transition:opacity var(--skeleton-fade-duration) ease}
 .resume-ai-parsing.show{opacity:1}
 

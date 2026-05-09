@@ -1,7 +1,7 @@
 /* Resume AI skeleton component styles */
 .resume-ai-parsing{
-    border-radius:8px;
-    padding:14px;
+    border-radius:var(--skeleton-radius-md);
+    padding:var(--skeleton-padding);
     background: linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.00));
     box-shadow: 0 1px 0 rgba(0,0,0,0.02) inset;
 }
@@ -9,14 +9,14 @@
     height:14px;
     background: linear-gradient(90deg,var(--skeleton-base),var(--skeleton-accent),var(--skeleton-base));
     background-size:200% 100%;
-    animation:sketchy 1.2s linear infinite;
-    border-radius:6px;
-    margin-bottom:10px;
+    animation:sketchy var(--skeleton-shimmer-duration) linear infinite;
+    border-radius:var(--skeleton-radius-sm);
+    margin-bottom:var(--skeleton-gap);
 }
 .resume-ai-parsing .skeleton-row.title{height:18px;width:58%}
 .resume-ai-parsing .skeleton-row.short{width:38%}
-.resume-ai-parsing .skeleton-block{display:flex;gap:10px;margin-top:10px;margin-bottom:10px}
-.resume-ai-parsing .skeleton-col{flex:1;height:50px;border-radius:8px;background:linear-gradient(90deg,var(--skeleton-base),var(--skeleton-accent),var(--skeleton-base));background-size:200% 100%;animation:sketchy 1.2s linear infinite}
+.resume-ai-parsing .skeleton-block{display:flex;gap:var(--skeleton-gap);margin-top:var(--skeleton-gap);margin-bottom:var(--skeleton-gap)}
+.resume-ai-parsing .skeleton-col{flex:1;height:50px;border-radius:var(--skeleton-radius-md);background:linear-gradient(90deg,var(--skeleton-base),var(--skeleton-accent),var(--skeleton-base));background-size:200% 100%;animation:sketchy var(--skeleton-shimmer-duration) linear infinite}
 .resume-ai-parsing .skeleton-note{font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin-top:6px}
 @keyframes sketchy{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
