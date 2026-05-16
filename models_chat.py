@@ -1,7 +1,7 @@
 """
 聊天消息模型
 """
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Boolean, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
@@ -31,7 +31,13 @@ def get_session():
 class Conversation(ChatBase):
     """会话表"""
     __tablename__ = 'conversations'
-    
+
+    # 复合索引：加速查询用户的会话列表和企业会话列表
+    __table_args__ = (
+        Index('idx_conv_user_active', 'user_id', 'is_active', 'updated_at'),
+        Index('idx_conv_company_active', 'company_name', 'is_active', 'updated_at'),
+    )
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, nullable=False, comment='用户 ID（求职者）')
     company_id = Column(Integer, nullable=False, default=0, comment='企业标识（公司管理员用户 ID）')
@@ -67,7 +73,13 @@ class Conversation(ChatBase):
 class Message(ChatBase):
     """消息表"""
     __tablename__ = 'messages'
-    
+
+    # 复合索引：加速按会话查询消息（最常用）
+    __table_args__ = (
+        Index('idx_msg_conv_created', 'conversation_id', 'created_at'),
+        Index('idx_msg_conv_id', 'conversation_id', 'id'),
+    )
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     conversation_id = Column(Integer, ForeignKey('conversations.id'), nullable=False, comment='会话 ID')
     sender_type = Column(String(20), nullable=False, comment='发送者类型：user（求职者）/company（企业 HR）')

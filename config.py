@@ -15,9 +15,20 @@ DATABASE_CONFIG = {
 # Flask 配置
 FLASK_CONFIG = {
     'SECRET_KEY': os.environ.get('SECRET_KEY', 'dev-key-change-in-production-' + __name__),
-    'HOST': '0.0.0.0',
+    'HOST': '127.0.0.1',
     'PORT': 5000,
-    'DEBUG': True
+    'DEBUG': False
+}
+
+# AI 配置
+AI_CONFIG = {
+    'BASE_URL': os.environ.get('AI_API_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1'),
+    'API_KEY': os.environ.get('AI_API_KEY', ''),
+    'MODEL': os.environ.get('AI_API_MODEL', 'qwen-plus'),
+    'TIMEOUT': int(os.environ.get('AI_API_TIMEOUT', 60)),
+    'ATTACHMENT_TIMEOUT': int(os.environ.get('AI_ATTACHMENT_TIMEOUT', 30)),
+    'TEMPERATURE': float(os.environ.get('AI_API_TEMPERATURE', 0.7)),
+    'MAX_TOKENS': int(os.environ.get('AI_API_MAX_TOKENS', 1200)),
 }
 
 # 城市映射配置（前端传值到实际城市名）

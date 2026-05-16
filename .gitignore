@@ -48,3 +48,15 @@ uploads/*
 # 操作系统
 .DS_Store
 Thumbs.db
+
+# Additional ignores
+.venv/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.cache/
+.python-version
+.ipynb_checkpoints/
+.pyright/
+.ropeproject/
+instance/

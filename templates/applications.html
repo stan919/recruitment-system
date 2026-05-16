@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/global.css">
 <link rel="stylesheet" href="/static/css/components/resume-ai.css">
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.2/dist/docx-preview.min.js"></script>
 <style>
 /* ===== Navigation Bar ===== */
@@ -654,16 +655,16 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
         <div class="container">
             <div class="page-header" data-reveal>
                 <span class="page-title-en">Application Records</span>
-                <h1 class="page-title">投递记录</h1>
+                <h1 class="page-title" class="text-primary" class="text-primary" class="text-primary">投递记录</h1>
                 <p class="page-desc">追踪您的投递状态，从提交到面试全程掌握</p>
             </div>
 
-            <section class="resume-ai-section" data-reveal>
+            <section class="resume-ai-section" id="resume-ai-workbench" data-reveal>
                 <div class="resume-ai-shell">
                     <div class="resume-ai-header">
                         <div>
                             <span class="section-title-en">Resume Studio</span>
-                            <h2 class="section-title">AI 简历工作台</h2>
+                            <h2 class="section-title" class="text-primary" class="text-primary" class="text-primary">AI 简历工作台</h2>
                             <p class="section-subtitle">这里会先拉取后端简历分析，再结合你补充的内容给出结构诊断、关键词补强和可直接改写的建议。右下角的浮窗保留给自由问答。</p>
                         </div>
                         <div class="resume-ai-badges">
@@ -677,7 +678,7 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
                         <div class="resume-ai-card">
                             <div class="resume-ai-card-head">
                                 <div>
-                                    <h3 class="resume-ai-card-title">上传并预检</h3>
+                                    <h3 class="resume-ai-card-title" class="text-primary" class="text-primary" class="text-primary">上传并预检</h3>
                                     <p class="resume-ai-card-desc">会先调用后端分析接口，再在页面上整理成评分、亮点、短板和改写建议。</p>
                                 </div>
                                 <span class="resume-ai-chip"><i class="fas fa-circle-info"></i> 后端分析模式</span>
@@ -688,11 +689,19 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
                                 <div class="upload-text">拖拽简历到这里，或者点击上传</div>
                                 <div class="upload-hint">支持 PDF、Word 和图片简历，系统会优先调用后端分析，再结合简历记录给出结构化结果。</div>
                             </div>
+                            <div class="resume-ai-first-guide">
+                                <div class="resume-ai-first-guide-title"><i class="fas fa-compass"></i> 第一次使用，按这三步来</div>
+                                <div class="resume-ai-first-guide-steps">
+                                    <span>1. 上传简历文件</span>
+                                    <span>2. 查看评分和建议</span>
+                                    <span>3. 继续去投递职位</span>
+                                </div>
+                            </div>
                             <input type="file" id="resumeAiFileInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.bmp,.gif" style="display:none;">
 
                             <div class="resume-ai-file-info" id="resumeAiFileInfo" style="display:none;">
                                 <span class="resume-ai-file-name" id="resumeAiFileName"></span>
-                                <span class="resume-ai-file-state" id="resumeAiFileState">等待后端分析</span>
+                                <span class="resume-ai-file-state" id="resumeAiFileState">等待上传</span>
                             </div>
                             <div class="resume-ai-ocr-status" id="resumeAiOcrStatus">
                                 <div><strong>OCR 状态：</strong><span class="ocr-state" id="resumeAiOcrState">等待上传</span></div>
@@ -740,17 +749,21 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
 
                         <div class="resume-ai-card resume-ai-report">
                             <div class="resume-score-card">
-                                <div class="resume-score-ring" id="resumeAiScoreRing" style="--score:68;">
+                                <div class="resume-score-ring" id="resumeAiScoreRing" style="--score:0;">
                                     <div class="resume-score-ring-inner">
-                                        <span class="resume-score-value" id="resumeAiScore">68</span>
+                                        <span class="resume-score-value" id="resumeAiScore">--</span>
                                         <span class="resume-score-label">综合评分</span>
                                     </div>
                                 </div>
                                 <div class="resume-ai-report-head">
-                                    <h3 id="resumeAiHeadline">等待后端分析生成结果</h3>
-                                    <p id="resumeAiSummary">这里会优先调用后端简历分析，再结合你补充的内容、投递记录和历史简历信息生成评分、亮点、短板和改写建议。</p>
+                                    <h3 id="resumeAiHeadline" class="text-primary" class="text-primary" class="text-primary">先上传简历，再自动生成分析</h3>
+                                    <p id="resumeAiSummary">第一次使用时，建议先上传 PDF、Word 或图片简历；系统会自动整理成评分、亮点、短板和改写建议。</p>
                                 </div>
                                     <div id="resumeAiParsingSkeleton" class="resume-ai-parsing" style="display:none;margin-top:12px;">
+                                        <div class="skeleton-hero">
+                                            <span class="skeleton-chip"><i class="fas fa-wave-square"></i> 正在解析简历</span>
+                                            <span class="skeleton-mini-note">上传后系统会自动整理成评分、亮点和建议</span>
+                                        </div>
                                         <div class="skeleton-row title"></div>
                                         <div class="skeleton-row short"></div>
                                         <div class="skeleton-block">
@@ -758,7 +771,7 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
                                             <div class="skeleton-col"></div>
                                             <div class="skeleton-col"></div>
                                         </div>
-                                        <div class="skeleton-note">后端解析中，稍候将自动更新结果...</div>
+                                        <div class="skeleton-note"><i class="fas fa-circle-notch fa-spin"></i><span>后端正在整理内容，完成后会自动替换为正式结果</span></div>
                                     </div>
                             </div>
 
@@ -791,8 +804,15 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
                                     <ul id="resumeAiIssues"></ul>
                                 </div>
                                 <div class="resume-ai-list-box">
-                                    <h4><i class="fas fa-pen-ruler" style="color:var(--bronze);margin-right:6px;"></i> 可直接替换的改写建议</h4>
-                                    <div class="resume-ai-callout" id="resumeAiRewrite">“负责项目开发”可以改成“主导某模块开发，接入 X 个关键功能，帮助团队将响应效率提升 30%”。</div>
+                                    <h4><i class="fas fa-pen-ruler" style="color:var(--bronze);margin-right:6px;"></i> 优化版简历文件</h4>
+                                    <div class="resume-ai-export">
+                                        <div class="resume-ai-export-note" id="resumeAiExportNote">生成可下载的 Word 文件，避免长文本占屏幕。</div>
+                                        <div class="resume-ai-export-actions">
+                                            <button type="button" id="resumeAiExportPreviewBtn"><i class="fas fa-eye"></i> 预览优化版</button>
+                                            <button type="button" id="resumeAiExportDownloadBtn"><i class="fas fa-download"></i> 下载 Word</button>
+                                        </div>
+                                    </div>
+                                    <div id="resumeAiExportPreview" class="resume-inline-preview" style="display:none;"></div>
                                 </div>
                             </div>
                         </div>
@@ -811,19 +831,19 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
 <div id="applicationDetailModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h2><i class="fas fa-info-circle"></i> 申请详情</h2>
+            <h2 class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-info-circle"></i> 申请详情</h2>
             <span class="close" onclick="closeApplicationDetail()">&times;</span>
         </div>
         <div class="modal-body">
             <div class="detail-section">
-                <h3 class="detail-title"><i class="fas fa-briefcase"></i> 职位信息</h3>
+                <h3 class="detail-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-briefcase"></i> 职位信息</h3>
                 <div class="detail-item"><strong>职位名称：</strong><span id="detailJobName"></span></div>
                 <div class="detail-item"><strong>公司名称：</strong><span id="detailCompanyName"></span></div>
                 <div class="detail-item"><strong>投递状态：</strong><span id="detailStatus" class="status-badge"></span></div>
                 <div class="detail-item"><strong>投递时间：</strong><span id="detailAppliedAt"></span></div>
             </div>
             <div class="detail-section">
-                <h3 class="detail-title"><i class="fas fa-file-signature"></i> 申请信息</h3>
+                <h3 class="detail-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-file-signature"></i> 申请信息</h3>
                 <div class="detail-item"><strong>期望薪资：</strong><span id="detailExpectedSalary"></span></div>
                 <div class="detail-item"><strong>申请理由：</strong><span id="detailReason" style="white-space:pre-wrap;"></span></div>
                 <div class="detail-item"><strong>其他信息：</strong><span id="detailOtherInfo" style="white-space:pre-wrap;"></span></div>
@@ -841,12 +861,12 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
 <div id="editApplicationModal" class="modal" style="display:none;">
     <div class="modal-content wide">
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> 修改申请</h2>
+            <h2 class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-pen"></i> 修改申请</h2>
             <span class="close" onclick="closeEditApplicationModal()">&times;</span>
         </div>
         <div class="modal-body">
             <div class="step">
-                <h3 class="step-title"><span class="step-number">1</span> 基本信息</h3>
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">1</span> 基本信息</h3>
                 <div class="form-group"><label>姓名 *</label><input type="text" id="editName" placeholder="请输入姓名"></div>
                 <div class="form-group"><label>手机号 *</label><input type="tel" id="editPhone" placeholder="请输入手机号"></div>
                 <div class="form-group"><label>邮箱 *</label><input type="email" id="editEmail" placeholder="请输入邮箱"></div>
@@ -856,13 +876,13 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
                 <div class="form-group"><label>专业</label><input type="text" id="editMajor" placeholder="请输入专业名称"></div>
             </div>
             <div class="step">
-                <h3 class="step-title"><span class="step-number">2</span> 工作经历和技能</h3>
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">2</span> 工作经历和技能</h3>
                 <div class="form-group"><label>工作经历</label><textarea id="editWorkExperience" placeholder="请描述您的工作经历" rows="4"></textarea></div>
                 <div class="form-group"><label>技能特长</label><textarea id="editSkills" placeholder="请描述您的技能特长" rows="3"></textarea></div>
                 <div class="form-group"><label>自我介绍</label><textarea id="editSelfIntroduction" placeholder="请做简单的自我介绍" rows="4"></textarea></div>
             </div>
             <div class="step">
-                <h3 class="step-title"><span class="step-number">3</span> 上传简历附件</h3>
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">3</span> 上传简历附件</h3>
                 <div class="upload-area" id="editUploadArea" onclick="document.getElementById('editFileInput').click()" ondrop="handleEditDrop(event)" ondragover="handleEditDragOver(event)">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt" style="color:var(--bronze);font-size:32px;"></i></div>
                     <div class="upload-text">点击或拖拽上传简历</div>
@@ -873,7 +893,7 @@ body { background: var(--obsidian); color: var(--text-primary); font-family: 'In
                 <div id="editResumeInlinePreview" class="resume-inline-preview"></div>
             </div>
             <div class="step">
-                <h3 class="step-title"><span class="step-number">4</span> 申请信息</h3>
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">4</span> 申请信息</h3>
                 <div class="form-group"><label>期望薪资</label><input type="text" id="editExpectedSalary" placeholder="如：8000-10000 或 面议"></div>
                 <div class="form-group"><label>申请理由</label><textarea id="editReason" placeholder="为什么想加入我们？" rows="4"></textarea></div>
                 <div class="form-group"><label>其他信息</label><textarea id="editOtherInfo" placeholder="其他需要说明的信息（选填）" rows="3"></textarea></div>
@@ -943,6 +963,8 @@ let resumeAiState = {
     fileName: '',
     text: ''
 };
+let resumeAiParseSlowTimer = null;
+let resumeAiExportPreviewBlobUrl = null;
 
 const RESUME_AI_PROFILES = {
     general: {
@@ -1241,38 +1263,25 @@ function renderResumeAiResult(result) {
     const priority = document.getElementById('resumeAiPriority');
     const strengths = document.getElementById('resumeAiStrengths');
     const issues = document.getElementById('resumeAiIssues');
-    const rewrite = document.getElementById('resumeAiRewrite');
+    const exportNote = document.getElementById('resumeAiExportNote');
     const fileState = document.getElementById('resumeAiFileState');
     const ocrStatus = document.getElementById('resumeAiOcrStatus');
     const ocrState = document.getElementById('resumeAiOcrState');
     const ocrNote = document.getElementById('resumeAiOcrNote');
     const ocrActions = document.getElementById('resumeAiOcrActions');
     const ocrInsertBtn = document.getElementById('resumeAiOcrInsertBtn');
+    const isPreviewOnly = String(result.source || '') !== 'ai';
 
-    if (scoreRing) scoreRing.style.setProperty('--score', String(result.score));
-    if (score) score.textContent = String(result.score);
+    if (scoreRing) scoreRing.style.setProperty('--score', isPreviewOnly ? '0' : String(result.score));
+    if (score) score.textContent = isPreviewOnly ? '预览中' : String(result.score);
     if (headline) headline.textContent = result.headline;
-    if (summary) {
-        const overview = result.application_overview && typeof result.application_overview === 'object'
-            ? (() => {
-                const total = Number(result.application_overview.total || 0);
-                const recentJobs = Array.isArray(result.application_overview.recent_jobs) ? result.application_overview.recent_jobs : [];
-                // 只有在确实有投递记录时才展示投递概览，避免首次使用产生迷惑
-                if (!total || total <= 0) {
-                    return '';
-                }
-                const recentText = recentJobs.length ? `最近投递：${recentJobs.slice(0, 2).join('；')}` : '';
-                return [total ? `投递联动：${total} 条` : '', recentText].filter(Boolean).join('，');
-            })()
-            : '';
-        summary.textContent = overview ? `${result.summary} ${overview}` : result.summary;
-    }
+    if (summary) summary.textContent = result.summary || '';
     if (structure) structure.textContent = result.structure;
     if (quant) quant.textContent = result.quant;
     if (keywords) keywords.textContent = result.keywords;
     if (priority) priority.textContent = result.priority;
-    if (rewrite) rewrite.textContent = result.rewrite;
-    if (fileState) fileState.textContent = result.source === 'ai' ? '后端已分析' : (resumeAiState.fileName ? '已接收，后端兜底分析' : '等待分析');
+    if (exportNote) exportNote.textContent = '已生成优化版文件，可直接预览或下载。';
+    if (fileState) fileState.textContent = result.source === 'ai' ? '后端已分析' : '正在分析';
     if (ocrStatus && ocrState && ocrNote) {
         const ocrAttempted = !!result.ocr_attempted;
         const ocrAvailable = !!result.ocr_available;
@@ -1295,21 +1304,140 @@ function renderResumeAiResult(result) {
             }
         } else {
             ocrStatus.style.display = 'none';
-            ocrState.textContent = '等待上传';
-            ocrNote.textContent = '图片文件会尝试走 OCR 识别；未启用时会自动回退到结构化文件信息分析。';
+            ocrState.textContent = result.source === 'ai' ? '后端已识别文本' : '正在分析';
+            ocrNote.textContent = result.source === 'ai' ? '可以把识别出的文字粘贴到补充简历重点里，进一步提高分析质量。' : '正在分析，请稍候...';
             if (ocrActions) ocrActions.style.display = 'none';
         }
     }
 
     populateResumeAiList(strengths, result.strengths, '上传内容后，这里会显示你的简历亮点。');
     populateResumeAiList(issues, result.issues, '上传内容后，这里会显示可以补强的地方。');
+
+    window.resumeAiLastResult = result;
+    setResumeAiExportDisabled(false);
+}
+
+function setResumeAiExportDisabled(disabled) {
+    const previewBtn = document.getElementById('resumeAiExportPreviewBtn');
+    const downloadBtn = document.getElementById('resumeAiExportDownloadBtn');
+    if (previewBtn) previewBtn.disabled = disabled;
+    if (downloadBtn) downloadBtn.disabled = disabled;
+}
+
+function clearResumeAiExportPreview() {
+    const container = document.getElementById('resumeAiExportPreview');
+    if (!container) return;
+    if (resumeAiExportPreviewBlobUrl) {
+        try { URL.revokeObjectURL(resumeAiExportPreviewBlobUrl); } catch (e) {}
+        resumeAiExportPreviewBlobUrl = null;
+    }
+    container.style.display = 'none';
+    container.innerHTML = '';
+}
+
+async function requestResumeAiExportBlob() {
+    const result = window.resumeAiLastResult;
+    if (!result) return null;
+    const payload = {
+        analysis: result,
+        file_name: resumeAiState.fileName || '简历',
+        template: resumeAiState.template || '通用'
+    };
+    const response = await fetch('/api/resume/analysis/export', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        let message = '导出失败';
+        try {
+            const data = await response.json();
+            if (data && data.message) message = data.message;
+        } catch (e) {}
+        throw new Error(message);
+    }
+    return await response.blob();
+}
+
+async function previewResumeAiExport() {
+    if (!window.resumeAiLastResult) {
+        if (window.showToast) window.showToast('请先生成简历分析结果', 'info');
+        return;
+    }
+    const container = document.getElementById('resumeAiExportPreview');
+    if (!container) return;
+
+    clearResumeAiExportPreview();
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div class="resume-preview-card">
+            <div class="resume-preview-header">
+                <div class="resume-preview-title">预览：优化版简历</div>
+                <button type="button" class="resume-preview-close" onclick="clearResumeAiExportPreview()">收起</button>
+            </div>
+            <div id="resumeAiExportPreviewBody" class="resume-preview-body">
+                <div class="resume-preview-loading">正在生成预览...</div>
+            </div>
+        </div>
+    `;
+    container.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+    const previewBody = document.getElementById('resumeAiExportPreviewBody');
+    try {
+        const blob = await requestResumeAiExportBlob();
+        if (!blob) throw new Error('未生成导出文件');
+        if (!window.docx || typeof window.docx.renderAsync !== 'function') {
+            throw new Error('Word 预览组件加载失败');
+        }
+        const buffer = await blob.arrayBuffer();
+        if (previewBody) {
+            previewBody.innerHTML = '<div id="resumeAiExportWordPreview" class="resume-preview-word"></div>';
+        }
+        const target = document.getElementById('resumeAiExportWordPreview');
+        if (target) {
+            await window.docx.renderAsync(buffer, target, null, {inWrapper:false, breakPages:false, ignoreWidth:true, ignoreHeight:true});
+        }
+    } catch (error) {
+        if (previewBody) {
+            const message = error && error.message ? error.message : '预览失败';
+            previewBody.innerHTML = '';
+            const node = document.createElement('div');
+            node.className = 'resume-preview-error';
+            node.textContent = message;
+            previewBody.appendChild(node);
+        }
+    }
+}
+
+async function downloadResumeAiExport() {
+    if (!window.resumeAiLastResult) {
+        if (window.showToast) window.showToast('请先生成简历分析结果', 'info');
+        return;
+    }
+    try {
+        const blob = await requestResumeAiExportBlob();
+        if (!blob) throw new Error('未生成导出文件');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().toISOString().slice(0,16).replace(/[:T]/g, '');
+        link.download = `简历优化建议_${timestamp}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} }, 1000);
+    } catch (error) {
+        if (window.showToast) window.showToast(error && error.message ? error.message : '导出失败', 'error');
+    }
 }
 
 async function runResumeAiAnalysis() {
     const textarea = document.getElementById('resumeAiText');
     const sourceText = textarea ? textarea.value : '';
     resumeAiState.text = sourceText;
-    const fallback = buildResumeAiAnalysis(sourceText, resumeAiState.fileName, resumeAiState.template);
+    setResumeAiAnalyzingState('正在分析，请稍候...');
 
     try {
         const response = await fetch('/api/resume/analysis', {
@@ -1325,23 +1453,29 @@ async function runResumeAiAnalysis() {
         });
         const data = await response.json();
         if (response.ok && data && data.success && data.analysis) {
-            const result = Object.assign({}, fallback, data.analysis, {
-                source: data.source || 'ai',
-                application_overview: data.application_summary || fallback.application_overview
-            });
-            renderResumeAiResult(result);
+            if (data.source === 'ai') {
+                const fallback = buildResumeAiAnalysis(sourceText, resumeAiState.fileName, resumeAiState.template);
+                const result = Object.assign({}, fallback, data.analysis, {
+                    source: data.source || 'ai'
+                });
+                renderResumeAiResult(result);
+                if (window.showToast) {
+                    window.showToast('已生成后端简历分析', 'success');
+                }
+                return;
+            }
+            setResumeAiAnalyzingState('正在分析，请稍候...');
             if (window.showToast) {
-                window.showToast(data.source === 'ai' ? '已生成后端简历分析' : '已生成简历分析（本地兜底）', 'success');
+                window.showToast('正在分析，请稍候返回最终结果', 'info');
             }
             return;
         }
     } catch (error) {
-        // 走本地兜底
+        // 保持“正在分析”状态
     }
 
-    renderResumeAiResult(Object.assign({}, fallback, { source: 'local' }));
     if (window.showToast) {
-        window.showToast('后端分析暂不可用，已使用本地兜底结果', 'info');
+        window.showToast('正在分析，请稍候', 'info');
     }
 }
 
@@ -1368,13 +1502,16 @@ function setResumeAiTemplate(templateKey) {
             }
         });
     }
-    runResumeAiAnalysis();
 }
 
 function resetResumeAiWorkbench() {
     resumeAiState.template = 'general';
     resumeAiState.fileName = '';
     resumeAiState.text = '';
+    if (resumeAiParseSlowTimer) {
+        clearTimeout(resumeAiParseSlowTimer);
+        resumeAiParseSlowTimer = null;
+    }
     const fileInput = document.getElementById('resumeAiFileInput');
     const textarea = document.getElementById('resumeAiText');
     const fileInfo = document.getElementById('resumeAiFileInfo');
@@ -1387,10 +1524,13 @@ function resetResumeAiWorkbench() {
     if (textarea) textarea.value = '';
     if (fileInfo) fileInfo.style.display = 'none';
     if (fileName) fileName.textContent = '';
-    if (fileState) fileState.textContent = '等待后端分析';
+    if (fileState) fileState.textContent = '等待上传';
     if (ocrStatus) ocrStatus.style.display = 'none';
     if (ocrState) ocrState.textContent = '等待上传';
     if (ocrNote) ocrNote.textContent = '图片文件会尝试走 OCR 识别；未启用时会自动回退到结构化文件信息分析。';
+    window.resumeAiLastResult = null;
+    setResumeAiExportDisabled(true);
+    clearResumeAiExportPreview();
     setResumeAiTemplate('general');
 }
 
@@ -1405,7 +1545,7 @@ function bindResumeAiFile(file) {
     const ocrNote = document.getElementById('resumeAiOcrNote');
     if (fileInfo) fileInfo.style.display = 'flex';
     if (fileName) fileName.textContent = resumeAiState.fileName;
-    if (fileState) fileState.textContent = '已接收，等待后端解析';
+    if (fileState) fileState.textContent = '等待上传';
     if (ocrStatus) ocrStatus.style.display = /image\//i.test(String(file.type || '')) ? 'block' : 'none';
     if (ocrState) ocrState.textContent = /image\//i.test(String(file.type || '')) ? '上传后尝试识别图片文字' : '仅文件内容分析';
     if (ocrNote) ocrNote.textContent = /image\//i.test(String(file.type || '')) ? '图片将优先提交到后端解析，后端会返回 OCR 相关状态。' : '文本类文件会先本地读取，再由后端进行结构化分析。';
@@ -1427,47 +1567,61 @@ function bindResumeAiFile(file) {
         reader.readAsText(file);
         return;
     }
-    // 对于二进制文件（PDF/DOC/DOCX/图片），先展示本地兜底分析以提高响应速度，再在后台上传到后端解析
+    // 对于二进制文件（PDF/DOC/DOCX/图片），只展示“正在分析”，不提前渲染任何分析结果
     (function(){
-        if (fileState) fileState.textContent = '本地预览生成中，后台上传并解析...';
-        // 立即使用本地兜底分析提高首次可见性
-        try{
-            const immediateFallback = buildResumeAiAnalysis(resumeAiState.text || '', resumeAiState.fileName, resumeAiState.template);
-            renderResumeAiResult(Object.assign({}, immediateFallback, { source: 'local-preview' }));
-        }catch(e){
-            // ignore
+        if (resumeAiParseSlowTimer) {
+            clearTimeout(resumeAiParseSlowTimer);
+            resumeAiParseSlowTimer = null;
         }
-
-        if (fileState) fileState.textContent = '上传并解析中... 0%';
+        // 不在上传前显示“正在分析”状态；仅在上传进度或上传完成后显示解析提示
         const fd = new FormData();
         fd.append('file', file);
         fd.append('template', resumeAiState.template || 'general');
 
         uploadWithProgress('/api/resume/attachment/analyze', fd, function(percent){
-            if (fileState) fileState.textContent = '上传并解析中... ' + percent + '%';
+            if (fileState) fileState.textContent = '上传中... ' + percent + '%';
         }, function(){
-            // upload finished, parsing starts
+            // 上传完成，开始后端解析并展示解析骨架（此处为后端处理阶段）
             try{ showParsingSkel(); }catch(e){}
+            if (fileState) fileState.textContent = '简历已上传，正在生成结构化结果...';
+            resumeAiParseSlowTimer = window.setTimeout(function(){
+                if (fileState) fileState.textContent = '解析比预期久一点，但还在继续，结果出来会自动替换...';
+                if (window.showToast) window.showToast('后端解析较慢，系统仍在继续处理', 'info');
+            }, 4000);
         }).then(function(resp){
             if (!resp) throw new Error('no response');
-            if (resp && resp.success && resp.analysis) {
+            if (resp && resp.success && resp.analysis && resp.source === 'ai') {
                 const fallback = buildResumeAiAnalysis(resumeAiState.text || '', resumeAiState.fileName, resumeAiState.template);
-                const result = Object.assign({}, fallback, resp.analysis, { source: resp.source || 'ai', application_overview: resp.application_summary || fallback.application_overview });
+                const result = Object.assign({}, fallback, resp.analysis, { source: resp.source || 'ai' });
                 window.resumeAiLastAttachmentText = String(resp.attachment_text || '');
                 renderResumeAiResult(result);
-                if (fileState) fileState.textContent = resp.ocr_attempted ? (resp.ocr_available ? '后端已识别文本' : '后端尝试识别，未启用 OCR') : (resp.source === 'ai' ? '后端已分析' : '已本地分析');
+                if (fileState) fileState.textContent = resp.ocr_attempted ? (resp.ocr_available ? '后端已识别文本' : '后端尝试识别，未启用 OCR') : '后端已分析';
+                if (resumeAiParseSlowTimer) {
+                    clearTimeout(resumeAiParseSlowTimer);
+                    resumeAiParseSlowTimer = null;
+                }
                 try{ hideParsingSkel(); }catch(e){}
-                if (window.showToast) window.showToast(resp.source === 'ai' ? '后端已完成简历解析' : '使用本地兜底结果', resp.source === 'ai' ? 'success' : 'info');
+                if (window.showToast) window.showToast('后端已完成简历解析', 'success');
                 return;
             }
 
-            throw new Error('解析失败');
+            setResumeAiAnalyzingState('正在分析，请稍候...');
+            if (resumeAiParseSlowTimer) {
+                clearTimeout(resumeAiParseSlowTimer);
+                resumeAiParseSlowTimer = null;
+            }
+            try{ hideParsingSkel(); }catch(e){}
+            if (window.showToast) window.showToast('正在分析，请稍候返回最终结果', 'info');
         }).catch(function(e){
             console.error('上传解析失败', e);
-            // 已经有本地预览，上传失败则保留本地结果并告知用户
-            if (fileState) fileState.textContent = '上传失败，已使用本地预览结果';
+            // 失败时也只保留“正在分析”状态，不展示本地分析结果
+            if (resumeAiParseSlowTimer) {
+                clearTimeout(resumeAiParseSlowTimer);
+                resumeAiParseSlowTimer = null;
+            }
+            setResumeAiAnalyzingState('正在分析，请稍候...');
             try{ hideParsingSkel(); }catch(er){}
-            if (window.showToast) window.showToast('后端解析失败，已使用本地兜底结果', 'info');
+            if (window.showToast) window.showToast('正在分析，请稍候', 'info');
         });
     })();
 }
@@ -1479,6 +1633,8 @@ function initResumeAiWorkbench() {
     const resetBtn = document.getElementById('resumeAiResetBtn');
     const textarea = document.getElementById('resumeAiText');
     const buttons = document.querySelectorAll('[data-resume-template]');
+    const exportPreviewBtn = document.getElementById('resumeAiExportPreviewBtn');
+    const exportDownloadBtn = document.getElementById('resumeAiExportDownloadBtn');
 
     if (!dropzone || !fileInput || !analyzeBtn || !resetBtn || !textarea) {
         return;
@@ -1516,11 +1672,19 @@ function initResumeAiWorkbench() {
         });
     });
 
-    runResumeAiAnalysis();
+    if (exportPreviewBtn) {
+        exportPreviewBtn.addEventListener('click', previewResumeAiExport);
+    }
+    if (exportDownloadBtn) {
+        exportDownloadBtn.addEventListener('click', downloadResumeAiExport);
+    }
+    setResumeAiExportDisabled(true);
+
 }
 
 initResumeAiWorkbench();
 
+// 注意：不在页面初始化时自动触发 `runResumeAiAnalysis()`，避免未上传文件时显示“正在分析”。
 // XHR 上传工具，用于显示上传进度
 function uploadWithProgress(url, formData, onProgress, onUploadComplete){
     return new Promise(function(resolve, reject){
@@ -1569,6 +1733,46 @@ function hideParsingSkel(){
     setTimeout(function(){ try{ el.style.display = 'none'; }catch(e){} }, 240);
 }
 
+function setResumeAiAnalyzingState(message) {
+    const scoreRing = document.getElementById('resumeAiScoreRing');
+    const score = document.getElementById('resumeAiScore');
+    const headline = document.getElementById('resumeAiHeadline');
+    const summary = document.getElementById('resumeAiSummary');
+    const structure = document.getElementById('resumeAiStructure');
+    const quant = document.getElementById('resumeAiQuant');
+    const keywords = document.getElementById('resumeAiKeywords');
+    const priority = document.getElementById('resumeAiPriority');
+    const strengths = document.getElementById('resumeAiStrengths');
+    const issues = document.getElementById('resumeAiIssues');
+    const fileState = document.getElementById('resumeAiFileState');
+    const ocrStatus = document.getElementById('resumeAiOcrStatus');
+    const ocrState = document.getElementById('resumeAiOcrState');
+    const ocrNote = document.getElementById('resumeAiOcrNote');
+    const ocrActions = document.getElementById('resumeAiOcrActions');
+
+    if (scoreRing) scoreRing.style.setProperty('--score', '0');
+    if (score) score.textContent = '--';
+    if (headline) headline.textContent = '正在分析';
+    if (summary) summary.textContent = message || '正在分析，请稍候...';
+    if (structure) structure.textContent = '分析中';
+    if (quant) quant.textContent = '分析中';
+    if (keywords) keywords.textContent = '分析中';
+    if (priority) priority.textContent = '分析中';
+    if (window.resumeAiLastResult) window.resumeAiLastResult = null;
+    setResumeAiExportDisabled(true);
+    clearResumeAiExportPreview();
+    populateResumeAiList(strengths, [], '分析中');
+    populateResumeAiList(issues, [], '分析中');
+    if (fileState) fileState.textContent = message || '正在分析';
+    if (ocrStatus && ocrState && ocrNote && ocrActions) {
+        ocrStatus.style.display = 'none';
+        ocrState.textContent = '正在分析';
+        ocrNote.textContent = '正在分析，请稍候...';
+        ocrActions.style.display = 'none';
+    }
+    if (exportNote) exportNote.textContent = '生成完成后可预览或下载 Word 文件。';
+}
+
 /* ===== Applications Logic (preserved) ===== */
 let currentApplicationId = null, applicationsData = [], editResumePreviewBlobUrl = null;
 function getResumeExtension(fn){ const p=String(fn||'').split('.'); return p.length>1?p.pop().toLowerCase():''; }
@@ -1587,12 +1791,28 @@ function truncateText(value, limit){
 function revokeEditResumePreviewBlobUrl(){ if(editResumePreviewBlobUrl){URL.revokeObjectURL(editResumePreviewBlobUrl); editResumePreviewBlobUrl=null;} }
 function clearEditResumeInlinePreview(){ revokeEditResumePreviewBlobUrl(); const p=document.getElementById('editResumeInlinePreview'); if(p){p.style.display='none';p.innerHTML='';} }
 
+function jumpToResumeUpload(){
+    const workbench = document.getElementById('resume-ai-workbench');
+    const dropzone = document.getElementById('resumeAiDropzone');
+    const fileInput = document.getElementById('resumeAiFileInput');
+    if (workbench && typeof workbench.scrollIntoView === 'function') {
+        workbench.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (dropzone) {
+        dropzone.classList.add('dragover');
+        window.setTimeout(function(){ dropzone.classList.remove('dragover'); }, 1400);
+    }
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
 function loadApplications(){
-    fetch('/api/applications').then(r=>r.json()).then(d=>{if(d.success){applicationsData=d.applications||[]; renderApplications(d.applications);}else document.getElementById('applicationsList').innerHTML='<div class="empty-state"><h3>加载失败</h3><p>请稍后重试</p></div>';}).catch(()=>{document.getElementById('applicationsList').innerHTML='<div class="empty-state"><h3>加载失败</h3><p>请稍后重试</p></div>';});
+    fetch('/api/applications').then(r=>r.json()).then(d=>{if(d.success){applicationsData=d.applications||[]; renderApplications(d.applications);}else document.getElementById('applicationsList').innerHTML='<div class="empty-state"><h3 class="text-primary" class="text-primary" class="text-primary">加载失败</h3><p>请稍后重试</p></div>';}).catch(()=>{document.getElementById('applicationsList').innerHTML='<div class="empty-state"><h3 class="text-primary" class="text-primary" class="text-primary">加载失败</h3><p>请稍后重试</p></div>';});
 }
 function renderApplications(apps){
     const c=document.getElementById('applicationsList');
-    if(!apps.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-inbox" style="font-size:48px;color:var(--text-muted);opacity:0.4;margin-bottom:16px;"></i><h3>暂无投递记录</h3><p>快去探索心仪的职位吧</p><a href="/jobs/search" class="btn-primary"><i class="fas fa-search"></i> 浏览职位</a></div>`;return;}
+    if(!apps.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-inbox" style="font-size:48px;color:var(--text-muted);opacity:0.4;margin-bottom:16px;"></i><h3 class="text-primary" class="text-primary" class="text-primary">暂无投递记录</h3><p>先上传简历做一次分析，再去浏览职位会更顺手。</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;"><a href="javascript:void(0)" class="btn-primary" onclick="jumpToResumeUpload();return false;"><i class="fas fa-cloud-arrow-up"></i> 去上传简历</a><a href="/jobs/search" class="btn-primary" style="background:transparent;border:1px solid var(--border-dim);"><i class="fas fa-search"></i> 浏览职位</a></div></div>`;return;}
     const sm={'submitted':{text:'已提交',class:'status-submitted'},'viewed':{text:'已查看',class:'status-viewed'},'interview':{text:'面试中',class:'status-interview'},'offer':{text:'已录用',class:'status-offer'},'rejected':{text:'已拒绝',class:'status-rejected'}};
     const counts = apps.reduce(function(acc, item){
         const key = item.status || 'submitted';
@@ -1639,7 +1859,7 @@ function renderApplications(apps){
         ].filter(Boolean).join('');
         const reason = truncateText(a.reason || '', 72) || '未填写申请理由';
         const otherInfo = truncateText(a.other_info || '', 72);
-        return `<div class="application-card" onclick="viewApplication(${a.id})"><div class="application-header"><div class="job-info"><h3>${escapeHtml(a.job_name||'未知职位')}</h3><p class="company-name">${escapeHtml(a.company_name||'未知公司')}</p><div class="application-chip-row">${chips}</div></div><div class="application-card-actions"><button class="chat-btn" onclick="event.stopPropagation();startChat(${a.id})"><i class="fas fa-comment"></i></button><span class="status-badge ${s.class}">${s.text}</span></div></div><div class="application-meta"><div class="meta-item"><div class="meta-label">投递时间</div><div class="meta-value">${escapeHtml(formatApplicationDate(a.applied_at))}</div></div><div class="meta-item"><div class="meta-label">期望薪资</div><div class="meta-value">${escapeHtml(a.expected_salary||'面议')}</div></div><div class="meta-item"><div class="meta-label">快速印象</div><div class="meta-value">${escapeHtml(a.status==='interview'?'值得重点跟进':a.status==='offer'?'已收获机会':a.status==='rejected'?'建议复盘岗位匹配度':'持续关注进展')}</div></div></div><div class="application-reason"><strong>申请理由：</strong>${escapeHtml(reason)}</div>${otherInfo ? `<div class="application-reason"><strong>补充信息：</strong>${escapeHtml(otherInfo)}</div>` : ''}<div class="application-card-footer"><span class="application-card-hint">点击卡片查看完整详情</span><span class="application-card-hint">聊天入口已保留在右侧</span></div></div>`;}).join('');
+        return `<div class="application-card" onclick="viewApplication(${a.id})"><div class="application-header"><div class="job-info"><h3 class="text-primary" class="text-primary" class="text-primary">${escapeHtml(a.job_name||'未知职位')}</h3><p class="company-name">${escapeHtml(a.company_name||'未知公司')}</p><div class="application-chip-row">${chips}</div></div><div class="application-card-actions"><button class="chat-btn" onclick="event.stopPropagation();startChat(${a.id})"><i class="fas fa-comment"></i></button><span class="status-badge ${s.class}">${s.text}</span></div></div><div class="application-meta"><div class="meta-item"><div class="meta-label">投递时间</div><div class="meta-value">${escapeHtml(formatApplicationDate(a.applied_at))}</div></div><div class="meta-item"><div class="meta-label">期望薪资</div><div class="meta-value">${escapeHtml(a.expected_salary||'面议')}</div></div><div class="meta-item"><div class="meta-label">快速印象</div><div class="meta-value">${escapeHtml(a.status==='interview'?'值得重点跟进':a.status==='offer'?'已收获机会':a.status==='rejected'?'建议复盘岗位匹配度':'持续关注进展')}</div></div></div><div class="application-reason"><strong>申请理由：</strong>${escapeHtml(reason)}</div>${otherInfo ? `<div class="application-reason"><strong>补充信息：</strong>${escapeHtml(otherInfo)}</div>` : ''}<div class="application-card-footer"><span class="application-card-hint">点击卡片查看完整详情</span><span class="application-card-hint">聊天入口已保留在右侧</span></div></div>`;}).join('');
 }
 function viewApplication(id){
     currentApplicationId=id;

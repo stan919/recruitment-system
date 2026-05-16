@@ -1,429 +1,150 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户登录 - 职引未来</title>
-    <link rel="stylesheet" href="/static/css/global.css">
-    <style>
-        body {
-            font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-            background: var(--bg-primary);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .bg-decoration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .bg-decoration::before {
-            content: '';
-            position: absolute;
-            top: -20%;
-            left: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(var(--color-brand-rgb), 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
-        }
-
-        .bg-decoration::after {
-            content: '';
-            position: absolute;
-            bottom: -20%;
-            right: -10%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(var(--color-brand-rgb), 0.06) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(60px);
-        }
-
-        .login-wrapper {
-            width: 320px;
-            text-align: center;
-            padding: 40px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .logo {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 24px;
-            color: var(--color-brand);
-            filter: none;
-        }
-
-        .login-header {
-            margin-bottom: 32px;
-        }
-
-        .login-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .login-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-light);
-            border-radius: 9999px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-            background: var(--bg-primary);
-        }
-
-        .form-control:focus {
-            border-color: var(--color-brand);
-            background: var(--bg-primary);
-        }
-
-        .form-control::placeholder {
-            color: var(--text-muted);
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: var(--color-brand);
-            color: var(--color-brand-contrast);
-            border: none;
-            border-radius: 9999px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, filter 0.2s;
-            margin-top: 8px;
-        }
-
-        .btn-login:hover {
-            opacity: 0.92;
-            filter: brightness(0.98);
-        }
-
-        .btn-login:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .terms {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin: 16px 0;
-        }
-
-        .terms a {
-            color: var(--text-main);
-            text-decoration: underline;
-        }
-
-        .login-footer {
-            margin-top: 16px;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .login-footer a {
-            color: var(--text-main);
-            text-decoration: underline;
-            font-weight: 600;
-        }
-
-        .mode-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #9aa3b2;
-            cursor: pointer;
-        }
-
-        .mode-label input {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            margin: 0;
-            border: 1px solid #e2e6ee;
-            border-radius: 4px;
-            background: #fafbfc;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .mode-label input::after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 4px;
-            height: 8px;
-            border: solid #ffffff;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg) scale(0);
-            transition: transform 0.15s ease;
-        }
-
-        .mode-label input:checked {
-            background: #d9deea;
-            border-color: #d9deea;
-        }
-
-        .mode-label input:checked::after {
-            transform: rotate(45deg) scale(1);
-        }
-
-        .mode-row {
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .btn-ghost {
-            margin-left: 10px;
-            padding: 10px 24px;
-            border: 1px solid var(--border-light);
-            border-radius: 9999px;
-            background: var(--bg-primary);
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, background-color 0.2s;
-        }
-
-        .btn-ghost:hover {
-            opacity: 0.92;
-            background: var(--bg-secondary);
-        }
-
-        .error-message {
-            color: #e53e3e;
-            font-size: 13px;
-            display: none;
-            margin-bottom: 16px;
-            font-weight: 500;
-            letter-spacing: -0.01em;
-            text-align: center;
-        }
-
-        .success-message {
-            display: none;
-        }
-
-        /* 响应式 */
-        @media (max-width: 480px) {
-            .login-wrapper {
-                width: 100%;
-                max-width: 320px;
-                padding: 20px;
-            }
-
-            .mode-row {
-                gap: 16px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户登录 — 职引未来 MERIDIAN CAREER</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/global.css">
+<link rel="stylesheet" href="/static/css/auth.css">
 </head>
 <body>
-    <!-- 背景装饰 -->
-    <div class="bg-decoration"></div>
-    
-    <div class="login-wrapper">
-        {% if already_logged_in %}
-        <!-- 已登录状态 -->
-        <div class="login-header">
-            <!-- 毕业帽 SVG 图标 -->
-            <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 4L4 14L24 24L44 14L24 4Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 15V22C6 22 12 26 24 26C36 26 42 22 42 22V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M22 26V34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M12 38H36" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h1 class="login-title">已登录</h1>
-            <p class="login-subtitle">您已成功登录，当前用户：{{ session.get('username', '用户') }}</p>
+    <!-- 背景 -->
+    <div class="auth-bg"></div>
+    <div class="auth-overlay"></div>
+
+    <!-- 品牌标识 -->
+    <a href="/" class="auth-brand">
+        <div class="auth-brand-logo">M</div>
+        <div class="auth-brand-text">
+            <span>职引未来</span>
+            <span class="auth-brand-en">MERIDIAN CAREER</span>
         </div>
-        <div class="success-message" style="display: block; background: #f7faf7; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #d9ead9;">
-            <svg style="width: 24px; height: 24px; display: block; margin: 0 auto 8px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 6L9 17L4 12" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <p style="margin: 0; color: #2E7D32; font-weight: 600;">登录成功</p>
+    </a>
+
+    {% if already_logged_in %}
+    <div class="auth-card" data-reveal>
+        <div class="auth-card-icon"><i class="fas fa-check-circle"></i></div>
+        <h1 class="auth-title">已登录</h1>
+        <p class="auth-subtitle">您已成功登录，当前用户：{{ session.get('username', '用户') }}</p>
+        <button onclick="logout()" class="auth-btn-primary">退出登录</button>
+    </div>
+    {% else %}
+    <div class="auth-card" data-reveal>
+        <div class="auth-card-header">
+            <div class="auth-card-badge">WELCOME</div>
+            <h1 class="auth-title">You Belong Here</h1>
+            <p class="auth-subtitle">登录到职引未来，开启你的职业旅程</p>
         </div>
-        <button onclick="logout()" class="btn-login">退出登录</button>
-        {% else %}
-        <!-- 未登录状态 -->
-        <div class="login-header">
-            <!-- 毕业帽 SVG 图标 -->
-            <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 4L4 14L24 24L44 14L24 4Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 15V22C6 22 12 26 24 26C36 26 42 22 42 22V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M22 26V34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M12 38H36" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <h1 class="login-title">You Belong Here</h1>
-        </div>
-        
-        <div id="errorMessage" class="error-message"></div>
-        
+
+        <div id="errorMessage" class="auth-error"></div>
+
         <form id="loginForm">
-            <div class="form-group">
-                <input type="text" id="username" class="form-control" placeholder="手机号 / 邮箱 / 用户名" required>
+            <div class="auth-field">
+                <label class="auth-label"><i class="fas fa-user"></i> 账号</label>
+                <input type="text" id="username" class="auth-input" placeholder="手机号 / 邮箱 / 用户名" required>
             </div>
-            
-            <div class="form-group">
-                <input type="password" id="password" class="form-control" placeholder="密码" required>
+
+            <div class="auth-field">
+                <label class="auth-label"><i class="fas fa-lock"></i> 密码</label>
+                <input type="password" id="password" class="auth-input" placeholder="输入密码" required>
             </div>
-            
-            <div class="form-group mode-row">
-                <label class="mode-label">
+
+            <div class="auth-mode-row">
+                <label class="auth-check">
                     <input type="checkbox" id="companyLogin">
+                    <span class="auth-check-mark"></span>
                     <span>企业登录</span>
                 </label>
-                <label class="mode-label">
+                <label class="auth-check">
                     <input type="checkbox" id="adminLogin">
+                    <span class="auth-check-mark"></span>
                     <span>管理员登录</span>
                 </label>
             </div>
-            
-            <button type="submit" class="btn-login" id="loginBtn">Continue</button>
+
+            <button type="submit" class="auth-btn-primary" id="loginBtn">
+                <span>Continue</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
         </form>
-        
-        <div class="login-footer">
-            <a href="{{ url_for('register') }}" style="display: none;">免费注册</a>
-            <button onclick="enterPlatform()" class="btn-ghost">进入平台</button>
+
+        <div class="auth-footer">
+            <span>还没有账号？</span>
+            <a href="{{ url_for('register') }}">免费注册</a>
+            <span class="auth-footer-divider">|</span>
+            <button onclick="enterPlatform()" class="auth-link-btn">进入平台</button>
         </div>
-        {% endif %}
     </div>
-    
+    {% endif %}
+
     <script>
-        // 进入平台
-        function enterPlatform() {
-            window.location.href = '/';
-        }
-        
-        // 退出登录
+        function enterPlatform() { window.location.href = '/'; }
+
         function logout() {
             fetch('/api/logout', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.removeItem('user');
-                        window.location.reload();
-                    }
-                });
+                .then(r => r.json())
+                .then(data => { if (data.success) { localStorage.removeItem('user'); window.location.reload(); } });
         }
-        
-        // 复选框互斥逻辑
+
         document.addEventListener('DOMContentLoaded', function() {
             const companyLogin = document.getElementById('companyLogin');
             const adminLogin = document.getElementById('adminLogin');
-            
-            // 当勾选企业登录时，自动取消管理员登录
-            companyLogin.addEventListener('change', function() {
-                if (this.checked) {
-                    adminLogin.checked = false;
-                }
-            });
-            
-            // 当勾选管理员登录时，自动取消企业登录
-            adminLogin.addEventListener('change', function() {
-                if (this.checked) {
-                    companyLogin.checked = false;
-                }
-            });
-        });
+            if (companyLogin && adminLogin) {
+                companyLogin.addEventListener('change', function() { if (this.checked) adminLogin.checked = false; });
+                adminLogin.addEventListener('change', function() { if (this.checked) companyLogin.checked = false; });
+            }
 
-        // 登录表单提交
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const isCompany = document.getElementById('companyLogin').checked;
-            const isAdmin = document.getElementById('adminLogin').checked;
-            
-            const loginBtn = document.getElementById('loginBtn');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            // 重置错误信息
-            errorMessage.style.display = 'none';
-            
-            // 禁用按钮
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Loading...';
-            
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        is_company: isCompany,
-                        is_admin: isAdmin
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    // 登录成功，直接跳转
-                    if (data.user) {
-                        localStorage.setItem('user', JSON.stringify(data.user));
+            const form = document.getElementById('loginForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    const isCompany = document.getElementById('companyLogin').checked;
+                    const isAdmin = document.getElementById('adminLogin').checked;
+                    const btn = document.getElementById('loginBtn');
+                    const err = document.getElementById('errorMessage');
+                    err.style.display = 'none';
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                    try {
+                        const resp = await fetch('/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password, is_company: isCompany, is_admin: isAdmin })
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && data.success) {
+                            if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+                            window.location.href = data.redirect || '/';
+                        } else {
+                            err.textContent = data.message || '账号或密码错误';
+                            err.style.display = 'block';
+                            btn.disabled = false;
+                            btn.innerHTML = '<span>Continue</span> <i class="fas fa-arrow-right"></i>';
+                        }
+                    } catch (error) {
+                        err.textContent = '网络错误，请稍后重试';
+                        err.style.display = 'block';
+                        btn.disabled = false;
+                        btn.innerHTML = '<span>Continue</span> <i class="fas fa-arrow-right"></i>';
                     }
-                    
-                    // 直接跳转，不显示提示
-                    window.location.href = data.redirect || '/';
-                } else {
-                    // 登录失败
-                    errorMessage.textContent = data.message || '账号或密码错误';
-                    errorMessage.style.display = 'block';
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Continue';
-                }
-            } catch (error) {
-                errorMessage.textContent = '网络错误，请稍后重试';
-                errorMessage.style.display = 'block';
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Continue';
+                });
             }
         });
+
+        /* Scroll reveal */
+        (function(){
+            const els = document.querySelectorAll('[data-reveal]');
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(entry => { if(entry.isIntersecting) { entry.target.classList.add('revealed'); obs.unobserve(entry.target); } });
+            }, {threshold:0.1});
+            els.forEach(el => obs.observe(el));
+        })();
     </script>
 </body>
 </html>

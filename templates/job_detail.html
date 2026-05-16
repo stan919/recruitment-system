@@ -1,1413 +1,667 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.2/dist/docx-preview.min.js"></script>
-    <title>职位详情 - 职引未来</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background: #f7f7fb;
-            min-height: 100vh;
-            color: #1f1f29;
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 48px;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #ececf2;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 40px;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #646373;
-            font-size: 15px;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: #4f46e5;
-        }
-
-        .back-btn {
-            padding: 9px 20px;
-            background: #ffffff;
-            color: #4f46e5;
-            border: 1px solid #dcdcec;
-            border-radius: 999px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .back-btn:hover {
-            border-color: #c9c8de;
-            color: #3730a3;
-        }
-
-        .container {
-            max-width: 1320px;
-            margin: 108px auto 64px;
-            padding: 0 20px;
-        }
-
-        body.embedded-mode {
-            background: #fff;
-            min-height: auto;
-        }
-
-        body.embedded-mode .navbar {
-            display: none;
-        }
-
-        body.embedded-mode .container {
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        body.embedded-mode .job-detail-card {
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
-        }
-
-        body.embedded-mode .job-main-layout {
-            padding-bottom: 14px;
-        }
-
-        body.embedded-mode .apply-inline {
-            display: none;
-        }
-
-        .job-detail-card {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #ebebf2;
-            box-shadow: 0 6px 20px rgba(25, 25, 35, 0.05);
-            overflow: hidden;
-        }
-
-        .job-hero {
-            position: relative;
-            padding: 30px 32px 24px;
-            background: #ffffff;
-            border-bottom: 1px solid #f1f1f5;
-        }
-
-        .job-title {
-            font-size: 30px;
-            font-weight: 700;
-            color: #1f1f29;
-            margin-bottom: 10px;
-        }
-
-        .job-company {
-            font-size: 18px;
-            color: #666577;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .company-tag {
-            background: #f4f3f8;
-            color: #5a5768;
-            padding: 5px 12px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .job-meta {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-top: 0;
-        }
-
-        .meta-item {
-            background: #fafafc;
-            border: 1px solid #efeff5;
-            padding: 14px;
-            border-radius: 10px;
-        }
-
-        .meta-label {
-            font-size: 12px;
-            color: #7c7a89;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .meta-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2a2934;
-        }
-
-        .salary-highlight {
-            font-size: 22px;
-            font-weight: 700;
-            color: #4f46e5;
-        }
-
-        .job-main-layout {
-            padding: 22px 32px 28px;
-        }
-
-        .job-content {
-            min-width: 0;
-        }
-
-        .job-section {
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #1f1f29;
-            display: flex;
-            align-items: center;
-            gap: 0;
-        }
-
-        .job-description {
-            font-size: 15px;
-            line-height: 1.8;
-            color: #3e3d4a;
-            padding: 16px;
-            background: #fafafc;
-            border-radius: 10px;
-            border: 1px solid #efeff5;
-        }
-
-        .skill-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .skill-tag {
-            background: #f4f3f8;
-            color: #575467;
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid #e8e6ef;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-            cursor: default;
-        }
-
-        .skill-tag:hover {
-            border-color: #d8d6e3;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .info-item {
-            padding: 12px 14px;
-            background: #fafafc;
-            border: 1px solid #efeff5;
-            border-radius: 10px;
-        }
-
-        .info-label {
-            font-size: 12px;
-            color: #7d7b89;
-            margin-bottom: 4px;
-            font-weight: 500;
-        }
-
-        .info-value {
-            font-size: 15px;
-            color: #2d2b38;
-            font-weight: 600;
-        }
-
-        .apply-btn {
-            width: 100%;
-            padding: 12px 14px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .apply-btn:hover {
-            background: #4338ca;
-        }
-
-        .apply-inline {
-            margin-top: 16px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 80px 20px;
-            color: #999;
-            font-size: 18px;
-        }
-
-        @media (max-width: 1024px) {
-            .job-meta {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 14px 16px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .container {
-                margin-top: 88px;
-                padding: 0 12px;
-            }
-
-            .job-hero {
-                padding: 24px 18px 20px;
-            }
-
-            .job-title {
-                font-size: 28px;
-            }
-
-            .job-main-layout {
-                padding: 18px 14px 22px;
-            }
-
-            .job-meta,
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .resume-preview-body {
-                height: 52vh;
-            }
-
-            .resume-preview-header {
-                padding: 10px 12px;
-            }
-
-            .resume-preview-title {
-                font-size: 14px;
-            }
-        }
-
-        /* 弹窗样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 700px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 32px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .modal-header h2 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .close {
-            font-size: 28px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .close:hover {
-            color: #1a1a1a;
-        }
-
-        .modal-body {
-            padding: 32px;
-        }
-
-        .step {
-            margin-bottom: 32px;
-        }
-
-        .step-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #1a1a1a;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .step-number {
-            width: 24px;
-            height: 24px;
-            background: #666;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #1a1a1a;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .upload-area {
-            border: 2px dashed #e0e0e0;
-            border-radius: 12px;
-            padding: 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .upload-area:hover {
-            border-color: #1a1a1a;
-            background: #f5f5f5;
-        }
-
-        .upload-area.has-file {
-            border-color: #1a1a1a;
-            background: #f5f5f5;
-        }
-
-        .upload-icon {
-            font-size: 32px;
-            color: #666;
-            margin-bottom: 12px;
-        }
-
-        .upload-text {
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .upload-hint {
-            font-size: 13px;
-            color: #999;
-        }
-
-        .file-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            background: #f8f7ff;
-            border-radius: 10px;
-            margin-top: 16px;
-        }
-
-        .file-name {
-            color: #1a1a1a;
-            font-weight: 600;
-        }
-
-        .remove-file {
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .resume-inline-preview {
-            margin-top: 12px;
-            display: none;
-        }
-
-        .resume-preview-card {
-            border: 1px solid #dedcf0;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #f8f8ff;
-        }
-
-        .resume-preview-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 14px;
-            border-bottom: 1px solid #e8e6f6;
-            background: #f2f1fc;
-        }
-
-        .resume-preview-title {
-            font-size: 15px;
-            color: #2f2d3a;
-            font-weight: 600;
-            max-width: calc(100% - 90px);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .resume-preview-close {
-            border: none;
-            background: transparent;
-            color: #4f46e5;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .resume-preview-body {
-            height: 420px;
-            overflow: auto;
-            background: #fff;
-        }
-
-        .resume-preview-body iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .resume-preview-loading,
-        .resume-preview-error,
-        .resume-preview-tip {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 180px;
-            text-align: center;
-            padding: 16px;
-            color: #5b5967;
-            font-size: 14px;
-        }
-
-        .resume-preview-error {
-            color: #c53030;
-        }
-
-        .resume-preview-word {
-            padding: 14px;
-            background: #fff;
-            min-height: 100%;
-            font-size: 15px;
-            line-height: 1.8;
-            color: #2f2d3a;
-        }
-
-        .resume-preview-word table {
-            width: 100% !important;
-        }
-
-        .resume-preview-word p {
-            margin: 0 0 10px;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .btn-cancel,
-        .btn-submit {
-            padding: 12px 32px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-
-        .btn-cancel {
-            background: #f5f5f5;
-            color: #666;
-        }
-
-        .btn-cancel:hover {
-            background: #e5e5e5;
-        }
-
-        .btn-submit {
-            background: #1a1a1a;
-            color: white;
-        }
-
-        .btn-submit:hover {
-            background: #333;
-        }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>职位详情 — 职引未来 MERIDIAN CAREER</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/global.css">
+<script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.2/dist/docx-preview.min.js"></script>
+<style>
+/* ===== Navigation Bar ===== */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    height: 80px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.3s;
+}
+.navbar.scrolled { background: rgba(10,10,15,0.95); }
+.navbar-inner {
+    max-width: var(--container-max); margin: 0 auto; padding: 0 24px;
+    height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-square {
+    width: 36px; height: 36px; border: 2px solid var(--bronze);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px;
+    color: var(--bronze); letter-spacing: 0; line-height: 1;
+}
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-text-cn { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.logo-text-en { font-size: 11px; font-weight: 500; color: var(--bronze); letter-spacing: 0.15em; text-transform: uppercase; }
+.nav-center { display: flex; align-items: center; gap: 6px; }
+.nav-link {
+    position: relative; padding: 8px 18px;
+    font-size: 14px; font-weight: 500; color: var(--text-secondary);
+    text-decoration: none; border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    cursor: pointer; white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+.nav-link i { font-size: 10px; margin-left: 4px; transition: transform 0.2s; }
+.nav-link:hover i { transform: rotate(180deg); }
+.dropdown { position: relative; }
+.dropdown-menu {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-8px);
+    background: var(--slate); border: 1px solid var(--border-dim); border-radius: 12px;
+    padding: 8px; min-width: 200px; opacity: 0; visibility: hidden;
+    transition: all 0.25s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    pointer-events: none;
+}
+.dropdown:hover .dropdown-menu, .dropdown-menu:hover {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.dropdown-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+    color: var(--text-secondary); text-decoration: none; border-radius: 8px;
+    font-size: 14px; transition: all 0.2s;
+}
+.dropdown-item:hover { background: rgba(201,169,110,0.1); color: var(--bronze); }
+.dropdown-item i { width: 20px; text-align: center; font-size: 14px; color: var(--bronze); }
+.dropdown-divider { height: 1px; background: var(--border-dim); margin: 4px 8px; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.auth-btn { padding: 8px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; font-family: inherit; border: none; }
+.auth-btn-primary { background: var(--bronze); color: var(--obsidian); }
+.auth-btn-primary:hover { background: var(--bronze-light); }
+.auth-btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-dim); }
+.auth-btn-ghost:hover { border-color: var(--bronze); color: var(--bronze); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+.hamburger span { display: block; width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.3s; }
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+.mobile-menu {
+    display: none; position: fixed; top: 80px; left: 0; right: 0;
+    background: rgba(10,10,15,0.98); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-dim);
+    padding: 16px 24px; z-index: 999;
+    transform: translateY(-100%); opacity: 0; transition: all 0.3s ease;
+    pointer-events: none;
+}
+.mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.mobile-link { display: block; padding: 14px 0; color: var(--text-secondary); text-decoration: none; font-size: 15px; border-bottom: 1px solid var(--border-dim); transition: color 0.2s; }
+.mobile-link:last-child { border-bottom: none; }
+.mobile-link:hover { color: var(--bronze); }
+
+/* ===== Page Layout ===== */
+body {
+    background: var(--obsidian);
+    min-height: 100vh;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+}
+.page-wrap { padding-top: 80px; }
+.page-header {
+    padding: 48px 0 24px; text-align: center;
+}
+.page-header .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid rgba(201,169,110,0.3); color: var(--bronze);
+    padding: 6px 20px; border-radius: 9999px; font-size: 11px; letter-spacing: 0.15em;
+    font-weight: 500; margin-bottom: 16px; font-family: 'Inter', sans-serif;
+}
+.back-nav {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text-secondary); text-decoration: none; font-size: 14px;
+    transition: color 0.2s; margin-bottom: 24px;
+}
+.back-nav:hover { color: var(--bronze); }
+.back-nav i { font-size: 14px; }
+
+/* ===== Job Detail Card ===== */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+body.embedded-mode { background: var(--obsidian); min-height: auto; }
+body.embedded-mode .navbar { display: none; }
+body.embedded-mode .page-wrap { padding-top: 0; }
+body.embedded-mode .container { max-width: 100%; margin: 0; padding: 0; }
+body.embedded-mode .job-detail-card { border: none; border-radius: 0; box-shadow: none; }
+body.embedded-mode .apply-inline { display: none; }
+
+.job-detail-card {
+    background: var(--slate);
+    border-radius: 20px;
+    border: 1px solid var(--border-dim);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+.job-hero {
+    position: relative;
+    padding: 32px 36px 24px;
+    background: var(--slate);
+    border-bottom: 1px solid var(--border-light);
+}
+.job-title {
+    font-size: 30px; font-weight: 700; margin-bottom: 10px;
+}
+.job-company {
+    font-size: 18px; color: var(--text-secondary);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.company-tag {
+    background: var(--graphite); color: var(--text-secondary);
+    padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+}
+.job-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.meta-item {
+    background: var(--graphite); border: 1px solid var(--border-light);
+    padding: 14px; border-radius: 10px;
+}
+.meta-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.meta-value { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.salary-highlight { font-size: 22px; font-weight: 700; color: var(--bronze); font-family: 'Inter', sans-serif; }
+.job-main-layout { padding: 24px 36px 28px; }
+.job-section { margin-bottom: 24px; }
+.section-title { font-size: 17px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.section-title i { color: var(--bronze); font-size: 16px; }
+.job-description {
+    font-size: 15px; line-height: 1.8; color: var(--text-primary);
+    padding: 16px; background: var(--graphite);
+    border-radius: 12px; border: 1px solid var(--border-light);
+}
+.skill-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.skill-tag {
+    background: var(--graphite); color: var(--text-secondary);
+    padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border-light);
+    font-size: 13px; font-weight: 500; transition: all 0.2s; cursor: default;
+}
+.skill-tag:hover { border-color: var(--bronze); }
+.info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.info-item { padding: 12px 14px; background: var(--graphite); border: 1px solid var(--border-light); border-radius: 10px; }
+.info-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+.info-value { font-size: 15px; color: var(--text-primary); font-weight: 600; }
+.apply-btn {
+    width: 100%; padding: 14px;
+    background: var(--bronze-gradient); color: var(--obsidian);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.apply-btn:hover { box-shadow: 0 4px 16px rgba(201,169,110,0.3); transform: translateY(-1px); }
+.apply-inline { margin-top: 20px; }
+.loading { text-align: center; padding: 80px 20px; color: var(--text-muted); font-size: 18px; }
+
+/* ===== Modal ===== */
+.modal {
+    display: none; position: fixed; z-index: 2000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center; justify-content: center;
+}
+.modal-content {
+    background: var(--slate); border: 1px solid var(--border-dim);
+    border-radius: 20px; width: 90%; max-width: 700px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 32px; border-bottom: 1px solid var(--border-light);
+}
+.modal-header h2 { font-size: 22px; font-weight: 600; }
+.close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+.close:hover { color: var(--text-primary); }
+.modal-body { padding: 32px; }
+.step { margin-bottom: 32px; }
+.step-title {
+    font-size: 17px; font-weight: 600; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+}
+.step-number {
+    width: 24px; height: 24px; background: var(--bronze); color: var(--obsidian);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold;
+}
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 12px 16px; border: 1px solid var(--border-dim);
+    border-radius: 10px; font-size: 15px; font-family: inherit; outline: none;
+    transition: all 0.2s; background: var(--graphite); color: var(--text-primary);
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--bronze); box-shadow: 0 0 0 2px rgba(201,169,110,0.2);
+}
+.form-group textarea { resize: vertical; min-height: 100px; }
+.form-group select option { background: var(--slate); color: var(--text-primary); }
+.upload-area {
+    border: 2px dashed var(--border-dim); border-radius: 12px;
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: all 0.3s;
+}
+.upload-area:hover { border-color: var(--bronze); background: var(--graphite); }
+.upload-area.has-file { border-color: var(--bronze); background: rgba(201,169,110,0.06); }
+.upload-icon { font-size: 32px; margin-bottom: 12px; }
+.upload-text { color: var(--text-secondary); margin-bottom: 8px; }
+.upload-hint { font-size: 13px; color: var(--text-muted); }
+.file-info {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px; background: rgba(201,169,110,0.06);
+    border: 1px solid rgba(201,169,110,0.15); border-radius: 10px; margin-top: 16px;
+}
+.file-name { color: var(--text-primary); font-weight: 600; }
+.remove-file { color: #f87171; cursor: pointer; font-size: 14px; }
+.resume-inline-preview { margin-top: 12px; display: none; }
+.resume-preview-card { border: 1px solid var(--border-dim); border-radius: 12px; overflow: hidden; background: var(--graphite); }
+.resume-preview-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border-light); background: var(--graphite); }
+.resume-preview-title { font-size: 15px; color: var(--text-primary); font-weight: 600; max-width: calc(100% - 90px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resume-preview-close { border: none; background: transparent; color: var(--bronze); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.resume-preview-body { height: 420px; overflow: auto; background: var(--obsidian); }
+.resume-preview-body iframe { width: 100%; height: 100%; border: none; }
+.resume-preview-loading, .resume-preview-error, .resume-preview-tip { display: flex; align-items: center; justify-content: center; min-height: 180px; text-align: center; padding: 16px; color: var(--text-secondary); font-size: 14px; }
+.resume-preview-error { color: #f87171; }
+.resume-preview-word { padding: 14px; background: var(--obsidian); min-height: 100%; font-size: 15px; line-height: 1.8; color: var(--text-primary); }
+.resume-preview-word table { width: 100% !important; }
+.resume-preview-word p { margin: 0 0 10px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-light); }
+.btn-cancel, .btn-submit { padding: 12px 32px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-family: inherit; }
+.btn-cancel { background: var(--graphite); color: var(--text-secondary); }
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.btn-submit { background: var(--bronze-gradient); color: var(--obsidian); font-weight: 700; }
+.btn-submit:hover { box-shadow: 0 4px 16px rgba(201,169,110,0.3); transform: translateY(-1px); }
+
+/* ===== Footer ===== */
+.footer {
+    background: var(--slate); border-top: 1px solid var(--border-light);
+    padding: 64px 0 0; margin-top: 80px;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+.footer-brand .logo { margin-bottom: 16px; }
+.footer-desc { font-size: 14px; color: var(--text-muted); line-height: 1.8; max-width: 320px; margin-bottom: 24px; }
+.footer-socials { display: flex; gap: 12px; }
+.footer-social {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-dim);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); text-decoration: none;
+    transition: all 0.2s; font-size: 16px;
+}
+.footer-social:hover { background: var(--bronze); color: var(--obsidian); border-color: var(--bronze); }
+.footer-col-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; }
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { margin-bottom: 12px; }
+.footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.footer-links a:hover { color: var(--bronze); }
+.footer-contact p { font-size: 14px; color: var(--text-muted); margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.footer-contact i { color: var(--bronze); width: 16px; }
+.footer-bottom { margin-top: 48px; padding: 24px 0; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-bottom p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.footer-bottom-links { display: flex; gap: 20px; }
+.footer-bottom-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+.footer-bottom-links a:hover { color: var(--bronze); }
+
+@media (max-width: 1024px) { .job-meta { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 1023px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 767px) {
+    .nav-center { display: none; }
+    .nav-right .auth-btn { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: block; }
+    .container { padding: 0 16px; }
+    .job-hero { padding: 24px 18px 20px; }
+    .job-title { font-size: 26px; }
+    .job-main-layout { padding: 18px 14px 22px; }
+    .job-meta, .info-grid { grid-template-columns: 1fr; }
+    .resume-preview-body { height: 52vh; }
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+}
+</style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="logo">
-            职引未来
-        </div>
-        <div class="nav-links">
-            <a href="/">首页</a>
-            <a href="/jobs/search">职位搜索</a>
-            <a href="/insights">数据洞察</a>
-        </div>
-        <button class="back-btn" onclick="goBack()">← 返回</button>
-    </nav>
 
-    <!-- 主内容区 -->
+<!-- ===== Navigation Bar ===== -->
+<nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+        <a href="/" class="logo">
+            <div class="logo-square">M</div>
+            <div class="logo-text">
+                <span class="logo-text-cn">职引未来</span>
+                <span class="logo-text-en">MERIDIAN CAREER</span>
+            </div>
+        </a>
+        <div class="nav-center">
+            <a class="nav-link" href="/">首页</a>
+            <div class="dropdown">
+                <a class="nav-link"><span>平台功能</span> <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/insights"><i class="fas fa-chart-bar"></i> 数据洞察</a>
+                    <a class="dropdown-item" href="/jobs/search"><i class="fas fa-search"></i> 职位搜索</a>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/chat/user"><i class="fas fa-comment-dots"></i> 消息中心</a>
+                    <a class="dropdown-item" href="/applications"><i class="fas fa-file-alt"></i> 投递中心</a>
+                    {% endif %}
+                </div>
+            </div>
+            <a class="nav-link" href="/jobs/search">职位搜索</a>
+            <a class="nav-link" href="/insights">数据洞察</a>
+        </div>
+        <div class="nav-right">
+            {% if session.get('user_id') %}
+                {% if session.get('is_admin') %}
+                <a href="/admin" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-shield-alt"></i> 管理后台</a>
+                {% elif session.get('is_company') %}
+                <a href="/company" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-building"></i> 企业后台</a>
+                {% else %}
+                <a href="/profile" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;"><i class="fas fa-user"></i> 个人中心</a>
+                <button class="auth-btn auth-btn-primary" onclick="logout()" style="padding:8px 18px;font-size:12px;">退出</button>
+                {% endif %}
+            {% else %}
+                <a href="/login" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;">登录</a>
+                <a href="/register" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;">注册</a>
+            {% endif %}
+            <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="菜单">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+        <a class="mobile-link" href="/" onclick="closeMobileMenu()">首页</a>
+        <a class="mobile-link" href="/jobs/search" onclick="closeMobileMenu()">职位搜索</a>
+        <a class="mobile-link" href="/insights" onclick="closeMobileMenu()">数据洞察</a>
+        {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+        <a class="mobile-link" href="/chat/user" onclick="closeMobileMenu()">消息中心</a>
+        <a class="mobile-link" href="/applications" onclick="closeMobileMenu()">投递中心</a>
+        {% endif %}
+        {% if not session.get('user_id') %}
+        <a class="mobile-link" href="/login" onclick="closeMobileMenu()">登录</a>
+        <a class="mobile-link" href="/register" onclick="closeMobileMenu()">注册</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="page-wrap">
     <div class="container">
-        <div id="jobDetail">
-            <div class="loading">加载中...</div>
+        <div data-reveal>
+            <a href="/jobs/search" class="back-nav"><i class="fas fa-arrow-left"></i> 返回职位列表</a>
+        </div>
+        <div id="jobDetail" data-reveal>
+            <div class="loading"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>加载中...</div>
         </div>
     </div>
+</div>
 
-    <!-- 申请弹窗 -->
-    <div id="applicationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>申请职位</h2>
-                <span class="close" onclick="closeApplicationModal()">&times;</span>
+<!-- ===== Application Modal ===== -->
+<div id="applicationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-paper-plane" style="color:var(--bronze);margin-right:8px;"></i>申请职位</h2>
+            <span class="close" onclick="closeApplicationModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="step">
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">1</span>基本信息</h3>
+                <div class="form-group"><label>姓名 *</label><input type="text" id="name" placeholder="请输入姓名" required></div>
+                <div class="form-group"><label>手机号 *</label><input type="tel" id="phone" placeholder="请输入手机号" required></div>
+                <div class="form-group"><label>邮箱 *</label><input type="email" id="email" placeholder="请输入邮箱" required></div>
+                <div class="form-group">
+                    <label>学历</label>
+                    <select id="education"><option value="">请选择</option><option value="高中">高中</option><option value="大专">大专</option><option value="本科">本科</option><option value="硕士">硕士</option><option value="博士">博士</option></select>
+                </div>
+                <div class="form-group"><label>毕业年份</label><input type="number" id="graduation_year" placeholder="如：2024" min="2000" max="2030"></div>
+                <div class="form-group"><label>学校</label><input type="text" id="school" placeholder="请输入学校名称"></div>
+                <div class="form-group"><label>专业</label><input type="text" id="major" placeholder="请输入专业名称"></div>
             </div>
-            <div class="modal-body">
-                <!-- 步骤 1：基本信息 -->
-                <div class="step">
-                    <h3 class="step-title">
-                        <span class="step-number">1</span>
-                        基本信息
-                    </h3>
-                    <div class="form-group">
-                        <label>姓名 *</label>
-                        <input type="text" id="name" placeholder="请输入姓名" required>
-                    </div>
-                    <div class="form-group">
-                        <label>手机号 *</label>
-                        <input type="tel" id="phone" placeholder="请输入手机号" required>
-                    </div>
-                    <div class="form-group">
-                        <label>邮箱 *</label>
-                        <input type="email" id="email" placeholder="请输入邮箱" required>
-                    </div>
-                    <div class="form-group">
-                        <label>学历</label>
-                        <select id="education" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                            <option value="">请选择</option>
-                            <option value="高中">高中</option>
-                            <option value="大专">大专</option>
-                            <option value="本科">本科</option>
-                            <option value="硕士">硕士</option>
-                            <option value="博士">博士</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>毕业年份</label>
-                        <input type="number" id="graduation_year" placeholder="如：2024" min="2000" max="2030">
-                    </div>
-                    <div class="form-group">
-                        <label>学校</label>
-                        <input type="text" id="school" placeholder="请输入学校名称">
-                    </div>
-                    <div class="form-group">
-                        <label>专业</label>
-                        <input type="text" id="major" placeholder="请输入专业名称">
+            <div class="step">
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">2</span>工作经历和技能</h3>
+                <div class="form-group"><label>工作经历</label><textarea id="work_experience" placeholder="请描述您的工作经历" rows="4"></textarea></div>
+                <div class="form-group"><label>技能特长</label><textarea id="skills" placeholder="请描述您的技能特长" rows="3"></textarea></div>
+                <div class="form-group"><label>自我介绍</label><textarea id="self_introduction" placeholder="请做简单的自我介绍" rows="4"></textarea></div>
+            </div>
+            <div class="step">
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">3</span>上传简历附件</h3>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt" style="color:var(--bronze);font-size:32px;"></i></div>
+                    <div class="upload-text">点击或拖拽上传简历</div>
+                    <div class="upload-hint">支持 PDF、Word 格式，最大 10MB</div>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleFileSelect(event)">
+                <div id="fileInfo" class="file-info" style="display:none;">
+                    <span class="file-name" id="fileName"></span>
+                    <div style="display:flex;gap:8px;">
+                        <span class="remove-file" onclick="removeResume()">✕ 删除</span>
+                        <span class="remove-file" onclick="previewResume()" style="color:var(--bronze);">👁 预览</span>
                     </div>
                 </div>
-
-                <!-- 步骤 2：工作和技能 -->
-                <div class="step">
-                    <h3 class="step-title">
-                        <span class="step-number">2</span>
-                        工作经历和技能
-                    </h3>
-                    <div class="form-group">
-                        <label>工作经历</label>
-                        <textarea id="work_experience" placeholder="请描述您的工作经历" rows="4"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>技能特长</label>
-                        <textarea id="skills" placeholder="请描述您的技能特长" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>自我介绍</label>
-                        <textarea id="self_introduction" placeholder="请做简单的自我介绍" rows="4"></textarea>
-                    </div>
-                </div>
-
-                <!-- 步骤 3：上传简历 -->
-                <div class="step">
-                    <h3 class="step-title">
-                        <span class="step-number">3</span>
-                        上传简历附件
-                    </h3>
-                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()"
-                         ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
-                        <div class="upload-icon">📄</div>
-                        <div class="upload-text">点击或拖拽上传简历</div>
-                        <div class="upload-hint">支持 PDF、Word 格式，最大 10MB</div>
-                    </div>
-                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx" style="display: none;" onchange="handleFileSelect(event)">
-                    <div id="fileInfo" class="file-info" style="display: none;">
-                        <span class="file-name" id="fileName"></span>
-                        <div style="display: flex; gap: 8px;">
-                            <span class="remove-file" onclick="removeResume()">✕ 删除</span>
-                            <span class="remove-file" onclick="previewResume()" style="color: var(--color-brand);">👁 预览</span>
-                        </div>
-                    </div>
-                    <div id="resumeInlinePreview" class="resume-inline-preview"></div>
-                </div>
-
-                <!-- 步骤 4：申请信息 -->
-                <div class="step">
-                    <h3 class="step-title">
-                        <span class="step-number">4</span>
-                        申请信息
-                    </h3>
-                    <div class="form-group">
-                        <label>期望薪资</label>
-                        <input type="text" id="expected_salary" placeholder="如：8000-10000 或 面议">
-                    </div>
-                    <div class="form-group">
-                        <label>申请理由</label>
-                        <textarea id="reason" placeholder="为什么想加入我们？" rows="4"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>其他信息</label>
-                        <textarea id="other_info" placeholder="其他需要说明的信息（选填）" rows="3"></textarea>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeApplicationModal()">取消</button>
-                    <button type="button" class="btn-submit" onclick="submitApplication()">提交申请</button>
-                </div>
+                <div id="resumeInlinePreview" class="resume-inline-preview"></div>
+            </div>
+            <div class="step">
+                <h3 class="step-title" class="text-primary" class="text-primary" class="text-primary"><span class="step-number">4</span>申请信息</h3>
+                <div class="form-group"><label>期望薪资</label><input type="text" id="expected_salary" placeholder="如：8000-10000 或 面议"></div>
+                <div class="form-group"><label>申请理由</label><textarea id="reason" placeholder="为什么想加入我们？" rows="4"></textarea></div>
+                <div class="form-group"><label>其他信息</label><textarea id="other_info" placeholder="其他需要说明的信息（选填）" rows="3"></textarea></div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeApplicationModal()">取消</button>
+                <button type="button" class="btn-submit" onclick="submitApplication()"><i class="fas fa-paper-plane"></i> 提交申请</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        const pageParams = new URLSearchParams(window.location.search);
-        const isEmbeddedMode = pageParams.get('embedded') === '1';
-
-        if (isEmbeddedMode) {
-            document.body.classList.add('embedded-mode');
-        }
-
-        // 获取 URL 中的职位 ID（从路径参数）
-        const pathParts = window.location.pathname.split('/');
-        const jobId = pathParts[pathParts.length - 1];
-
-        // 返回上一页
-        function goBack() {
-            window.location.href = '/jobs/search#top';
-        }
-
-        function escapeHtml(value) {
-            return String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/\"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function safeText(value, fallback = '-') {
-            if (value === null || value === undefined || value === '') {
-                return fallback;
-            }
-            return escapeHtml(String(value));
-        }
-
-        function formatSalaryRange(minSalary, maxSalary) {
-            const minNum = Number(minSalary);
-            const maxNum = Number(maxSalary);
-            if (!Number.isFinite(minNum) || !Number.isFinite(maxNum) || minNum <= 0 || maxNum <= 0) {
-                return '薪资面议';
-            }
-            return `¥${(minNum / 1000).toFixed(0)}k-¥${(maxNum / 1000).toFixed(0)}k`;
-        }
-
-        // 加载职位详情
-        function loadJobDetail() {
-            if (!jobId) {
-                document.getElementById('jobDetail').innerHTML = `
-                    <div class="loading">
-                        <h2>职位 ID 缺失</h2>
-                        <p>请从搜索结果页面进入</p>
+<!-- ===== Footer ===== -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo" style="margin-bottom:16px;">
+                    <div class="logo-square">M</div>
+                    <div class="logo-text">
+                        <span class="logo-text-cn">职引未来</span>
+                        <span class="logo-text-en">MERIDIAN CAREER</span>
                     </div>
-                `;
-                return;
-            }
+                </a>
+                <p class="footer-desc">连接高校毕业生与理想职场的桥梁，用数据驱动就业，以科技赋能未来。</p>
+                <div class="footer-socials">
+                    <a class="footer-social" href="#" title="微信"><i class="fab fa-weixin"></i></a>
+                    <a class="footer-social" href="#" title="微博"><i class="fab fa-weibo"></i></a>
+                    <a class="footer-social" href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a class="footer-social" href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-col-title">快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="/">首页</a></li>
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">平台服务</h4>
+                <ul class="footer-links">
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <li><a href="/chat/user">消息中心</a></li>
+                    <li><a href="/applications">投递中心</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">联系方式</h4>
+                <div class="footer-contact">
+                    <p><i class="fas fa-envelope"></i> contact@meridiancareer.com</p>
+                    <p><i class="fas fa-phone"></i> 400-888-9999</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 职引未来 MERIDIAN CAREER. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">隐私政策</a>
+                <a href="#">用户协议</a>
+                <a href="#">京ICP备XXXXXXXX号</a>
+            </div>
+        </div>
+    </div>
+</footer>
 
-            fetch(`/api/jobs/${jobId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        renderJobDetail(data.job);
-                    } else {
-                        document.getElementById('jobDetail').innerHTML = `
-                            <div class="loading">
-                                <h2>职位不存在</h2>
-                                <p>该职位可能已被删除或下架</p>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('加载失败:', error);
-                    document.getElementById('jobDetail').innerHTML = `
-                        <div class="loading">
-                            <h2>加载失败</h2>
-                            <p>请稍后重试</p>
-                        </div>
-                    `;
-                });
-        }
+<script src="/static/js/ui_feedback.js"></script>
+<script>
+/* ===== Utility ===== */
+function logout(){ fetch('/api/logout',{method:'POST'}).then(r=>r.json()).then(d=>{if(d.success) window.location.reload();}); }
+function toggleMobileMenu(){ const m=document.getElementById('mobileMenu'),h=document.getElementById('hamburger'); m.classList.toggle('open'); h.classList.toggle('active'); document.body.style.overflow=m.classList.contains('open')?'hidden':''; }
+function closeMobileMenu(){ document.getElementById('mobileMenu').classList.remove('open'); document.getElementById('hamburger').classList.remove('active'); document.body.style.overflow=''; }
 
-        // 渲染职位详情
-        function renderJobDetail(job) {
-            const skills = job.skill_tags
-                ? String(job.skill_tags).split(',').map(s => s.trim()).filter(Boolean)
-                : [];
+/* ===== Navbar scroll ===== */
+window.addEventListener('scroll',()=>{ const n=document.getElementById('navbar'); if(window.scrollY>80) n.classList.add('scrolled'); else n.classList.remove('scrolled'); });
 
-            const safeJobName = safeText(job.job_name, '未知职位');
-            const safeCompanyName = safeText(job.company_name, '未知公司');
-            const safeIndustry = safeText(job.industry, '');
-            const safeCity = safeText(job.city, '未知城市');
-            const safeDistrict = job.district ? `·${safeText(job.district, '')}` : '';
-            const safeEducation = safeText(job.education, '不限');
-            const safeExperience = safeText(job.experience, '不限');
-            const safeDescription = job.description
-                ? escapeHtml(String(job.description)).replace(/\n/g, '<br>')
-                : '暂无详细描述';
-            const safeCompanySize = safeText(job.company_size, '');
-            const safePublishDate = safeText(job.publish_date, '');
-            const salaryRange = formatSalaryRange(job.min_salary, job.max_salary);
-            
-            document.getElementById('jobDetail').innerHTML = `
-                <div class="job-detail-card">
-                    <div class="job-hero">
-                        <h1 class="job-title">${safeJobName}</h1>
-                        <div class="job-company">
-                            ${safeCompanyName}
-                            ${job.industry ? `<span class="company-tag">${safeIndustry}</span>` : ''}
-                        </div>
-                        
-                        <div class="job-meta">
-                            <div class="meta-item">
-                                <div class="meta-label">薪资</div>
-                                <div class="meta-value salary-highlight">${salaryRange}</div>
-                            </div>
-                            <div class="meta-item">
-                                <div class="meta-label">城市</div>
-                                <div class="meta-value">${safeCity}${safeDistrict}</div>
-                            </div>
-                            <div class="meta-item">
-                                <div class="meta-label">学历</div>
-                                <div class="meta-value">${safeEducation}</div>
-                            </div>
-                            <div class="meta-item">
-                                <div class="meta-label">经验</div>
-                                <div class="meta-value">${safeExperience}</div>
-                            </div>
-                        </div>
-                    </div>
+/* ===== Scroll Reveal ===== */
+(function(){ document.querySelectorAll('[data-reveal]').forEach(el=>{ const o=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');o.unobserve(e.target);}});},{threshold:0.1}); o.observe(el); }); })();
 
-                    <div class="job-main-layout">
-                        <div class="job-content">
-                            <div class="job-section">
-                                <h2 class="section-title">职位描述</h2>
-                                <div class="job-description">
-                                    ${safeDescription}
-                                </div>
-                            </div>
+/* ===== Job Detail Logic (preserved) ===== */
+const pageParams = new URLSearchParams(window.location.search);
+const isEmbeddedMode = pageParams.get('embedded') === '1';
+if (isEmbeddedMode) document.body.classList.add('embedded-mode');
 
-                            ${skills.length > 0 ? `
-                            <div class="job-section">
-                                <h2 class="section-title">技能要求</h2>
-                                <div class="skill-tags">
-                                    ${skills.map(skill => `<span class="skill-tag">${safeText(skill, '')}</span>`).join('')}
-                                </div>
-                            </div>
-                            ` : ''}
+const pathParts = window.location.pathname.split('/');
+const jobId = pathParts[pathParts.length - 1];
 
-                            <div class="job-section">
-                                <h2 class="section-title">公司信息</h2>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">公司名称</div>
-                                        <div class="info-value">${safeCompanyName}</div>
-                                    </div>
-                                    ${job.company_size ? `
-                                    <div class="info-item">
-                                        <div class="info-label">公司规模</div>
-                                        <div class="info-value">${safeCompanySize}</div>
-                                    </div>
-                                    ` : ''}
-                                    ${job.is_campus ? `
-                                    <div class="info-item">
-                                        <div class="info-label">职位类型</div>
-                                        <div class="info-value">校招岗位</div>
-                                    </div>
-                                    ` : ''}
-                                    ${job.publish_date ? `
-                                    <div class="info-item">
-                                        <div class="info-label">发布日期</div>
-                                        <div class="info-value">${safePublishDate}</div>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                            </div>
+function goBack() { window.location.href = '/jobs/search#top'; }
+function escapeHtml(value) { return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;'); }
+function safeText(value, fallback = '-') { return (value===null||value===undefined||value==='')?fallback:escapeHtml(String(value)); }
+function formatSalaryRange(minSalary, maxSalary) { const minNum=Number(minSalary),maxNum=Number(maxSalary); if(!Number.isFinite(minNum)||!Number.isFinite(maxNum)||minNum<=0||maxNum<=0) return '薪资面议'; return `¥${(minNum/1000).toFixed(0)}k-¥${(maxNum/1000).toFixed(0)}k`; }
 
-                            ${isEmbeddedMode ? '' : `
-                            <div class="apply-inline">
-                                <button class="apply-btn" onclick="applyJob()">立即申请</button>
-                            </div>
-                            `}
-                        </div>
+function loadJobDetail() {
+    if (!jobId) { document.getElementById('jobDetail').innerHTML = '<div class="loading"><h2 class="text-primary" class="text-primary" class="text-primary">职位 ID 缺失</h2><p>请从搜索结果页面进入</p></div>'; return; }
+    fetch(`/api/jobs/${jobId}`).then(r=>r.json()).then(data=>{ if(data.success) renderJobDetail(data.job); else document.getElementById('jobDetail').innerHTML='<div class="loading"><h2 class="text-primary" class="text-primary" class="text-primary">职位不存在</h2><p>该职位可能已被删除或下架</p></div>'; }).catch(()=>{ document.getElementById('jobDetail').innerHTML='<div class="loading"><h2 class="text-primary" class="text-primary" class="text-primary">加载失败</h2><p>请稍后重试</p></div>'; });
+}
+
+let currentJob = null;
+function renderJobDetail(job) {
+    currentJob = job;
+    const skills = job.skill_tags ? String(job.skill_tags).split(',').map(s=>s.trim()).filter(Boolean) : [];
+    const sd = job.description ? escapeHtml(String(job.description)).replace(/\n/g,'<br>') : '暂无详细描述';
+    document.getElementById('jobDetail').innerHTML = `
+        <div class="job-detail-card bg-slate border-dim">
+            <div class="job-hero">
+                <h1 class="job-title" class="text-primary" class="text-primary" class="text-primary">${safeText(job.job_name,'未知职位')}</h1>
+                <div class="job-company">${safeText(job.company_name,'未知公司')} ${job.industry?`<span class="company-tag">${safeText(job.industry)}</span>`:''}</div>
+                <div class="job-meta">
+                    <div class="meta-item"><div class="meta-label">薪资</div><div class="meta-value salary-highlight">${formatSalaryRange(job.min_salary,job.max_salary)}</div></div>
+                    <div class="meta-item"><div class="meta-label">城市</div><div class="meta-value"><i class="fas fa-map-marker-alt" style="color:var(--bronze);font-size:12px;margin-right:4px;"></i>${safeText(job.city,'未知')}</div></div>
+                    <div class="meta-item"><div class="meta-label">学历</div><div class="meta-value">${safeText(job.education,'不限')}</div></div>
+                    <div class="meta-item"><div class="meta-label">经验</div><div class="meta-value">${safeText(job.experience,'不限')}</div></div>
+                </div>
+            </div>
+            <div class="job-main-layout">
+                <div class="job-section"><h2 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-align-left"></i> 职位描述</h2><div class="job-description">${sd}</div></div>
+                ${skills.length?`<div class="job-section"><h2 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-tools"></i> 技能要求</h2><div class="skill-tags">${skills.map(s=>`<span class="skill-tag">${safeText(s)}</span>`).join('')}</div></div>`:''}
+                <div class="job-section">
+                    <h2 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-building"></i> 公司信息</h2>
+                    <div class="info-grid">
+                        <div class="info-item"><div class="info-label">公司名称</div><div class="info-value">${safeText(job.company_name)}</div></div>
+                        ${job.company_size?`<div class="info-item"><div class="info-label">公司规模</div><div class="info-value">${safeText(job.company_size)}</div></div>`:''}
+                        ${job.is_campus?`<div class="info-item"><div class="info-label">职位类型</div><div class="info-value">校招岗位</div></div>`:''}
+                        ${job.publish_date?`<div class="info-item"><div class="info-label">发布日期</div><div class="info-value">${safeText(job.publish_date)}</div></div>`:''}
                     </div>
                 </div>
-            `;
-        }
+                ${isEmbeddedMode?'':`<div class="apply-inline"><button class="apply-btn bronze-gradient" onclick="applyJob()"><i class="fas fa-paper-plane"></i> 立即申请</button></div>`}
+            </div>
+        </div>`;
+}
 
-        // 申请职位
-        function applyJob() {
-            // 检查是否登录
-            fetch('/api/user')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.logged_in) {
-                        openApplicationModal();
-                    } else {
-                        if (confirm('请先登录后再申请职位')) {
-                            window.location.href = '/login';
-                        }
-                    }
-                })
-                .catch(() => {
-                    window.location.href = '/login';
-                });
+function applyJob() {
+    fetch('/api/user').then(r=>r.json()).then(data=>{ if(data.logged_in) openApplicationModal(); else window.location.href='/login'; }).catch(()=>{ window.location.href='/login'; });
+}
+
+const editAppId = pageParams.get('edit');
+if (editAppId) { loadApplicationForEdit(editAppId); } else { window.editingApplicationId = null; }
+
+function loadApplicationForEdit(appId) {
+    window.editingApplicationId = appId;
+    fetch(`/api/application/${appId}`).then(r=>r.json()).then(data=>{ if(data.success){ openApplicationModal(); setTimeout(()=>{ document.getElementById('expected_salary').value=data.application.expected_salary||''; document.getElementById('reason').value=data.application.reason||''; document.getElementById('other_info').value=data.application.other_info||''; },300); } }).catch(e=>console.error(e));
+}
+
+function openApplicationModal() { document.getElementById('applicationModal').style.display='flex'; if(window.editingApplicationId) loadUserResume(); else clearApplicationForm(); }
+function closeApplicationModal() { document.getElementById('applicationModal').style.display='none'; clearResumeInlinePreview(); }
+
+function loadUserResume() {
+    fetch('/api/resume').then(r=>r.json()).then(data=>{
+        if(data.success&&data.resume){
+            document.getElementById('name').value=data.resume.name||''; document.getElementById('phone').value=data.resume.phone||''; document.getElementById('email').value=data.resume.email||'';
+            document.getElementById('education').value=data.resume.education||''; document.getElementById('graduation_year').value=data.resume.graduation_year||'';
+            document.getElementById('school').value=data.resume.school||''; document.getElementById('major').value=data.resume.major||'';
+            document.getElementById('work_experience').value=data.resume.work_experience||''; document.getElementById('skills').value=data.resume.skills||''; document.getElementById('self_introduction').value=data.resume.self_introduction||'';
+            if(data.resume.has_attachment){ document.getElementById('fileInfo').style.display='flex'; document.getElementById('fileName').textContent=data.resume.attachment_name; } else { document.getElementById('fileInfo').style.display='none'; }
+            clearResumeInlinePreview();
         }
-        
-        // 检查是否是编辑模式
-        const editAppId = pageParams.get('edit');
-        if (editAppId) {
-            // 编辑模式，加载申请详情
-            loadApplicationForEdit(editAppId);
+    }).catch(e=>console.error(e));
+}
+
+function saveResume() {
+    return fetch('/api/resume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        name:document.getElementById('name').value, phone:document.getElementById('phone').value, email:document.getElementById('email').value,
+        education:document.getElementById('education').value, graduation_year:document.getElementById('graduation_year').value,
+        school:document.getElementById('school').value, major:document.getElementById('major').value,
+        work_experience:document.getElementById('work_experience').value, skills:document.getElementById('skills').value, self_introduction:document.getElementById('self_introduction').value
+    })}).then(r=>r.json()).then(r=>{if(r.success) return r; else throw new Error(r.message);});
+}
+
+function uploadResume(file) {
+    const fd=new FormData(); fd.append('file',file);
+    return fetch('/api/resume/upload',{method:'POST',body:fd}).then(r=>r.json()).then(r=>{if(r.success){document.getElementById('fileInfo').style.display='flex';document.getElementById('fileName').textContent=r.filename;clearResumeInlinePreview();}else alert(r.message);}).catch(()=>alert('上传失败'));
+}
+
+function submitApplication() {
+    if(!document.getElementById('name').value.trim()||!document.getElementById('phone').value.trim()||!document.getElementById('email').value.trim()){alert('请填写基本信息');return;}
+    saveResume().then(()=>{
+        const es=document.getElementById('expected_salary').value, re=document.getElementById('reason').value, oi=document.getElementById('other_info').value;
+        if(window.editingApplicationId){
+            return fetch(`/api/application/${window.editingApplicationId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({expected_salary:es,reason:re,other_info:oi})}).then(r=>r.json()).then(r=>{if(r.success){alert('修改成功！');closeApplicationModal();clearApplicationForm();window.editingApplicationId=null;window.location.href='/applications';}else alert(r.message||'修改失败');});
         } else {
-            // 不是编辑模式，清空标志
-            window.editingApplicationId = null;
+            return fetch('/api/application/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({job_id:jobId,job_name:currentJob?currentJob.job_name:'',company_name:currentJob?currentJob.company_name:'',expected_salary:es,reason:re,other_info:oi})}).then(r=>r.json()).then(r=>{if(r.success){alert('申请成功！\n\n您的简历已提交给企业。');closeApplicationModal();clearApplicationForm();loadJobDetail();}else alert(r.message||'申请失败');});
         }
-        
-        // 加载申请用于编辑
-        function loadApplicationForEdit(appId) {
-            // 设置编辑模式标志
-            window.editingApplicationId = appId;
-            
-            fetch(`/api/application/${appId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const app = data.application;
-                        // 打开弹窗并填充数据
-                        openApplicationModal();
-                        // 填充申请信息（基本信息从简历加载，申请信息从申请加载）
-                        setTimeout(() => {
-                            document.getElementById('expected_salary').value = app.expected_salary || '';
-                            document.getElementById('reason').value = app.reason || '';
-                            document.getElementById('other_info').value = app.other_info || '';
-                        }, 300);
-                    }
-                })
-                .catch(error => {
-                    console.error('加载申请失败:', error);
-                });
-        }
+    }).catch(e=>{console.error(e);alert('申请失败，请重试');});
+}
 
-        // 打开申请弹窗
-        function openApplicationModal() {
-            document.getElementById('applicationModal').style.display = 'flex';
-            // 检查是否是编辑模式
-            if (window.editingApplicationId) {
-                // 编辑已有申请，加载用户简历数据
-                loadUserResume();
-            } else {
-                // 新申请，清空表单
-                clearApplicationForm();
-            }
-        }
+let resumePreviewBlobUrl = null;
+function revokeResumePreviewBlobUrl(){ if(resumePreviewBlobUrl){URL.revokeObjectURL(resumePreviewBlobUrl);resumePreviewBlobUrl=null;} }
+function clearResumeInlinePreview(){ revokeResumePreviewBlobUrl(); const p=document.getElementById('resumeInlinePreview'); if(p){p.style.display='none';p.innerHTML='';} }
+function getResumeExtension(fn){ const p=String(fn||'').split('.'); return p.length>1?p.pop().toLowerCase():''; }
 
-        // 关闭申请弹窗
-        function closeApplicationModal() {
-            document.getElementById('applicationModal').style.display = 'none';
-            clearResumeInlinePreview();
-        }
+function removeResume(){
+    fetch('/api/resume/attachment',{method:'DELETE'}).then(r=>r.json()).then(r=>{if(r.success){document.getElementById('fileInfo').style.display='none';document.getElementById('fileName').textContent='';document.getElementById('fileInput').value='';clearResumeInlinePreview();}else alert(r.message||'删除失败');}).catch(()=>alert('删除失败'));
+}
 
-        // 加载用户简历
-        function loadUserResume() {
-            fetch('/api/resume')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.resume) {
-                        // 填充简历信息
-                        document.getElementById('name').value = data.resume.name || '';
-                        document.getElementById('phone').value = data.resume.phone || '';
-                        document.getElementById('email').value = data.resume.email || '';
-                        document.getElementById('education').value = data.resume.education || '';
-                        document.getElementById('graduation_year').value = data.resume.graduation_year || '';
-                        document.getElementById('school').value = data.resume.school || '';
-                        document.getElementById('major').value = data.resume.major || '';
-                        document.getElementById('work_experience').value = data.resume.work_experience || '';
-                        document.getElementById('skills').value = data.resume.skills || '';
-                        document.getElementById('self_introduction').value = data.resume.self_introduction || '';
-                        
-                        if (data.resume.has_attachment) {
-                            document.getElementById('fileInfo').style.display = 'flex';
-                            document.getElementById('fileName').textContent = data.resume.attachment_name;
-                        } else {
-                            document.getElementById('fileInfo').style.display = 'none';
-                            document.getElementById('fileName').textContent = '';
-                        }
+async function previewResume(){
+    const fn=document.getElementById('fileName').textContent; if(!fn){alert('没有可预览的简历');return;}
+    const ext=getResumeExtension(fn); const pc=document.getElementById('resumeInlinePreview');
+    pc.style.display='block'; pc.innerHTML=`<div class="resume-preview-card"><div class="resume-preview-header"><div class="resume-preview-title">预览：${escapeHtml(fn)}</div><button type="button" class="resume-preview-close" onclick="clearResumeInlinePreview()">收起</button></div><div id="resumePreviewBody" class="resume-preview-body"><div class="resume-preview-loading">正在加载预览...</div></div></div>`;
+    pc.scrollIntoView({behavior:'smooth',block:'nearest'}); const pb=document.getElementById('resumePreviewBody');
+    try{ const r=await fetch('/api/resume/attachment/preview'); if(!r.ok) throw new Error('获取预览文件失败');
+        const ct=(r.headers.get('Content-Type')||'').toLowerCase();
+        if((ext==='docx'||ext==='doc')&&ct.includes('text/html')){ pb.innerHTML=`<div class="resume-preview-word">${await r.text()}</div>`; return; }
+        const blob=await r.blob();
+        if(ext==='pdf'){ revokeResumePreviewBlobUrl(); resumePreviewBlobUrl=URL.createObjectURL(blob); pb.innerHTML=`<iframe src="${resumePreviewBlobUrl}#toolbar=0&navpanes=0"></iframe>`; return; }
+        if(ext==='docx'){ if(!window.docx||typeof window.docx.renderAsync!=='function') throw new Error('Word 预览组件加载失败'); const ab=await blob.arrayBuffer(); pb.innerHTML='<div id="resumeWordPreview" class="resume-preview-word"></div>'; await window.docx.renderAsync(ab,document.getElementById('resumeWordPreview'),null,{inWrapper:false,breakPages:false,ignoreWidth:true,ignoreHeight:true}); return; }
+        pb.innerHTML='<div class="resume-preview-tip">暂不支持 .doc 在线预览</div>';
+    } catch(e){ pb.innerHTML=`<div class="resume-preview-error">${escapeHtml(e.message||'预览失败')}</div>`; }
+}
 
-                        clearResumeInlinePreview();
-                    }
-                })
-                .catch(error => {
-                    console.error('加载简历失败:', error);
-                });
-        }
+function clearApplicationForm(){
+    ['name','phone','email','graduation_year','school','major','work_experience','skills','self_introduction','expected_salary','reason','other_info'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+    document.getElementById('education').value=''; document.getElementById('fileInfo').style.display='none'; document.getElementById('fileInput').value=''; clearResumeInlinePreview(); window.savedResumeData=null;
+}
 
-        // 保存简历
-        function saveResume() {
-            const data = {
-                name: document.getElementById('name').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value,
-                education: document.getElementById('education').value,
-                graduation_year: document.getElementById('graduation_year').value,
-                school: document.getElementById('school').value,
-                major: document.getElementById('major').value,
-                work_experience: document.getElementById('work_experience').value,
-                skills: document.getElementById('skills').value,
-                self_introduction: document.getElementById('self_introduction').value
-            };
-            
-            return fetch('/api/resume', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    return result;
-                } else {
-                    throw new Error(result.message);
-                }
-            });
-        }
-
-        // 上传简历附件
-        function uploadResume(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            return fetch('/api/resume/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    document.getElementById('fileInfo').style.display = 'flex';
-                    document.getElementById('fileName').textContent = result.filename;
-                    clearResumeInlinePreview();
-                } else {
-                    alert(result.message);
-                }
-            })
-            .catch(error => {
-                console.error('上传失败:', error);
-                alert('上传失败，请重试');
-            });
-        }
-
-        // 提交申请
-        function submitApplication() {
-            // 验证必填项
-            const name = document.getElementById('name').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const email = document.getElementById('email').value.trim();
-            
-            if (!name || !phone || !email) {
-                alert('请填写基本信息');
-                return;
-            }
-            
-            // 保存简历
-            saveResume()
-                .then(() => {
-                    const expectedSalary = document.getElementById('expected_salary').value;
-                    const reason = document.getElementById('reason').value;
-                    const otherInfo = document.getElementById('other_info').value;
-                    
-                    // 检查是编辑还是新申请
-                    if (window.editingApplicationId) {
-                        // 更新申请
-                        return fetch(`/api/application/${window.editingApplicationId}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                expected_salary: expectedSalary,
-                                reason: reason,
-                                other_info: otherInfo
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(result => {
-                            if (result.success) {
-                                alert('修改成功！');
-                                closeApplicationModal();
-                                clearApplicationForm();
-                                window.editingApplicationId = null;
-                                // 跳转到投递记录页面
-                                window.location.href = '/applications';
-                            } else {
-                                alert(result.message || '修改失败，请重试');
-                            }
-                        });
-                    } else {
-                        // 新申请
-                        return fetch('/api/application/submit', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                job_id: jobId,
-                                job_name: currentJob ? currentJob.job_name : '',
-                                company_name: currentJob ? currentJob.company_name : '',
-                                expected_salary: expectedSalary,
-                                reason: reason,
-                                other_info: otherInfo
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(result => {
-                            if (result.success) {
-                                alert('申请成功！\n\n您的简历已提交给企业。');
-                                closeApplicationModal();
-                                // 清空表单数据
-                                clearApplicationForm();
-                                // 重新加载职位详情（刷新页面）
-                                loadJobDetail();
-                            } else {
-                                alert(result.message || '申请失败，请重试');
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('提交失败:', error);
-                    alert('申请失败，请重试');
-                });
-        }
-
-        // 文件上传处理
-        let currentJob = null;
-        
-        let resumePreviewBlobUrl = null;
-
-        function revokeResumePreviewBlobUrl() {
-            if (resumePreviewBlobUrl) {
-                URL.revokeObjectURL(resumePreviewBlobUrl);
-                resumePreviewBlobUrl = null;
-            }
-        }
-
-        function clearResumeInlinePreview() {
-            revokeResumePreviewBlobUrl();
-            const previewContainer = document.getElementById('resumeInlinePreview');
-            if (previewContainer) {
-                previewContainer.style.display = 'none';
-                previewContainer.innerHTML = '';
-            }
-        }
-
-        function getResumeExtension(fileName) {
-            const parts = String(fileName || '').split('.');
-            return parts.length > 1 ? parts.pop().toLowerCase() : '';
-        }
-
-        // 删除简历
-        function removeResume() {
-            fetch('/api/resume/attachment', {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    document.getElementById('fileInfo').style.display = 'none';
-                    document.getElementById('fileName').textContent = '';
-                    document.getElementById('fileInput').value = '';
-                    clearResumeInlinePreview();
-                } else {
-                    alert(result.message || '删除失败');
-                }
-            })
-            .catch(error => {
-                console.error('删除失败:', error);
-                alert('删除失败，请重试');
-            });
-        }
-        
-        async function previewResume() {
-            const fileName = document.getElementById('fileName').textContent;
-            if (!fileName) {
-                alert('没有可预览的简历');
-                return;
-            }
-
-            const ext = getResumeExtension(fileName);
-            const previewContainer = document.getElementById('resumeInlinePreview');
-            previewContainer.style.display = 'block';
-            previewContainer.innerHTML = `
-                <div class="resume-preview-card">
-                    <div class="resume-preview-header">
-                        <div class="resume-preview-title">预览：${escapeHtml(fileName)}</div>
-                        <button type="button" class="resume-preview-close" onclick="clearResumeInlinePreview()">收起</button>
-                    </div>
-                    <div id="resumePreviewBody" class="resume-preview-body">
-                        <div class="resume-preview-loading">正在加载预览...</div>
-                    </div>
-                </div>
-            `;
-            previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            const previewBody = document.getElementById('resumePreviewBody');
-
-            try {
-                const response = await fetch('/api/resume/attachment/preview');
-                if (!response.ok) {
-                    throw new Error('获取预览文件失败，请稍后重试');
-                }
-
-                const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
-                if ((ext === 'docx' || ext === 'doc') && contentType.includes('text/html')) {
-                    const htmlContent = await response.text();
-                    previewBody.innerHTML = `<div class="resume-preview-word">${htmlContent}</div>`;
-                    return;
-                }
-
-                const blob = await response.blob();
-                if (ext === 'pdf') {
-                    revokeResumePreviewBlobUrl();
-                    resumePreviewBlobUrl = URL.createObjectURL(blob);
-                    previewBody.innerHTML = `<iframe src="${resumePreviewBlobUrl}#toolbar=0&navpanes=0"></iframe>`;
-                    return;
-                }
-
-                if (ext === 'docx') {
-                    if (!window.docx || typeof window.docx.renderAsync !== 'function') {
-                        throw new Error('Word 预览组件加载失败，请刷新页面后重试');
-                    }
-
-                    const arrayBuffer = await blob.arrayBuffer();
-                    previewBody.innerHTML = '<div id="resumeWordPreview" class="resume-preview-word"></div>';
-                    const wordContainer = document.getElementById('resumeWordPreview');
-                    await window.docx.renderAsync(arrayBuffer, wordContainer, null, {
-                        inWrapper: false,
-                        breakPages: false,
-                        ignoreWidth: true,
-                        ignoreHeight: true
-                    });
-                    return;
-                }
-
-                previewBody.innerHTML = '<div class="resume-preview-tip">暂不支持 .doc 在线预览，请将文件另存为 .docx 后上传</div>';
-            } catch (error) {
-                console.error('预览失败:', error);
-                previewBody.innerHTML = `<div class="resume-preview-error">${escapeHtml(error.message || '预览失败，请稍后重试')}</div>`;
-            }
-        }
-
-        // 清空申请表单
-        function clearApplicationForm() {
-            document.getElementById('name').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('education').value = '';
-            document.getElementById('graduation_year').value = '';
-            document.getElementById('school').value = '';
-            document.getElementById('major').value = '';
-            document.getElementById('work_experience').value = '';
-            document.getElementById('skills').value = '';
-            document.getElementById('self_introduction').value = '';
-            document.getElementById('expected_salary').value = '';
-            document.getElementById('reason').value = '';
-            document.getElementById('other_info').value = '';
-            document.getElementById('fileInfo').style.display = 'none';
-            document.getElementById('fileInput').value = '';
-            clearResumeInlinePreview();
-            // 清空简历数据，下次打开时不加载
-            window.savedResumeData = null;
-        }
-        
-        // 渲染职位详情时保存当前职位信息
-        const originalRenderJobDetail = renderJobDetail;
-        renderJobDetail = function(job) {
-            currentJob = job;
-            originalRenderJobDetail(job);
-        };
-
-        // 文件选择处理
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const ext = file.name.split('.').pop().toLowerCase();
-                if (!['pdf', 'doc', 'docx'].includes(ext)) {
-                    alert('仅支持 PDF 和 Word 格式');
-                    return;
-                }
-                uploadResume(file);
-            }
-        }
-
-        // 拖拽上传处理
-        function handleDrop(event) {
-            event.preventDefault();
-            const file = event.dataTransfer.files[0];
-            if (file) {
-                handleFileSelect({ target: { files: [file] } });
-            }
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-        }
-
-        // 页面加载时获取职位详情
-        loadJobDetail();
-    </script>
+function handleFileSelect(e){ const f=e.target.files[0]; if(f){ const ext=f.name.split('.').pop().toLowerCase(); if(!['pdf','doc','docx'].includes(ext)){alert('仅支持 PDF 和 Word 格式');return;} uploadResume(f); } }
+function handleDrop(e){ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f) handleFileSelect({target:{files:[f]}}); }
+function handleDragOver(e){ e.preventDefault(); }
+loadJobDetail();
+</script>
 </body>
 </html>

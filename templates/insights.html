@@ -6,340 +6,491 @@
     <link rel="stylesheet" href="/static/css/global.css">
     <title>数据洞察 - 职引未来</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #f8fafc;
-            color: #1a1a1a;
-            line-height: 1.6;
+            background: #0A0A0F;
+            color: var(--text-primary);
+            position: relative;
         }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(201,169,110,0.02) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(201,169,110,0.015) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        body > * { position: relative; z-index: 1; }
 
-        /* 导航栏 */
+        /* ===== Navigation ===== */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 48px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #f0f0f0;
+            padding: 0 48px;
+            height: 80px;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(201,169,110,0.06);
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             z-index: 1000;
         }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { display: flex; align-items: center; text-decoration: none; gap: 10px; }
+        .logo-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: var(--bronze-gradient);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 800; font-size: 16px;
+        }
+        .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .logo-text-cn { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .logo-text-en { font-size: 9px; font-weight: 600; color: var(--bronze); letter-spacing: 0.15em; text-transform: uppercase; }
+        .nav-center { display: flex; gap: 4px; }
+        .nav-link {
+            text-decoration: none; color: var(--text-secondary);
+            font-size: 14px; font-weight: 500; padding: 8px 18px;
+            border-radius: 8px; transition: all 0.25s;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+        .nav-link.active {
+            color: var(--bronze-light);
+            background: rgba(201,169,110,0.1);
+            border-color: rgba(201,169,110,0.2);
+        }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .auth-btn {
+            text-decoration: none; font-size: 13px; font-weight: 500;
+            padding: 8px 20px; border-radius: 8px; transition: all 0.25s;
+            border: 1px solid rgba(201,169,110,0.2);
+            color: var(--bronze-light); background: rgba(201,169,110,0.08);
+        }
+        .auth-btn:hover {
+            background: rgba(201,169,110,0.15);
+            border-color: rgba(201,169,110,0.35);
+            box-shadow: 0 0 16px rgba(201,169,110,0.1);
+        }
+        .hamburger { display: none; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); cursor: pointer; color: var(--text-secondary); font-size: 18px; }
+        .mobile-menu { display: none; position: fixed; top: 80px; left: 0; right: 0; background: rgba(10,10,15,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(201,169,110,0.08); padding: 16px; z-index: 999; }
+        .mobile-menu .nav-link { display: block; padding: 12px 16px; margin-bottom: 4px; }
 
-        .logo {
+        /* ===== Scrollable BI Dashboard ===== */
+        .bi-dashboard {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+            padding: 0;
+        }
+
+        /* Dashboard Header */
+        .bi-dash-header {
+            padding: 40px 48px 32px;
             display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a1a;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 32px;
+            border-bottom: 1px solid rgba(201,169,110,0.06);
+            position: relative;
         }
-
-        .nav-links {
-            display: flex;
-            gap: 40px;
+        .bi-dash-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 48px; right: 48px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201,169,110,0.12), transparent);
         }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #666;
-            font-size: 15px;
-            transition: color 0.2s;
+        .bi-dash-title {
+            font-size: 32px; font-weight: 700; margin: 0;
+            display: flex; align-items: center; gap: 14px;
+            letter-spacing: 0.02em;
         }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: #2563eb;
+        .bi-dash-title i {
+            background: var(--bronze-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        /* 主内容区 */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 100px 24px 40px;
+        .bi-dash-subtitle {
+            font-size: 14px; color: var(--text-muted); margin: 10px 0 0;
+            line-height: 1.6;
         }
-
-        .page-header {
-            text-align: center;
-            margin-bottom: 36px;
-        }
-
-        .page-title {
-            font-size: 44px;
-            font-weight: 800;
-            margin-bottom: 12px;
-            color: #1a1a1a;
-        }
-
-        .page-subtitle {
-            font-size: 17px;
-            color: #666;
-        }
-
-        .filter-bar {
-            max-width: 980px;
-            margin: 0 auto 20px;
-            background: #ffffff;
-            border: 1px solid #dbeafe;
-            border-radius: 12px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .filter-label {
-            font-size: 14px;
-            color: #1e3a8a;
-            font-weight: 600;
-        }
-
-        .filter-select {
-            min-width: 220px;
-            border: 1px solid #cbd5e1;
+        .bi-dash-header-right { flex-shrink: 0; }
+        .bi-filter-area { display: flex; align-items: center; gap: 10px; }
+        .bi-filter-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+        .bi-filter-area select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(201,169,110,0.1);
+            color: var(--text-primary);
+            padding: 8px 16px;
             border-radius: 8px;
-            padding: 8px 10px;
-            font-size: 14px;
             outline: none;
-            background: #fff;
-        }
-
-        .filter-tip {
-            font-size: 13px;
-            color: #64748b;
-        }
-
-        /* 图表容器 */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
-            gap: 22px;
-            margin-bottom: 40px;
-        }
-
-        .chart-card {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #e7edf5;
-            padding: 22px;
-            box-shadow: 0 6px 22px rgba(15, 23, 42, 0.04);
-            transition: all 0.3s;
-        }
-
-        .chart-card:hover {
-            transform: translateY(-2px);
-            border-color: #dbeafe;
-            box-shadow: 0 10px 26px rgba(37, 99, 235, 0.08);
-        }
-
-        .chart-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 14px;
-            color: #1a1a1a;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e9eef5;
-        }
-
-        .chart-content {
-            min-height: 520px;
-            background: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid #f1f5f9;
-        }
-
-        .chart-frame {
-            width: 100%;
-            border: none;
-            display: block;
-            min-height: 520px;
-        }
-
-        .chart-loading {
-            min-height: 520px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            font-size: 14px;
-            background: linear-gradient(90deg, #f8fafc, #f1f5f9, #f8fafc);
-            background-size: 200% 100%;
-            animation: shimmer 1.3s infinite;
-        }
-
-        .chart-empty {
-            min-height: 520px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #64748b;
-            font-size: 14px;
-            padding: 20px;
-            background: #f8fafc;
-        }
-
-        @keyframes shimmer {
-            from { background-position: 200% 0; }
-            to { background-position: -200% 0; }
-        }
-
-        .switch-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .switch-btn {
-            border: 1px solid #dbe2ef;
-            background: #fff;
-            color: #334155;
-            border-radius: 8px;
-            padding: 6px 12px;
             font-size: 13px;
             cursor: pointer;
+            transition: all 0.2s;
         }
-
-        .switch-btn.active {
-            border-color: #93c5fd;
-            background: #eff6ff;
-            color: #1e3a8a;
+        .bi-filter-area select:hover, .bi-filter-area select:focus {
+            border-color: var(--bronze);
+            background: rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 2px rgba(201,169,110,0.15);
         }
+        .bi-filter-tip { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 
-        .skill-cloud {
-            min-height: 520px;
+        /* Charts Grid - 12-column flexible layout */
+        .bi-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            padding: 28px 48px 48px;
+        }
+        .bi-chart-card {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(201,169,110,0.08);
+            border-radius: 20px;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03), 0 0 30px rgba(201,169,110,0.02);
+            overflow: hidden;
             display: flex;
+            flex-direction: column;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .bi-chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--bronze-gradient);
+            opacity: 0.4;
+            z-index: 1;
+            transition: opacity 0.3s;
+        }
+        .bi-chart-card:hover {
+            border-color: rgba(201,169,110,0.15);
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03), 0 0 40px rgba(201,169,110,0.04);
+        }
+        .bi-chart-card:hover::before { opacity: 0.7; }
+
+        .bi-chart-city-map { grid-column: span 12; }
+        .bi-chart-city-map .bi-chart-card-body { min-height: 520px; }
+
+        .bi-chart-salary-bar { grid-column: span 7; }
+        .bi-chart-salary-bar .bi-chart-card-body { min-height: 480px; }
+
+        .bi-chart-salary-boxplot { grid-column: span 5; }
+        .bi-chart-salary-boxplot .bi-chart-card-body { min-height: 480px; }
+
+        .bi-chart-requirement { grid-column: span 5; }
+        .bi-chart-requirement .bi-chart-card-body { min-height: 500px; }
+
+        .bi-chart-skills { grid-column: span 7; }
+        .bi-chart-skills .bi-chart-card-body { min-height: 500px; }
+
+        .bi-chart-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(201,169,110,0.06);
+            background: rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 2;
             flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 8px 10px;
-            padding: 14px;
-            background: #f8fafc;
+            gap: 8px;
+        }
+        .bi-chart-card-title {
+            font-size: 15px; font-weight: 600; color: var(--text-primary);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .bi-chart-card-title i { color: var(--bronze); font-size: 14px; }
+        .bi-chart-card-desc { font-size: 12px; color: var(--text-muted); }
+        .bi-chart-card-body {
+            flex: 1;
+            position: relative;
+            min-height: 400px;
         }
 
+        /* Chart Loading & Empty */
+        .chart-loading, .chart-empty {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 400px; color: var(--text-muted); font-size: 14px;
+            flex-direction: column; gap: 12px;
+        }
+        .chart-loading::before {
+            content: '';
+            width: 32px; height: 32px;
+            border: 3px solid rgba(201,169,110,0.15);
+            border-top-color: var(--bronze);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Switch Toggle */
+        .switch-row { display: flex; gap: 6px; }
+        .switch-btn {
+            border: 1px solid rgba(201,169,110,0.1); background: rgba(255,255,255,0.03);
+            color: var(--text-secondary); border-radius: 8px;
+            padding: 5px 12px; font-size: 12px; cursor: pointer;
+            font-family: inherit; transition: all 0.25s;
+        }
+        .switch-btn.active {
+            border-color: rgba(201,169,110,0.4);
+            background: rgba(201,169,110,0.12);
+            color: var(--bronze-light);
+            box-shadow: 0 0 12px rgba(201,169,110,0.1);
+        }
+        .switch-btn:hover:not(.active) { border-color: rgba(201,169,110,0.25); transform: translateY(-1px); }
+
+        /* Skill Cloud */
+        .skill-cloud {
+            min-height: 480px; display: flex; flex-wrap: wrap;
+            align-content: flex-start; gap: 8px 10px;
+            padding: 16px; background: var(--graphite);
+            border: 1px solid rgba(201,169,110,0.06);
+            border-radius: 16px;
+        }
         .skill-word {
-            display: inline-block;
-            line-height: 1.2;
-            font-weight: 600;
-            transition: transform 0.15s ease;
-            cursor: default;
-            user-select: none;
+            display: inline-block; line-height: 1.2; font-weight: 600;
+            transition: transform 0.15s ease, text-shadow 0.15s ease; cursor: default; user-select: none;
+        }
+        .skill-word:hover { transform: translateY(-2px) scale(1.04); text-shadow: 0 0 8px rgba(201,169,110,0.2); }
+
+        /* ===== Footer ===== */
+        .footer {
+            background: rgba(10,10,15,0.95);
+            border-top: 1px solid rgba(201,169,110,0.06);
+            padding: 48px 48px 24px;
+            color: var(--text-secondary);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-brand .logo { margin-bottom: 16px; }
+        .footer-desc { font-size: 13px; line-height: 1.7; color: var(--text-muted); margin-bottom: 16px; }
+        .footer-socials { display: flex; gap: 10px; }
+        .footer-social {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); text-decoration: none;
+            transition: all 0.25s;
+        }
+        .footer-social:hover { color: var(--bronze-light); border-color: rgba(201,169,110,0.2); background: rgba(201,169,110,0.08); }
+        .footer-col-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { text-decoration: none; color: var(--text-muted); font-size: 13px; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--bronze-light); }
+        .footer-bottom {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.04);
+            font-size: 12px; color: var(--text-muted);
         }
 
-        .skill-word:hover {
-            transform: translateY(-1px) scale(1.04);
+        /* ===== Responsive ===== */
+        @media (max-width: 1279px) {
+            .bi-chart-salary-bar,
+            .bi-chart-salary-boxplot,
+            .bi-chart-requirement,
+            .bi-chart-skills { grid-column: span 6; }
         }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 16px 20px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .page-title {
-                font-size: 28px;
-            }
-
-            .chart-content,
-            .chart-frame,
-            .chart-loading {
-                min-height: 430px;
-            }
-
-            .filter-bar {
-                padding: 10px 12px;
-            }
-
-            .filter-select {
-                width: 100%;
-            }
+        @media (max-width: 1023px) {
+            .bi-dash-header { padding: 28px 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
+            .bi-charts-grid { padding: 0 32px 32px; }
+            .bi-chart-salary-bar,
+            .bi-chart-salary-boxplot,
+            .bi-chart-requirement,
+            .bi-chart-skills { grid-column: span 6; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 767px) {
+            .nav-center { display: none; }
+            .nav-right .auth-btn { display: none; }
+            .hamburger { display: flex; }
+            .mobile-menu { display: block; }
+            .bi-dash-header { padding: 20px 20px 16px; }
+            .bi-dash-title { font-size: 24px; }
+            .bi-charts-grid { grid-template-columns: 1fr; padding: 0 20px 20px; }
+            .bi-chart-city-map,
+            .bi-chart-salary-bar,
+            .bi-chart-salary-boxplot,
+            .bi-chart-requirement,
+            .bi-chart-skills { grid-column: span 1; }
+            .bi-filter-area { flex-wrap: wrap; }
+            .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
+    <!-- Navigation -->
     <nav class="navbar">
-        <div class="logo">
-            职引未来
+        <div class="nav-left">
+            <a href="/" class="logo">
+                <div class="logo-icon">职</div>
+                <div class="logo-text">
+                    <span class="logo-text-cn">职引未来</span>
+                    <span class="logo-text-en">MERIDIAN CAREER</span>
+                </div>
+            </a>
+            <div class="nav-center">
+                <a href="/" class="nav-link">首页</a>
+                <a href="/jobs/search" class="nav-link">职位搜索</a>
+                <a href="/insights" class="nav-link active">数据洞察</a>
+            </div>
         </div>
-        <div class="nav-links">
-            <a href="/" class="nav-link">首页</a>
-            <a href="/jobs/search" class="nav-link">职位搜索</a>
-            <a href="/insights" class="nav-link active">数据洞察</a>
+        <div class="nav-right">
+            {% if session.get('user_id') %}
+            <a href="/logout" class="auth-btn">退出登录</a>
+            {% else %}
+            <a href="/login" class="auth-btn">登录 / 注册</a>
+            {% endif %}
+            <div class="hamburger" onclick="document.querySelector('.mobile-menu').style.display = document.querySelector('.mobile-menu').style.display === 'block' ? 'none' : 'block'">
+                <i class="fas fa-bars"></i>
+            </div>
         </div>
     </nav>
+    <div class="mobile-menu">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/jobs/search" class="nav-link">职位搜索</a>
+        <a href="/insights" class="nav-link active">数据洞察</a>
+        {% if session.get('user_id') %}
+        <a href="/logout" class="nav-link">退出登录</a>
+        {% else %}
+        <a href="/login" class="nav-link">登录 / 注册</a>
+        {% endif %}
+    </div>
 
-    <!-- 主内容区 -->
-    <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">数据洞察</h1>
-            <p class="page-subtitle">基于岗位数据的城市、薪资、要求与技能结构分析</p>
-        </div>
-
-        <div class="filter-bar">
-            <span class="filter-label">专业筛选</span>
-            <select id="professionSelect" class="filter-select">
-                <option value="">全部专业（全局视角）</option>
-            </select>
-            <span id="professionTip" class="filter-tip">当前：全局市场视角</span>
-        </div>
-
-        <!-- 图表展示区 -->
-        <div class="charts-grid">
-            <!-- 图表 1: 全国岗位分布地图 -->
-            <div class="chart-card">
-                <h3 class="chart-title"> 全国岗位分布（按省聚合）</h3>
-                <div class="chart-content" id="city-map"></div>
+    <!-- ===== Scrollable BI Dashboard ===== -->
+    <div class="bi-dashboard">
+        <!-- Dashboard Header -->
+        <header class="bi-dash-header">
+            <div class="bi-dash-header-left">
+                <h1 class="bi-dash-title"><i class="fas fa-chart-line"></i> 数据洞察</h1>
+                <p class="bi-dash-subtitle">选择专业，查看对应的岗位分布、薪资走势、要求结构与技能需求可视化</p>
             </div>
-
-            <!-- 图表 2: 薪资水平分析 -->
-            <div class="chart-card">
-                <h3 class="chart-title"> 各城市平均薪资对比</h3>
-                <div class="chart-content" id="salary-bar"></div>
-            </div>
-
-            <!-- 图表 3: 薪资分位对比 -->
-            <div class="chart-card">
-                <h3 class="chart-title"> 薪资分位（P25/P50/P75）</h3>
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">读法：P50 越高代表城市整体薪资中枢越高；P75-P25 差距越大，说明薪资分层越明显。</p>
-                <div class="chart-content" id="salary-boxplot"></div>
-            </div>
-
-            <!-- 图表 4: 要求结构分析（学历/经验切换） -->
-            <div class="chart-card">
-                <h3 class="chart-title"> 要求结构分析</h3>
-                <div class="switch-row">
-                    <button class="switch-btn active" onclick="switchRequirementChart('education')">学历要求</button>
-                    <button class="switch-btn" onclick="switchRequirementChart('experience')">经验要求</button>
+            <div class="bi-dash-header-right">
+                <div class="bi-filter-area">
+                    <span class="bi-filter-label"><i class="fas fa-sliders-h"></i> 专业筛选</span>
+                    <select id="professionSelect">
+                        <option value="">全部专业（全局市场）</option>
+                    </select>
+                    <span id="professionTip" class="bi-filter-tip">当前：全局市场视角</span>
                 </div>
-                <div class="chart-content" id="education-pie"></div>
-                <div class="chart-content" id="experience-pie" style="display: none;"></div>
+            </div>
+        </header>
+
+        <!-- Charts Grid -->
+        <div class="bi-charts-grid">
+            <!-- Row 1: City Map (full width) -->
+            <div class="bi-chart-card bi-chart-city-map">
+                <div class="bi-chart-card-header">
+                    <div class="bi-chart-card-title"><i class="fas fa-map-marked-alt"></i> 行业星火分布</div>
+                    <div class="bi-chart-card-desc">呈现深色的区域代表高需求量的聚集体，人才核心圈层</div>
+                </div>
+                <div class="bi-chart-card-body" id="city-map"></div>
             </div>
 
-            <!-- 图表 6: 技能词云 -->
-            <div class="chart-card" style="grid-column: 1 / -1;">
-                <h3 class="chart-title"> 技能需求热词（关键词频次）</h3>
-                <div class="chart-content" id="skill-wordcloud"></div>
+            <!-- Row 2: Salary Bar (wide) + Salary Quantile (narrow) -->
+            <div class="bi-chart-card bi-chart-salary-bar">
+                <div class="bi-chart-card-header">
+                    <div class="bi-chart-card-title"><i class="fas fa-fire"></i> 城市薪资动能</div>
+                    <div class="bi-chart-card-desc">核心引擎城市平均薪资排行与相对势能对比</div>
+                </div>
+                <div class="bi-chart-card-body" id="salary-bar"></div>
+            </div>
+            <div class="bi-chart-card bi-chart-salary-boxplot">
+                <div class="bi-chart-card-header">
+                    <div class="bi-chart-card-title"><i class="fas fa-layer-group"></i> 薪水分层矩阵</div>
+                    <div class="bi-chart-card-desc">宽幅拉开表明分化严重；P50高位表明购买力深厚</div>
+                </div>
+                <div class="bi-chart-card-body" id="salary-boxplot"></div>
+            </div>
+
+            <!-- Row 3: Requirement (narrow) + Skills (wide) -->
+            <div class="bi-chart-card bi-chart-requirement">
+                <div class="bi-chart-card-header">
+                    <div class="bi-chart-card-title"><i class="fas fa-graduation-cap"></i> 壁垒切面分析</div>
+                    <div class="switch-row">
+                        <button class="switch-btn active" onclick="switchRequirementChart('education')">学历阶层切割</button>
+                        <button class="switch-btn" onclick="switchRequirementChart('experience')">经验红利分布</button>
+                    </div>
+                </div>
+                <div class="bi-chart-card-body" style="position:relative;">
+                    <div id="education-pie" style="width:100%;height:100%;position:absolute;inset:0;"></div>
+                    <div id="experience-pie" style="display:none;width:100%;height:100%;position:absolute;inset:0;"></div>
+                </div>
+            </div>
+            <div class="bi-chart-card bi-chart-skills">
+                <div class="bi-chart-card-header">
+                    <div class="bi-chart-card-title"><i class="fas fa-brain"></i> 技能光谱阵列</div>
+                    <div class="bi-chart-card-desc">主流技术栈热度投影，越大代表需求吞吐力越强</div>
+                </div>
+                <div class="bi-chart-card-body" id="skill-wordcloud"></div>
             </div>
         </div>
     </div>
+
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo" style="margin-bottom:16px;">
+                    <div class="logo-text">
+                        <span class="logo-text-cn">职引未来</span>
+                        <span class="logo-text-en">MERIDIAN CAREER</span>
+                    </div>
+                </a>
+                <p class="footer-desc">连接高校毕业生与理想职场的桥梁，用数据驱动就业，以科技赋能未来。</p>
+                <div class="footer-socials">
+                    <a class="footer-social" href="#" title="微信"><i class="fab fa-weixin"></i></a>
+                    <a class="footer-social" href="#" title="微博"><i class="fab fa-weibo"></i></a>
+                    <a class="footer-social" href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a class="footer-social" href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-col-title">快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="/">首页</a></li>
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">平台服务</h4>
+                <ul class="footer-links">
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <li><a href="/chat/user">消息中心</a></li>
+                    <li><a href="/applications">投递中心</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">联系我们</h4>
+                <ul class="footer-links">
+                    <li><a href="#">帮助中心</a></li>
+                    <li><a href="#">意见反馈</a></li>
+                    <li><a href="#">隐私政策</a></li>
+                    <li><a href="#">用户协议</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 职引未来 Meridian Career. All rights reserved.</span>
+            <span>用数据驱动就业，以科技赋能未来</span>
+        </div>
+    </footer>
 
     <script src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
     <script src="https://assets.pyecharts.org/assets/v5/echarts-wordcloud.min.js"></script>
@@ -377,22 +528,23 @@
         function loadStaticChart(containerId, chartFile) {
             showLoading(containerId);
             const container = document.getElementById(containerId);
-
             const iframe = document.createElement('iframe');
             iframe.src = chartFile;
             iframe.className = 'chart-frame';
             iframe.setAttribute('scrolling', 'no');
-
+            iframe.style.width = '100%';
+            iframe.style.border = 'none';
+            iframe.style.display = 'block';
+            iframe.style.minHeight = '400px';
             container.innerHTML = '';
             container.appendChild(iframe);
-
             iframe.addEventListener('load', function() {
                 try {
                     const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 520);
+                    const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 400);
                     iframe.style.height = height + 'px';
                 } catch (e) {
-                    iframe.style.height = '520px';
+                    iframe.style.height = '400px';
                 }
             });
             iframe.addEventListener('error', function() {
@@ -414,7 +566,6 @@
             const edu = document.getElementById('education-pie');
             const exp = document.getElementById('experience-pie');
             const buttons = document.querySelectorAll('.switch-btn');
-
             buttons.forEach(btn => btn.classList.remove('active'));
             if (type === 'education') {
                 edu.style.display = 'block';
@@ -445,13 +596,10 @@
         async function loadOverallConsistencyCharts() {
             showLoading('city-map', '全国岗位分布加载中...');
             showLoading('experience-pie', '经验要求分布加载中...');
-
             try {
                 const resp = await fetch('/api/insights/overall-data');
                 const data = await resp.json();
-                if (!data.success) {
-                    throw new Error(data.message || '加载失败');
-                }
+                if (!data.success) throw new Error(data.message || '加载失败');
 
                 const provinceData = data.province_distribution || [];
                 const expData = data.experience_distribution || [];
@@ -464,7 +612,7 @@
                         grid: { left: 80, right: 20, top: 20, bottom: 30 },
                         xAxis: { type: 'value', name: '岗位数' },
                         yAxis: { type: 'category', data: provinceData.map(i => i.name), inverse: true },
-                        series: [{ type: 'bar', data: provinceData.map(i => i.count), itemStyle: { color: '#2563eb' } }]
+                        series: [{ type: 'bar', data: provinceData.map(i => i.count), itemStyle: { color: '#C9A96E' } }]
                     });
                 }
 
@@ -476,7 +624,7 @@
                         grid: { left: 80, right: 20, top: 20, bottom: 30 },
                         xAxis: { type: 'value', name: '岗位数' },
                         yAxis: { type: 'category', data: expData.map(i => i.name), inverse: true },
-                        series: [{ type: 'bar', data: expData.map(i => i.value), itemStyle: { color: '#0f766e' } }]
+                        series: [{ type: 'bar', data: expData.map(i => i.value), itemStyle: { color: '#C9A96E' } }]
                     });
                 }
             } catch (e) {
@@ -489,13 +637,10 @@
         async function loadOverallSkillCloud() {
             const containerId = 'skill-wordcloud';
             showLoading(containerId, '技能词云加载中...');
-
             try {
                 const resp = await fetch('/api/insights/overall-skill-cloud');
                 const data = await resp.json();
-                if (!data.success) {
-                    throw new Error(data.message || '加载失败');
-                }
+                if (!data.success) throw new Error(data.message || '加载失败');
                 renderSkillCloud(data.skill_cloud || []);
             } catch (e) {
                 console.error('加载全局技能词云失败:', e);
@@ -509,7 +654,6 @@
                 const resp = await fetch('/api/insights/professions');
                 const data = await resp.json();
                 if (!data.success || !Array.isArray(data.professions)) return;
-
                 data.professions.forEach(item => {
                     const op = document.createElement('option');
                     op.value = item.key;
@@ -527,50 +671,35 @@
                 showEmpty(containerId, '该专业暂无可视化技能词数据');
                 return;
             }
-
             const top = data.slice(0, 80);
             try {
                 createChart(containerId, {
-                    tooltip: {
-                        trigger: 'item',
-                        formatter: p => `${p.name}: ${p.value}`
-                    },
+                    tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value}` },
                     series: [{
                         type: 'wordCloud',
                         shape: 'circle',
-                        left: 'center',
-                        top: 'center',
-                        width: '95%',
-                        height: '95%',
-                        gridSize: 8,
-                        sizeRange: [16, 70],
-                        rotationRange: [-45, 45],
-                        rotationStep: 15,
-                        drawOutOfBound: false,
-                        layoutAnimation: true,
+                        left: 'center', top: 'center',
+                        width: '95%', height: '95%',
+                        gridSize: 8, sizeRange: [16, 70],
+                        rotationRange: [-45, 45], rotationStep: 15,
+                        drawOutOfBound: false, layoutAnimation: true,
                         textStyle: {
                             color: () => {
-                                const palette = ['#1d4ed8', '#0f766e', '#0ea5e9', '#2563eb', '#0369a1', '#334155'];
+                                const palette = ['#C9A96E', '#D4B87A', '#A88B5E', '#E8D5A8', '#8B7355', '#BFA77A'];
                                 return palette[Math.floor(Math.random() * palette.length)];
                             }
                         },
-                        emphasis: {
-                            textStyle: {
-                                shadowBlur: 8,
-                                shadowColor: '#93c5fd'
-                            }
-                        },
+                        emphasis: { textStyle: { shadowBlur: 8, shadowColor: 'rgba(201,169,110,0.5)' } },
                         data: top
                     }]
                 });
             } catch (e) {
-                // 词云插件加载失败时，降级为条形图，避免展示异常布局
                 createChart(containerId, {
                     tooltip: { trigger: 'axis' },
                     grid: { left: 80, right: 20, top: 20, bottom: 30 },
                     xAxis: { type: 'value', name: '频次' },
                     yAxis: { type: 'category', data: top.slice(0, 20).map(i => i.name), inverse: true },
-                    series: [{ type: 'bar', data: top.slice(0, 20).map(i => i.value), itemStyle: { color: '#2563eb' } }]
+                    series: [{ type: 'bar', data: top.slice(0, 20).map(i => i.value), itemStyle: { color: '#C9A96E' } }]
                 });
             }
         }
@@ -590,7 +719,7 @@
                     grid: { left: 80, right: 20, top: 20, bottom: 30 },
                     xAxis: { type: 'value', name: '岗位数' },
                     yAxis: { type: 'category', data: cityData.map(i => i.city), inverse: true },
-                    series: [{ type: 'bar', data: cityData.map(i => i.count), itemStyle: { color: '#2563eb' } }]
+                    series: [{ type: 'bar', data: cityData.map(i => i.count), itemStyle: { color: '#C9A96E' } }]
                 });
             }
 
@@ -602,7 +731,7 @@
                     grid: { left: 60, right: 20, top: 30, bottom: 50 },
                     xAxis: { type: 'category', data: salaryData.map(i => i.city), axisLabel: { rotate: 25 } },
                     yAxis: { type: 'value', name: '元/月' },
-                    series: [{ type: 'line', smooth: true, data: salaryData.map(i => i.avg), areaStyle: {}, itemStyle: { color: '#0ea5e9' } }]
+                    series: [{ type: 'line', smooth: true, data: salaryData.map(i => i.avg), areaStyle: {}, itemStyle: { color: '#C9A96E' } }]
                 });
             }
 
@@ -611,14 +740,14 @@
             } else {
                 createChart('salary-boxplot', {
                     tooltip: { trigger: 'axis' },
-                    legend: { data: ['P25', 'P50(中位)', 'P75'] },
+                    legend: { data: ['P25', 'P50(中位)', 'P75'], textStyle: { color: '#999' } },
                     grid: { left: 60, right: 20, top: 40, bottom: 50 },
                     xAxis: { type: 'category', data: quantData.map(i => i.city), axisLabel: { rotate: 25 } },
                     yAxis: { type: 'value', name: '元/月' },
                     series: [
-                        { name: 'P25', type: 'bar', data: quantData.map(i => i.p25), itemStyle: { color: '#0ea5e9' } },
-                        { name: 'P50(中位)', type: 'bar', data: quantData.map(i => i.p50), itemStyle: { color: '#2563eb' } },
-                        { name: 'P75', type: 'bar', data: quantData.map(i => i.p75), itemStyle: { color: '#1d4ed8' } }
+                        { name: 'P25', type: 'bar', data: quantData.map(i => i.p25), itemStyle: { color: '#E8D5A8' } },
+                        { name: 'P50(中位)', type: 'bar', data: quantData.map(i => i.p50), itemStyle: { color: '#C9A96E' } },
+                        { name: 'P75', type: 'bar', data: quantData.map(i => i.p75), itemStyle: { color: '#8B7355' } }
                     ]
                 });
             }
@@ -628,8 +757,8 @@
             } else {
                 createChart('education-pie', {
                     tooltip: { trigger: 'item' },
-                    legend: { top: '2%' },
-                    series: [{ type: 'pie', radius: ['45%', '70%'], data: eduData, label: { formatter: '{b}: {d}%' } }]
+                    legend: { top: '2%', textStyle: { color: '#999' } },
+                    series: [{ type: 'pie', radius: ['45%', '70%'], data: eduData, label: { formatter: '{b}: {d}%', color: '#ccc' } }]
                 });
             }
 
@@ -641,7 +770,7 @@
                     grid: { left: 80, right: 20, top: 20, bottom: 30 },
                     xAxis: { type: 'value', name: '岗位数' },
                     yAxis: { type: 'category', data: expData.map(i => i.name), inverse: true },
-                    series: [{ type: 'bar', data: expData.map(i => i.value), itemStyle: { color: '#0f766e' } }]
+                    series: [{ type: 'bar', data: expData.map(i => i.value), itemStyle: { color: '#C9A96E' } }]
                 });
             }
 
@@ -651,14 +780,10 @@
 
         async function loadProfessionInsights(professionKey) {
             ['city-map', 'salary-bar', 'salary-boxplot', 'education-pie', 'experience-pie', 'skill-wordcloud'].forEach(id => showLoading(id));
-
             try {
                 const resp = await fetch(`/api/insights/profession-data?profession=${encodeURIComponent(professionKey)}`);
                 const data = await resp.json();
-                if (!data.success) {
-                    throw new Error(data.message || '加载失败');
-                }
-
+                if (!data.success) throw new Error(data.message || '加载失败');
                 document.getElementById('professionTip').textContent = `当前：${data.profession.name}`;
                 renderProfessionCharts(data);
             } catch (e) {
@@ -670,25 +795,18 @@
 
         window.addEventListener('resize', () => {
             Object.values(chartInstances).forEach(chart => {
-                if (chart && !chart.isDisposed()) {
-                    chart.resize();
-                }
+                if (chart && !chart.isDisposed()) chart.resize();
             });
         });
 
         window.addEventListener('DOMContentLoaded', async function() {
             const select = document.getElementById('professionSelect');
             await loadProfessionOptions();
-
             select.addEventListener('change', function() {
                 const key = this.value;
-                if (!key) {
-                    loadDefaultCharts();
-                    return;
-                }
+                if (!key) { loadDefaultCharts(); return; }
                 loadProfessionInsights(key);
             });
-
             loadDefaultCharts();
         });
     </script>

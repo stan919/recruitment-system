@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Awesome-pyecharts</title>
             <script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+    <style>
+        html, body { margin: 0; background: transparent; }
+    </style>
 
 </head>
 <body >
@@ -164,6 +167,62 @@
         }
     ]
 };
+        function applyDarkTheme(option) {
+            const textPrimary = '#E5E5E5';
+            const textSecondary = '#B8B8C4';
+            const textMuted = '#8A8A9A';
+            const lineDim = 'rgba(255,255,255,0.18)';
+            const gridLine = 'rgba(255,255,255,0.08)';
+            option.backgroundColor = 'transparent';
+            option.textStyle = Object.assign({
+                color: textPrimary,
+                fontFamily: 'Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif'
+            }, option.textStyle || {});
+            const titles = option.title ? (Array.isArray(option.title) ? option.title : [option.title]) : [];
+            titles.forEach(title => {
+                title.textStyle = Object.assign({ color: textPrimary, fontWeight: 600 }, title.textStyle || {});
+                title.subtextStyle = Object.assign({ color: textMuted }, title.subtextStyle || {});
+            });
+            const legends = option.legend ? (Array.isArray(option.legend) ? option.legend : [option.legend]) : [];
+            legends.forEach(legend => {
+                legend.textStyle = Object.assign({ color: textSecondary }, legend.textStyle || {});
+            });
+            const normalizeAxis = axis => axis ? (Array.isArray(axis) ? axis : [axis]) : [];
+            normalizeAxis(option.xAxis).forEach(axis => {
+                axis.axisLabel = Object.assign({ color: textSecondary }, axis.axisLabel || {});
+                axis.axisLine = axis.axisLine || {};
+                axis.axisLine.lineStyle = Object.assign({ color: lineDim }, axis.axisLine.lineStyle || {});
+                axis.axisTick = axis.axisTick || {};
+                axis.axisTick.lineStyle = Object.assign({ color: lineDim }, axis.axisTick.lineStyle || {});
+                axis.splitLine = axis.splitLine || {};
+                axis.splitLine.lineStyle = Object.assign({ color: gridLine }, axis.splitLine.lineStyle || {});
+                axis.nameTextStyle = Object.assign({ color: textMuted }, axis.nameTextStyle || {});
+            });
+            normalizeAxis(option.yAxis).forEach(axis => {
+                axis.axisLabel = Object.assign({ color: textSecondary }, axis.axisLabel || {});
+                axis.axisLine = axis.axisLine || {};
+                axis.axisLine.lineStyle = Object.assign({ color: lineDim }, axis.axisLine.lineStyle || {});
+                axis.axisTick = axis.axisTick || {};
+                axis.axisTick.lineStyle = Object.assign({ color: lineDim }, axis.axisTick.lineStyle || {});
+                axis.splitLine = axis.splitLine || {};
+                axis.splitLine.lineStyle = Object.assign({ color: gridLine }, axis.splitLine.lineStyle || {});
+                axis.nameTextStyle = Object.assign({ color: textMuted }, axis.nameTextStyle || {});
+            });
+            (option.series || []).forEach(series => {
+                if (series.label) {
+                    series.label = Object.assign({ color: textSecondary }, series.label || {});
+                }
+                if (series.labelLine) {
+                    series.labelLine = series.labelLine || {};
+                    series.labelLine.lineStyle = Object.assign({ color: gridLine }, series.labelLine.lineStyle || {});
+                }
+            });
+            option.tooltip = option.tooltip || {};
+            option.tooltip.backgroundColor = option.tooltip.backgroundColor || 'rgba(20,20,26,0.92)';
+            option.tooltip.borderColor = option.tooltip.borderColor || lineDim;
+            option.tooltip.textStyle = Object.assign({ color: textPrimary }, option.tooltip.textStyle || {});
+        }
+        applyDarkTheme(option_51222f181b7945de9f4d3cd5418e09a6);
         chart_51222f181b7945de9f4d3cd5418e09a6.setOption(option_51222f181b7945de9f4d3cd5418e09a6);
             window.addEventListener('resize', function(){
                 chart_51222f181b7945de9f4d3cd5418e09a6.resize();

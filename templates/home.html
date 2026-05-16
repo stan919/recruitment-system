@@ -1,525 +1,1454 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>职引未来 - 数据驱动就业，精准匹配理想职位</title>
-    <link rel="stylesheet" href="/static/css/global.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>职引未来 MERIDIAN CAREER — 连接高校毕业生与理想职场</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/global.css">
+<style>
+/* ===== 导航栏 ===== */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    height: 80px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.3s;
+}
+.navbar.scrolled { background: rgba(10,10,15,0.95); }
+.navbar-inner {
+    max-width: var(--container-max); margin: 0 auto; padding: 0 24px;
+    height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-square {
+    width: 36px; height: 36px; border: 2px solid var(--bronze);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px;
+    color: var(--bronze); letter-spacing: 0; line-height: 1;
+}
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-text-cn { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.logo-text-en { font-size: 11px; font-weight: 500; color: var(--bronze); letter-spacing: 0.15em; text-transform: uppercase; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #ffffff;
-            color: #1a1a1a;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+/* 导航链接 */
+.nav-center { display: flex; align-items: center; gap: 6px; }
+.nav-link {
+    position: relative; padding: 8px 18px;
+    font-size: 14px; font-weight: 500; color: var(--text-secondary);
+    text-decoration: none; border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    cursor: pointer; white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+.nav-link i { font-size: 10px; margin-left: 4px; transition: transform 0.2s; }
+.nav-link:hover i { transform: rotate(180deg); }
 
-        /* 导航栏 */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 48px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #f0f0f0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            transition: all 0.3s;
-        }
+/* 下拉菜单 */
+.dropdown { position: relative; }
+.dropdown-menu {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-8px);
+    background: var(--slate); border: 1px solid var(--border-dim); border-radius: 12px;
+    padding: 8px; min-width: 200px; opacity: 0; visibility: hidden;
+    transition: all 0.25s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    pointer-events: none;
+}
+.dropdown:hover .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.dropdown-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+    color: var(--text-secondary); text-decoration: none; border-radius: 8px;
+    font-size: 14px; transition: all 0.2s;
+}
+.dropdown-item:hover { background: rgba(201,169,110,0.1); color: var(--bronze); }
+.dropdown-item i { width: 20px; text-align: center; font-size: 14px; color: var(--bronze); }
+.dropdown-divider { height: 1px; background: var(--border-dim); margin: 4px 8px; }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: #1a1a1a;
-        }
+/* 导航右侧 */
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.lang-toggle {
+    display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border-dim);
+    border-radius: 9999px; cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--text-secondary); transition: all 0.2s; font-family: inherit;
+}
+.lang-toggle:hover { border-color: var(--bronze); color: var(--bronze); }
+.lang-toggle .active-lang { color: var(--bronze); }
 
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--color-brand);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
+.auth-btn { padding: 8px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; font-family: inherit; border: none; }
+.auth-btn-primary { background: var(--bronze); color: var(--obsidian); }
+.auth-btn-primary:hover { background: var(--bronze-light); }
+.auth-btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-dim); }
+.auth-btn-ghost:hover { border-color: var(--bronze); color: var(--bronze); }
 
-        .nav-links {
-            display: flex;
-            gap: 40px;
-        }
+/* 汉堡菜单 */
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+.hamburger span { display: block; width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.3s; }
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
 
-        .nav-links a {
-            text-decoration: none;
-            color: #666;
-            font-size: 15px;
-            font-weight: 400;
-            transition: color 0.2s;
-            position: relative;
-        }
+/* 移动菜单 */
+.mobile-menu {
+    display: none; position: fixed; top: 80px; left: 0; right: 0;
+    background: rgba(10,10,15,0.98); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-dim);
+    padding: 16px 24px; z-index: 999;
+    transform: translateY(-100%); opacity: 0; transition: all 0.3s ease;
+    pointer-events: none;
+}
+.mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.mobile-link {
+    display: block; padding: 14px 0; color: var(--text-secondary);
+    text-decoration: none; font-size: 15px; border-bottom: 1px solid var(--border-dim);
+    transition: color 0.2s;
+}
+.mobile-link:last-child { border-bottom: none; }
+.mobile-link:hover { color: var(--bronze); }
 
-        .nav-links a:hover {
-            color: #1a1a1a;
-        }
+/* ===== Hero 首屏 ===== */
+.hero {
+    position: relative; min-height: 100vh; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    padding-top: 80px;
+}
+.hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80') center/cover no-repeat;
+    animation: heroZoom 20s ease-in-out infinite;
+}
+@keyframes heroZoom {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+.hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, rgba(10,10,15,0.3) 0%, rgba(10,10,15,0.7) 60%, var(--obsidian) 100%);
+}
+.hero-content {
+    position: relative; z-index: 2; text-align: center; max-width: 900px; padding: 0 24px;
+}
+.hero-content > * { animation: heroFadeUp 0.8s ease-out both; }
+.hero-content > .hero-badge { animation-delay: 0.1s; }
+.hero-content > h1 { animation-delay: 0.3s; }
+.hero-content > p { animation-delay: 0.5s; }
+.hero-content > .hero-buttons { animation-delay: 0.7s; }
+@keyframes heroFadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(201,169,110,0.3); color: var(--bronze);
+    padding: 8px 24px; border-radius: 9999px; font-size: 12px; letter-spacing: 0.3em;
+    font-weight: 500; margin-bottom: 32px;
+}
+.hero h1 {
+    font-size: clamp(36px, 5vw, 64px); font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.02em; margin: 0 0 8px 0;
+}
+.hero h1 .line1 { display: block; color: var(--text-primary); }
+.hero h1 .line2 {
+    display: block;
+    background: var(--bronze-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub {
+    font-size: clamp(15px, 1.5vw, 18px); color: var(--text-secondary);
+    max-width: 640px; margin: 20px auto 40px; line-height: 1.8;
+}
+.hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.hero-btn {
+    padding: 14px 36px; border-radius: 9999px; font-size: 15px; font-weight: 600;
+    text-decoration: none; transition: all 0.3s; cursor: pointer;
+    border: none; font-family: inherit; display: inline-flex; align-items: center; gap: 8px;
+}
+.hero-btn-primary { background: var(--bronze); color: var(--obsidian); }
+.hero-btn-primary:hover { background: var(--bronze-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,169,110,0.3); }
+.hero-btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid rgba(255,255,255,0.3); }
+.hero-btn-outline:hover { border-color: var(--bronze); color: var(--bronze); transform: translateY(-2px); }
+.hero-arrow {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 2;
+    color: var(--text-secondary); font-size: 20px; animation: bounceDown 2s ease-in-out infinite;
+    cursor: pointer;
+}
+@keyframes bounceDown {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+}
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--color-brand);
-            transition: width 0.3s;
-        }
+/* ===== 区块通用 ===== */
+.section { padding: var(--section-gap) 0; }
+.section-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 48px; flex-wrap: wrap; gap: 20px;
+}
+.section-title {
+    font-size: clamp(28px, 3vw, 38px); font-weight: 700; margin: 0;
+    letter-spacing: -0.02em;
+}
+.section-title-en {
+    display: block; font-size: 13px; font-weight: 500; color: var(--bronze);
+    letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px;
+}
+.section-subtitle {
+    color: var(--text-secondary); font-size: 15px; max-width: 480px; margin-top: 12px;
+}
 
-        .nav-links a:hover::after {
-            width: 100%;
-        }
+/* ===== 职位画廊 ===== */
+.job-gallery { background: var(--obsidian); }
+#jobs, #metrics, #timeline, #contact { scroll-margin-top: 80px; }
+.filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-pill {
+    padding: 8px 20px; border-radius: 9999px; border: 1px solid var(--border-dim);
+    background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.filter-pill:hover { border-color: rgba(201,169,110,0.4); color: var(--bronze); }
+.filter-pill.active { background: var(--bronze); color: var(--obsidian); border-color: var(--bronze); font-weight: 600; }
+.job-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.job-card {
+    background: var(--slate); border-radius: 16px; overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;
+    border: 1px solid var(--border-light);
+}
+.job-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+.job-card-image {
+    position: relative; aspect-ratio: 16/10; overflow: hidden; background: var(--graphite);
+}
+.job-card-image img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.7s ease;
+}
+.job-card:hover .job-card-image img { transform: scale(1.05); }
+.job-card-badge {
+    position: absolute; top: 12px; left: 12px;
+    background: var(--bronze); color: var(--obsidian);
+    padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+.job-card-match {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+    color: var(--text-primary); padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif;
+}
+.job-card-body { padding: 20px 24px 24px; }
+.job-card-location {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--bronze); margin-bottom: 8px;
+}
+.job-card-location i { font-size: 12px; }
+.job-card-title {
+    font-size: 18px; font-weight: 600; color: var(--text-primary);
+    margin: 0 0 8px; transition: color 0.2s;
+}
+.job-card:hover .job-card-title { color: var(--bronze); }
+.job-card-desc {
+    font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; margin-bottom: 16px;
+}
+.job-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.job-card-tag {
+    padding: 3px 10px; background: rgba(201,169,110,0.1); color: var(--bronze-light);
+    border-radius: 4px; font-size: 11px; font-weight: 500;
+}
+.job-card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--border-light);
+}
+.job-card-salary { font-size: 18px; font-weight: 700; color: var(--bronze); font-family: 'Inter', sans-serif; }
+.job-card-company { font-size: 13px; color: var(--text-muted); }
 
-        .auth-buttons {
-            display: flex;
-            gap: 12px;
-        }
+/* ===== 平台实力 ===== */
+.impact-metrics {
+    position: relative; overflow: hidden;
+    background: var(--slate);
+}
+.impact-metrics::before {
+    content: ''; position: absolute; inset: 0; z-index: 0;
+    background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80') center/cover no-repeat;
+    opacity: 0.08;
+}
+.impact-metrics * { position: relative; z-index: 1; }
+.metrics-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; text-align: center;
+    margin-bottom: 64px;
+}
+.metric-number {
+    font-size: clamp(36px, 4vw, 56px); font-weight: 700;
+    font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
+    background: var(--bronze-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1.1; margin-bottom: 8px;
+}
+.metric-label { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
+.metric-label-en { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.1em; }
+.sub-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+.sub-metric-card {
+    background: var(--graphite); border-radius: 16px; padding: 28px 20px;
+    text-align: center; border: 1px solid var(--border-light);
+    transition: border-color 0.3s, transform 0.3s;
+}
+.sub-metric-card:hover { border-color: var(--bronze); transform: translateY(-2px); }
+.sub-metric-icon {
+    width: 44px; height: 44px; margin: 0 auto 14px;
+    background: rgba(201,169,110,0.12); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--bronze); font-size: 20px;
+}
+.sub-metric-number { font-size: 24px; font-weight: 700; color: var(--text-primary); font-family: 'Inter', sans-serif; }
+.sub-metric-label { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
 
-        .btn-login {
-            padding: 10px 28px;
-            background: var(--color-brand);
-            color: white;
-            border: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
+/* ===== 时间线 + 出版物 ===== */
+.timeline-section { background: rgba(28,28,36,0.5); }
+.timeline-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
 
-        .btn-login:hover {
-            opacity: 0.92;
-            filter: brightness(0.98);
-        }
+/* 左侧时间线 */
+.timeline { position: relative; padding-left: 32px; }
+.timeline::before {
+    content: ''; position: absolute; left: 7px; top: 6px; bottom: 0;
+    width: 2px; background: linear-gradient(180deg, var(--bronze), var(--bronze-dark), transparent);
+}
+.timeline-item { position: relative; margin-bottom: 36px; }
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-dot {
+    position: absolute; left: -32px; top: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--bronze); border: 3px solid var(--slate);
+    box-shadow: 0 0 0 2px rgba(201,169,110,0.3);
+}
+.timeline-date { font-size: 12px; color: var(--bronze); font-weight: 600; font-family: 'Inter', sans-serif; margin-bottom: 4px; }
+.timeline-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.timeline-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 
-        .btn-register {
-            padding: 10px 28px;
-            background: transparent;
-            color: var(--color-brand);
-            border: 1.5px solid var(--color-brand);
-            border-radius: 9999px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
+/* 右侧出版物 */
+.pub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pub-card {
+    position: relative; background: var(--slate); border-radius: 12px;
+    padding: 24px; border: 1px solid var(--border-light);
+    transition: border-color 0.3s, transform 0.3s; overflow: hidden;
+}
+.pub-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--bronze-gradient); opacity: 0.6;
+}
+.pub-card:hover { border-color: rgba(201,169,110,0.3); transform: translateY(-2px); }
+.pub-icon { font-size: 28px; color: var(--bronze); margin-bottom: 12px; }
+.pub-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; transition: color 0.2s; }
+.pub-card:hover .pub-title { color: var(--bronze); }
+.pub-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+.pub-link {
+    font-size: 13px; color: var(--bronze); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.pub-link:hover { color: var(--bronze-light); }
+.pub-link i { font-size: 12px; }
 
-        .btn-register:hover {
-            background: var(--color-brand);
-            color: white;
-            opacity: 0.92;
-        }
+/* ===== 联系表单 + 留言簿 ===== */
+.contact-section { background: var(--obsidian); }
+.contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
 
-        /* 主视觉区域 */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 140px 20px 80px;
-            background: #ffffff;
-            color: #1a1a1a;
-            position: relative;
-            overflow: hidden;
-        }
+/* 左侧表单 */
+.contact-form { background: var(--slate); border-radius: 20px; padding: 40px; border: 1px solid var(--border-light); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+.form-input, .form-select, .form-textarea {
+    width: 100%; padding: 12px 16px; background: var(--graphite);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    color: var(--text-primary); font-size: 14px; font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-select { appearance: none; cursor: pointer; }
+.form-textarea { min-height: 100px; resize: vertical; }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+.form-upload {
+    border: 2px dashed rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s; background: var(--graphite);
+}
+.form-upload:hover { border-color: var(--bronze); }
+.form-upload i { font-size: 32px; color: var(--bronze); margin-bottom: 8px; }
+.form-upload p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.form-upload .upload-hint { font-size: 11px; color: var(--text-muted); opacity: 0.7; margin-top: 4px; }
+.form-submit {
+    width: 100%; padding: 14px; background: var(--bronze); color: var(--obsidian);
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.form-submit:hover { background: var(--bronze-light); }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -10%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(60px);
-            z-index: 0;
-        }
+/* 右侧留言簿 */
+.guestbook-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.guestbook-title { font-size: 20px; font-weight: 600; margin: 0; }
+.gb-write-btn {
+    padding: 8px 20px; background: var(--bronze); color: var(--obsidian);
+    border: none; border-radius: 9999px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.gb-write-btn:hover { background: var(--bronze-light); }
+.gb-list { display: flex; flex-direction: column; gap: 16px; }
+.gb-item {
+    display: flex; gap: 14px; padding: 18px; border-radius: 12px;
+    background: var(--slate); border: 1px solid var(--border-light);
+    border-left: 3px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+}
+.gb-item:hover { background: rgba(28,28,36,0.8); border-left-color: var(--bronze); }
+.gb-avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: var(--bronze); color: var(--obsidian);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+}
+.gb-content { flex: 1; min-width: 0; }
+.gb-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+.gb-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.gb-tag {
+    font-size: 11px; padding: 2px 8px; background: rgba(201,169,110,0.12);
+    color: var(--bronze-light); border-radius: 4px;
+}
+.gb-time { font-size: 12px; color: var(--text-muted); }
+.gb-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0 8px; }
+.gb-actions { display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); }
+.gb-actions span { cursor: pointer; transition: color 0.2s; }
+.gb-actions span:hover { color: var(--bronze); }
+.gb-actions i { margin-right: 4px; }
 
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #f8f7ff;
-            padding: 8px 20px;
-            border-radius: 9999px;
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 40px;
-            position: relative;
-            z-index: 1;
-            border: 1px solid #f0f0f0;
-        }
+/* ===== 页脚 ===== */
+.footer {
+    background: var(--slate); border-top: 1px solid var(--border-light);
+    padding: 64px 0 0;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+.footer-brand .logo { margin-bottom: 16px; }
+.footer-desc { font-size: 14px; color: var(--text-muted); line-height: 1.8; max-width: 320px; margin-bottom: 24px; }
+.footer-socials { display: flex; gap: 12px; }
+.footer-social {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-dim);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); text-decoration: none;
+    transition: all 0.2s; font-size: 16px;
+}
+.footer-social:hover { background: var(--bronze); color: var(--obsidian); border-color: var(--bronze); }
+.footer-col-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; }
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { margin-bottom: 12px; }
+.footer-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 14px;
+    transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--bronze); }
+.footer-contact p { font-size: 14px; color: var(--text-muted); margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.footer-contact i { color: var(--bronze); width: 16px; }
+.footer-bottom {
+    margin-top: 48px; padding: 24px 0;
+    border-top: 1px solid var(--border-light);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+}
+.footer-bottom p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.footer-bottom-links { display: flex; gap: 20px; }
+.footer-bottom-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+.footer-bottom-links a:hover { color: var(--bronze); }
 
-        .hero-badge-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--color-brand);
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+/* ===== AI 职业助手 ===== */
+.ai-trigger {
+    position: fixed; bottom: 32px; right: 32px; z-index: 900;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--bronze); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--obsidian); font-size: 24px;
+    box-shadow: 0 4px 20px rgba(201,169,110,0.3);
+    animation: aiPulse 3s ease-in-out infinite;
+    transition: transform 0.2s;
+}
+.ai-trigger:hover { transform: scale(1.1); }
+@keyframes aiPulse { 0%, 100% { box-shadow: 0 4px 20px rgba(201,169,110,0.3); } 50% { box-shadow: 0 4px 30px rgba(201,169,110,0.5); } }
+.ai-badge {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #ef4444; border: 2px solid var(--obsidian);
+}
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
+.ai-panel {
+    position: fixed; bottom: 100px; right: 32px; z-index: 899;
+    width: 380px; max-height: 560px; background: var(--slate);
+    border: 1px solid var(--border-dim); border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: none; flex-direction: column; overflow: hidden;
+}
+.ai-panel.open { display: flex; }
+.ai-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid var(--border-light);
+}
+.ai-panel-avatar {
+    display: flex; align-items: center; gap: 10px;
+}
+.ai-panel-avatar .ai-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bronze); display: flex; align-items: center; justify-content: center;
+    color: var(--obsidian); font-size: 16px;
+}
+.ai-panel-avatar .ai-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.ai-panel-avatar .ai-status { font-size: 11px; color: #22c55e; }
+.ai-panel-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; }
+.ai-panel-close:hover { color: var(--text-primary); }
+.ai-panel-messages {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 16px;
+}
+.ai-message, .user-message {
+    max-width: 85%; padding: 12px 16px; border-radius: 12px;
+    font-size: 14px; line-height: 1.6;
+}
+.ai-message { background: var(--graphite); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 4px; }
+.user-message { background: rgba(201,169,110,0.15); color: var(--text-primary); align-self: flex-end; border-bottom-right-radius: 4px; }
+.ai-welcome-title { font-weight: 600; margin-bottom: 8px; color: var(--bronze); }
+.ai-welcome-list { padding-left: 18px; margin: 8px 0; }
+.ai-welcome-list li { margin-bottom: 4px; color: var(--text-secondary); font-size: 13px; }
+.ai-panel-input {
+    display: flex; gap: 8px; padding: 14px 16px;
+    border-top: 1px solid var(--border-light);
+}
+.ai-panel-input input {
+    flex: 1; padding: 10px 14px; background: var(--graphite);
+    border: 1px solid var(--border-dim); border-radius: 10px;
+    color: var(--text-primary); font-size: 13px; font-family: inherit;
+}
+.ai-panel-input input:focus { border-color: var(--bronze); box-shadow: 0 0 0 2px rgba(201,169,110,0.2) !important; }
+.ai-send-btn {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--bronze);
+    border: none; color: var(--obsidian); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ai-send-btn:hover { background: var(--bronze-light); }
+.ai-typing { display: flex; gap: 4px; padding: 12px 16px; align-items: center; }
+.ai-typing span { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); animation: aiTyping 1.4s infinite both; }
+.ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes aiTyping { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .hero h1 {
-            font-size: clamp(32px, 6vw, 56px);
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 1;
-            color: #1a1a1a;
-        }
-
-        .hero h2 {
-            font-size: clamp(32px, 6vw, 56px);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 24px;
-            color: var(--color-brand);
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero p {
-            font-size: 18px;
-            max-width: 640px;
-            margin: 0 auto 48px;
-            color: #666;
-            line-height: 1.8;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 0;
-            position: relative;
-            z-index: 1;
-            justify-content: center;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .btn-primary {
-            padding: 12px 32px;
-            background: var(--color-brand);
-            color: var(--color-brand-contrast);
-            border: none;
-            border-radius: 9999px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, filter 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.92;
-            filter: brightness(0.98);
-        }
-
-        .nav-link-brand {
-            color: var(--color-brand) !important;
-        }
-
-        .btn-secondary {
-            padding: 12px 32px;
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--border-light);
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: background-color 0.2s, opacity 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-secondary);
-            opacity: 0.95;
-        }
-
-        /* 统计数据 */
-        .stats {
-            display: flex;
-            gap: 80px;
-            margin-top: 80px;
-            padding-top: 60px;
-            border-top: 1px solid var(--border-light);
-            position: relative;
-            z-index: 1;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 40px;
-            font-weight: 700;
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-main);
-            letter-spacing: -0.02em;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        /* 特性区域 */
-        .features {
-            background: var(--bg-secondary);
-            padding: 120px 48px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 32px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .feature-card {
-            padding: 40px 32px;
-            background: var(--bg-primary);
-            border-radius: 16px;
-            border: 1px solid var(--border-light);
-            transition: border-color 0.2s;
-        }
-
-        .feature-card:hover {
-            border-color: #dcdcdc;
-        }
-
-        .feature-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--text-main);
-        }
-
-        .feature-desc {
-            font-size: 15px;
-            color: var(--text-muted);
-            line-height: 1.8;
-        }
-
-        /* 页脚 */
-        .footer {
-            background: var(--bg-secondary);
-            color: var(--text-main);
-            padding: 64px 48px;
-            border-top: 1px solid var(--border-light);
-            text-align: center;
-        }
-
-        .footer p {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 15px 20px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .hero h1 {
-                font-size: 36px;
-            }
-
-            .hero h2 {
-                font-size: 28px;
-            }
-
-            .hero p {
-                font-size: 16px;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .stats {
-                flex-direction: column;
-                gap: 30px;
-            }
-
-            .features {
-                padding: 60px 20px;
-            }
-        }
-    </style>
+/* ===== 响应式 ===== */
+@media (max-width: 1279px) {
+    .timeline-layout { grid-template-columns: 1fr; gap: 48px; }
+}
+@media (max-width: 1023px) {
+    .job-grid { grid-template-columns: 1fr 1fr; }
+    .metrics-grid { gap: 32px; }
+    .sub-metrics { grid-template-columns: repeat(2, 1fr); }
+    .contact-layout { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 767px) {
+    .nav-center { display: none; }
+    .nav-right .auth-btn { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: block; }
+    .job-grid { grid-template-columns: 1fr; }
+    .section-header { flex-direction: column; align-items: flex-start; }
+    .metrics-grid { grid-template-columns: 1fr; gap: 32px; }
+    .sub-metrics { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .sub-metric-card { padding: 20px 16px; }
+    .timeline { padding-left: 28px; }
+    .pub-grid { grid-template-columns: 1fr; }
+    .contact-form { padding: 24px; }
+    .form-row { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+    .ai-panel { width: calc(100vw - 32px); right: 16px; bottom: 90px; max-height: 480px; }
+    .hero-bg { animation: none; background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80'); }
+    .section { --section-gap: 60px; }
+}
+</style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="logo">
-            职引未来
+
+<!-- ===== 导航栏 ===== -->
+<nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+        <a href="/" class="logo">
+            <div class="logo-text">
+                <span class="logo-text-cn">职引未来</span>
+                <span class="logo-text-en">MERIDIAN CAREER</span>
+            </div>
+        </a>
+
+        <div class="nav-center">
+            <div class="dropdown">
+                <a class="nav-link"><span data-i18n="nav-platform">平台功能</span> <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/insights"><i class="fas fa-chart-bar"></i> <span data-i18n="nav-insights">数据洞察</span></a>
+                    <a class="dropdown-item" href="/jobs/search"><i class="fas fa-search"></i> <span data-i18n="nav-jobs">职位搜索</span></a>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/chat/user"><i class="fas fa-comment-dots"></i> <span data-i18n="nav-messages">消息中心</span></a>
+                    <a class="dropdown-item" href="/applications"><i class="fas fa-file-alt"></i> <span data-i18n="nav-applications">投递中心</span></a>
+                    {% endif %}
+                </div>
+            </div>
+            <a class="nav-link" href="#jobs" data-i18n="nav-opportunities">职位机会</a>
+            <a class="nav-link" href="#metrics" data-i18n="nav-impact">平台实力</a>
+            <a class="nav-link" href="#timeline" data-i18n="nav-achievements">成果历程</a>
+            <a class="nav-link" href="#contact" data-i18n="nav-contact">联系我们</a>
         </div>
-        <div class="nav-links">
-            <a href="/">首页</a>
-            <a href="/jobs/search">职位搜索</a>
-            <a href="/insights">数据洞察</a>
-            <a href="#features">功能介绍</a>
-            {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
-            <a href="/chat/user" class="nav-link-brand">消息中心</a>
-            <a href="/applications" style="color: #666;">投递记录</a>
-            {% endif %}
-        </div>
-        <div class="auth-buttons">
+
+        <div class="nav-right">
+            <button class="lang-toggle" id="langToggle" onclick="toggleLang()">
+                <span class="active-lang" id="langCurrent">中</span>
+                <span style="color:var(--text-muted);font-size:11px;">/</span>
+                <span id="langOther">EN</span>
+            </button>
+
             {% if session.get('user_id') %}
-            {% if session.get('is_admin') %}
-            <button class="btn-register" onclick="location.href='/admin'">管理后台</button>
-            {% elif session.get('is_company') %}
-            <button class="btn-register" onclick="location.href='/company'">企业后台</button>
+                {% if session.get('is_admin') %}
+                <a href="/admin" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-shield-alt"></i> 管理后台</a>
+                {% elif session.get('is_company') %}
+                <a href="/company" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-building"></i> 企业后台</a>
+                {% else %}
+                <a href="/profile" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;"><i class="fas fa-user"></i> 个人中心</a>
+                <button class="auth-btn auth-btn-primary" onclick="logout()" style="padding:8px 18px;font-size:12px;">退出</button>
+                {% endif %}
             {% else %}
-            <button class="btn-register" onclick="location.href='/profile'">个人中心</button>
+                <a href="/login" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;" data-i18n="btn-login">登录</a>
+                <a href="/register" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;" data-i18n="btn-register">注册</a>
             {% endif %}
-            <button class="btn-login" onclick="logout()">退出</button>
-            {% else %}
-            <button class="btn-login" onclick="location.href='/login'">登录</button>
-            <button class="btn-register" onclick="location.href='/register'">注册</button>
-            {% endif %}
-        </div>
-    </nav>
 
-    <!-- 主视觉区域 -->
-    <section class="hero">
-        <h1>数据驱动就业</h1>
-        <h2>精准匹配理想职位</h2>
-        <p>整合全国企业招聘信息，通过智能分析为高校毕业生提供个性化推荐，让求职更高效、更简单。</p>
-        
+            <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="菜单">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a class="mobile-link" href="#jobs" onclick="closeMobileMenu()" data-i18n="nav-opportunities">职位机会</a>
+        <a class="mobile-link" href="#metrics" onclick="closeMobileMenu()" data-i18n="nav-impact">平台实力</a>
+        <a class="mobile-link" href="#timeline" onclick="closeMobileMenu()" data-i18n="nav-achievements">成果历程</a>
+        <a class="mobile-link" href="#contact" onclick="closeMobileMenu()" data-i18n="nav-contact">联系我们</a>
+        <a class="mobile-link" href="/insights" data-i18n="nav-insights">数据洞察</a>
+        <a class="mobile-link" href="/jobs/search" data-i18n="nav-jobs">职位搜索</a>
+        {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+        <a class="mobile-link" href="/chat/user" data-i18n="nav-messages">消息中心</a>
+        <a class="mobile-link" href="/applications" data-i18n="nav-applications">投递中心</a>
+        {% endif %}
+        {% if not session.get('user_id') %}
+        <a class="mobile-link" href="/login" data-i18n="btn-login">登录</a>
+        <a class="mobile-link" href="/register" data-i18n="btn-register">注册</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ===== Hero 首屏 ===== -->
+<section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-badge">EST. 2026</div>
+        <h1>
+            <span class="line1" data-i18n="hero-title-line1">Navigating Your</span>
+            <span class="line2" data-i18n="hero-title-line2">Career Horizon</span>
+        </h1>
+        <p class="hero-sub" data-i18n="hero-sub">职引未来，horizon 由你定义 —— 连接高校毕业生与理想职场的桥梁</p>
         <div class="hero-buttons">
-            {% if not session.get('user_id') %}
-            <a href="/register" class="btn-primary">免费注册</a>
-            {% endif %}
-            <a href="/dashboard" class="btn-secondary">进入平台</a>
+            <a href="#jobs" class="hero-btn hero-btn-primary"><i class="fas fa-rocket"></i> <span data-i18n="hero-cta-primary">探索职位机会</span></a>
+            <a href="#contact" class="hero-btn hero-btn-outline"><i class="fas fa-comments"></i> <span data-i18n="hero-cta-secondary">预约导师咨询</span></a>
         </div>
+    </div>
+    <div class="hero-arrow"><i class="fas fa-chevron-down"></i></div>
+</section>
 
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-number">10W+</span>
-                <span class="stat-label">优质企业</span>
+<!-- ===== 职位画廊 ===== -->
+<section class="section job-gallery" id="jobs">
+    <div class="container">
+        <div class="section-header" data-reveal>
+            <div>
+                <span class="section-title-en" data-i18n="gallery-title-en">Opportunity Gallery</span>
+                <h2 class="section-title" data-i18n="gallery-title">精选职位机会</h2>
+                <p class="section-subtitle" data-i18n="gallery-sub">汇聚优质企业，为你找到最合适的职业起点</p>
             </div>
-            <div class="stat-item">
-                <span class="stat-number">50W+</span>
-                <span class="stat-label">在招职位</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number">98%</span>
-                <span class="stat-label">就业成功率</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- 功能介绍 -->
-    <section class="features" id="features">
-        <div class="features-grid">
-            <div class="feature-card">
-                <h3 class="feature-title">数据洞察</h3>
-                <p class="feature-desc">支持专业筛选联动图表，实时查看岗位分布、薪资分位、学历经验结构与技能热词。</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="feature-title">企业协同</h3>
-                <p class="feature-desc">企业端覆盖职位管理、投递处理、公司设置与日志追踪，让招聘流程更高效可控。</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="feature-title">技能画像</h3>
-                <p class="feature-desc">基于岗位技能标签生成热词词云，帮助你识别核心能力与学习优先级。</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="feature-title">城市机会</h3>
-                <p class="feature-desc">按省市对比岗位数量与薪资表现，快速判断目标城市的机会和竞争强度。</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="feature-title">职位搜索</h3>
-                <p class="feature-desc">支持关键词、城市、专业方向和薪资区间筛选，一次检索更精准。</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="feature-title">求职中心</h3>
-                <p class="feature-desc">统一管理简历与附件，跟踪投递状态，支持撤回修改并可与企业在线沟通。</p>
+            <div class="filter-pills" id="filterPills">
+                <button class="filter-pill active" data-filter="all" data-i18n="filter-all">全部</button>
+                <button class="filter-pill" data-filter="互联网科技" data-i18n="filter-tech">互联网科技</button>
+                <button class="filter-pill" data-filter="金融" data-i18n="filter-finance">金融</button>
+                <button class="filter-pill" data-filter="咨询" data-i18n="filter-consulting">咨询</button>
             </div>
         </div>
-    </section>
+        <div class="job-grid" id="jobGrid"></div>
+    </div>
+</section>
 
-    <!-- 页脚 -->
-    <footer class="footer">
-        <p>&copy; 2026 职引未来。All rights reserved. 数据驱动就业，精准匹配理想职位</p>
-    </footer>
-    
-    <script>
-        // 检查管理员权限并显示入口
-        fetch('/api/admin/check')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.user.is_admin) {
-                    // 在导航栏添加管理后台链接
-                    const navLinks = document.querySelector('.nav-links');
-                    const adminLink = document.createElement('a');
-                    adminLink.href = '/admin';
-                    adminLink.textContent = '管理后台';
-                    adminLink.className = 'nav-link-brand';
-                    adminLink.style.fontWeight = '600';
-                    navLinks.appendChild(adminLink);
-                }
-            })
-            .catch(error => console.error('检查管理员权限失败:', error));
-        
-        // 退出登录
-        function logout() {
-            fetch('/api/logout', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.removeItem('user');
-                        window.location.reload();
-                    }
-                });
+<!-- ===== 平台实力 ===== -->
+<section class="section impact-metrics" id="metrics">
+    <div class="container">
+        <div style="text-align:center;margin-bottom:48px;" data-reveal>
+            <span class="section-title-en" data-i18n="metrics-title-en">Impact Metrics</span>
+            <h2 class="section-title" data-i18n="metrics-title">平台实力</h2>
+            <p class="section-subtitle" style="margin:12px auto 0;" data-i18n="metrics-sub">用数据说话，见证我们的成长与承诺</p>
+        </div>
+        <div class="metrics-grid" data-reveal>
+            <div>
+                <div class="metric-number" data-count="148000">0</div>
+                <div class="metric-label"><span data-i18n="metric-positions">岗位机会</span><span class="metric-label-en">Positions</span></div>
+            </div>
+            <div>
+                <div class="metric-number" data-count="3200">0</div>
+                <div class="metric-label"><span data-i18n="metric-enterprises">合作企业</span><span class="metric-label-en">Partner Enterprises</span></div>
+            </div>
+            <div>
+                <div class="metric-number" data-count="26">0</div>
+                <div class="metric-label"><span data-i18n="metric-industries">覆盖行业</span><span class="metric-label-en">Industries</span></div>
+            </div>
+        </div>
+        <div class="sub-metrics" data-reveal>
+            <div class="sub-metric-card">
+                <div class="sub-metric-icon"><i class="fas fa-trophy"></i></div>
+                <div class="sub-metric-number">500+</div>
+                <div class="sub-metric-label" data-i18n="sub-fortune">世界 500 强合作</div>
+            </div>
+            <div class="sub-metric-card">
+                <div class="sub-metric-icon"><i class="fas fa-university"></i></div>
+                <div class="sub-metric-number">800+</div>
+                <div class="sub-metric-label" data-i18n="sub-schools">高校合作网络</div>
+            </div>
+            <div class="sub-metric-card">
+                <div class="sub-metric-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="sub-metric-number">95%</div>
+                <div class="sub-metric-label" data-i18n="sub-employment">就业成功率</div>
+            </div>
+            <div class="sub-metric-card">
+                <div class="sub-metric-icon"><i class="fas fa-clock"></i></div>
+                <div class="sub-metric-number">48h</div>
+                <div class="sub-metric-label" data-i18n="sub-feedback">平均反馈时长</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 时间线 + 出版物 ===== -->
+<section class="section timeline-section" id="timeline">
+    <div class="container">
+        <div style="margin-bottom:48px;" data-reveal>
+            <span class="section-title-en" data-i18n="timeline-title-en">Milestones & Guides</span>
+            <h2 class="section-title" data-i18n="timeline-title">成果历程</h2>
+            <p class="section-subtitle" data-i18n="timeline-sub">我们的成长足迹与职业发展指南</p>
+        </div>
+        <div class="timeline-layout">
+            <div class="timeline" data-reveal>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2024.03</div>
+                    <div class="timeline-title" data-i18n="tl-1-title">平台正式上线</div>
+                    <div class="timeline-desc" data-i18n="tl-1-desc">职引未来平台 v1.0 正式发布，首批 500+ 企业入驻</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2024.06</div>
+                    <div class="timeline-title" data-i18n="tl-2-title">AI 匹配引擎上线</div>
+                    <div class="timeline-desc" data-i18n="tl-2-desc">基于深度学习的职位推荐系统，匹配准确率提升至 92%</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2024.09</div>
+                    <div class="timeline-title" data-i18n="tl-3-title">用户突破 50,000</div>
+                    <div class="timeline-desc" data-i18n="tl-3-desc">平台注册用户突破 5 万，覆盖全国 200+ 高校</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2024.12</div>
+                    <div class="timeline-title" data-i18n="tl-4-title">企业端功能升级</div>
+                    <div class="timeline-desc" data-i18n="tl-4-desc">企业后台 v2.0 上线，新增简历管理、数据分析等强大功能</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2025.03</div>
+                    <div class="timeline-title" data-i18n="tl-5-title">智能聊天系统发布</div>
+                    <div class="timeline-desc" data-i18n="tl-5-desc">学生与企业即时沟通，面试邀约线上化，效率提升 60%</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2025.08</div>
+                    <div class="timeline-title" data-i18n="tl-6-title">AI 职业助手上线</div>
+                    <div class="timeline-desc" data-i18n="tl-6-desc">集成千问大模型，为每位用户提供个性化职业规划与简历优化建议</div>
+                </div>
+            </div>
+            <div data-reveal>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h3 style="font-size:18px;font-weight:600;margin:0;" data-i18n="pub-title">职业发展指南</h3>
+                    <span style="font-size:12px;color:var(--text-muted);">PUBLICATIONS</span>
+                </div>
+                <div class="pub-grid">
+                    <div class="pub-card">
+                        <div class="pub-icon"><i class="fas fa-file-pdf"></i></div>
+                        <div class="pub-title" data-i18n="pub-1-title">2024 应届生就业趋势报告</div>
+                        <div class="pub-desc" data-i18n="pub-1-desc">覆盖全国 50+ 城市，10,000+ 企业样本的深度分析</div>
+                        <a class="pub-link" href="#"><span data-i18n="pub-download">下载报告</span> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-icon"><i class="fas fa-file-pdf"></i></div>
+                        <div class="pub-title" data-i18n="pub-2-title">简历撰写完全指南</div>
+                        <div class="pub-desc" data-i18n="pub-2-desc">从格式到内容，手把手教你写一份出色的简历</div>
+                        <a class="pub-link" href="#"><span data-i18n="pub-download">下载报告</span> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-icon"><i class="fas fa-file-pdf"></i></div>
+                        <div class="pub-title" data-i18n="pub-3-title">面试通关宝典</div>
+                        <div class="pub-desc" data-i18n="pub-3-desc">精选 100+ 真实面试题，涵盖各行业核心考点</div>
+                        <a class="pub-link" href="#"><span data-i18n="pub-download">下载报告</span> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="pub-title" data-i18n="pub-4-title">互联网行业薪资地图</div>
+                        <div class="pub-desc" data-i18n="pub-4-desc">一线城市 vs 新一线，各岗位薪资全方位对比</div>
+                        <a class="pub-link" href="#"><span data-i18n="pub-view">查看详情</span> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="pub-title" data-i18n="pub-5-title">职业规划工作坊</div>
+                        <div class="pub-desc" data-i18n="pub-5-desc">专业职业规划师团队，帮你找到最适合的发展方向</div>
+                        <a class="pub-link" href="#"><span data-i18n="pub-view">查看详情</span> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="pub-title" data-i18n="pub-6-title">考研vs就业决策指南</div>
+                        <div class="pub-desc" data-i18n="pub-6-desc">数据驱动的决策框架，帮你做出最适合自己的选择</div>
+                        <a class="pub-link" href="#"><span data-i18n="pub-view">查看详情</span> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 联系表单 + 留言簿 ===== -->
+<section class="section contact-section" id="contact">
+    <div class="container">
+        <div style="text-align:center;margin-bottom:48px;" data-reveal>
+            <span class="section-title-en" data-i18n="contact-title-en">Contact & Guestbook</span>
+            <h2 class="section-title" data-i18n="contact-title">联系我们</h2>
+            <p class="section-subtitle" style="margin:12px auto 0;" data-i18n="contact-sub">有任何问题或建议？我们随时倾听你的声音</p>
+        </div>
+        <div class="contact-layout">
+            <div data-reveal>
+                <div class="contact-form" id="contactForm">
+                    <h3 style="font-size:20px;font-weight:600;margin:0 0 24px;" data-i18n="form-title">智能咨询表单</h3>
+                    <form onsubmit="submitContact(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="form-name">姓名</label>
+                                <input class="form-input" type="text" id="contactName" placeholder="请输入姓名" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="form-school">学校</label>
+                                <input class="form-input" type="text" id="contactSchool" placeholder="请输入学校名称">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="form-major">专业</label>
+                                <input class="form-input" type="text" id="contactMajor" placeholder="请输入专业">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="form-email">邮箱</label>
+                                <input class="form-input" type="email" id="contactEmail" placeholder="请输入邮箱" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="form-intent">求职意向</label>
+                            <select class="form-select" id="contactIntent">
+                                <option value="" data-i18n="form-intent-placeholder">请选择求职方向</option>
+                                <option value="互联网科技" data-i18n="form-intent-1">互联网科技</option>
+                                <option value="金融" data-i18n="form-intent-2">金融</option>
+                                <option value="咨询" data-i18n="form-intent-3">咨询</option>
+                                <option value="其他" data-i18n="form-intent-4">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="form-resume">简历上传</label>
+                            <div class="form-upload" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p data-i18n="form-upload-text">拖拽简历文件到此处或点击上传</p>
+                                <p class="upload-hint" data-i18n="form-upload-hint">支持 PDF、DOCX 格式，文件大小不超过 10MB</p>
+                            </div>
+                            <input type="file" id="resumeInput" accept=".pdf,.docx,.doc" style="display:none">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="form-message">留言</label>
+                            <textarea class="form-textarea" id="contactMessage" placeholder="请输入您的留言内容..." data-i18n="form-message-placeholder"></textarea>
+                        </div>
+                        <button class="form-submit" type="submit" data-i18n="form-submit">提交咨询</button>
+                    </form>
+                </div>
+            </div>
+            <div data-reveal>
+                <div class="guestbook-header">
+                    <h3 class="guestbook-title" data-i18n="guestbook-title">就业留言簿</h3>
+                    <button class="gb-write-btn" onclick="openWriteGuestbook()"><i class="fas fa-pen"></i> <span data-i18n="guestbook-write">写留言</span></button>
+                </div>
+                <div class="gb-list" id="guestbookList"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 页脚 ===== -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo" style="margin-bottom:16px;">
+                    <div class="logo-square">M</div>
+                    <div class="logo-text">
+                        <span class="logo-text-cn">职引未来</span>
+                        <span class="logo-text-en">MERIDIAN CAREER</span>
+                    </div>
+                </a>
+                <p class="footer-desc" data-i18n="footer-desc">连接高校毕业生与理想职场的桥梁，用数据驱动就业，以科技赋能未来。</p>
+                <div class="footer-socials">
+                    <a class="footer-social" href="#" title="微信"><i class="fab fa-weixin"></i></a>
+                    <a class="footer-social" href="#" title="微博"><i class="fab fa-weibo"></i></a>
+                    <a class="footer-social" href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a class="footer-social" href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-col-title" data-i18n="footer-quick">快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="#jobs" data-i18n="nav-opportunities">职位机会</a></li>
+                    <li><a href="#metrics" data-i18n="nav-impact">平台实力</a></li>
+                    <li><a href="#timeline" data-i18n="nav-achievements">成果历程</a></li>
+                    <li><a href="/insights" data-i18n="nav-insights">数据洞察</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title" data-i18n="footer-services">平台服务</h4>
+                <ul class="footer-links">
+                    <li><a href="/jobs/search" data-i18n="nav-jobs">职位搜索</a></li>
+                    <li><a href="/insights" data-i18n="nav-insights">数据洞察</a></li>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <li><a href="/chat/user" data-i18n="nav-messages">消息中心</a></li>
+                    <li><a href="/applications" data-i18n="nav-applications">投递中心</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title" data-i18n="footer-contact">联系方式</h4>
+                <div class="footer-contact">
+                    <p><i class="fas fa-envelope"></i> contact@meridiancareer.com</p>
+                    <p><i class="fas fa-phone"></i> 400-888-9999</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 职引未来 MERIDIAN CAREER. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#" data-i18n="footer-privacy">隐私政策</a>
+                <a href="#" data-i18n="footer-terms">用户协议</a>
+                <a href="#" data-i18n="footer-icp">京ICP备XXXXXXXX号</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ===== AI 职业助手 ===== -->
+<button class="ai-trigger" id="aiTrigger" onclick="toggleAI()" title="AI 职业助手">
+    <i class="fas fa-robot"></i>
+    <span class="ai-badge"></span>
+</button>
+<div class="ai-panel" id="aiPanel">
+    <div class="ai-panel-header">
+        <div class="ai-panel-avatar">
+            <div class="ai-icon"><i class="fas fa-robot"></i></div>
+            <div>
+                <div class="ai-name" data-i18n="ai-name">AI 职业助手</div>
+                <div class="ai-status">● <span data-i18n="ai-status">在线</span></div>
+            </div>
+        </div>
+        <button class="ai-panel-close" onclick="toggleAI()">&times;</button>
+    </div>
+    <div class="ai-panel-messages" id="aiMessages">
+        <div class="ai-message">
+            <div class="ai-welcome-title" data-i18n="ai-welcome-title">👋 你好！我是 AI 职业助手</div>
+            <span data-i18n="ai-welcome-text">我可以帮你：</span>
+            <ul class="ai-welcome-list">
+                <li data-i18n="ai-help-1">📝 优化简历内容和格式</li>
+                <li data-i18n="ai-help-2">💡 提供职业发展规划建议</li>
+                <li data-i18n="ai-help-3">🎯 分析岗位匹配度和技能差距</li>
+                <li data-i18n="ai-help-4">❓ 回答求职面试相关问题</li>
+            </ul>
+        </div>
+    </div>
+    <div class="ai-panel-input">
+        <input type="text" id="aiInput" placeholder="输入你的问题..." data-i18n-placeholder="ai-placeholder" onkeydown="if(event.key==='Enter') sendAIMessage()">
+        <button class="ai-send-btn" onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+/* ===== 登录状态检查 ===== */
+fetch('/api/admin/check').then(r=>r.json()).then(data=>{
+    if(data.success && data.user.is_admin){
+        const dd=document.querySelector('.dropdown-menu');
+        if(dd){
+            const div=document.createElement('div'); div.className='dropdown-divider';
+            const a=document.createElement('a'); a.className='dropdown-item'; a.href='/admin';
+            a.innerHTML='<i class="fas fa-shield-alt"></i> <span>管理后台</span>';
+            dd.appendChild(div); dd.appendChild(a);
         }
-    </script>
+    }
+}).catch(()=>{});
+
+function logout(){
+    fetch('/api/logout',{method:'POST'}).then(r=>r.json()).then(d=>{if(d.success) window.location.reload();});
+}
+
+/* ===== 移动菜单 ===== */
+function toggleMobileMenu(){
+    const m=document.getElementById('mobileMenu'),h=document.getElementById('hamburger');
+    m.classList.toggle('open'); h.classList.toggle('active');
+    document.body.style.overflow=m.classList.contains('open')?'hidden':'';
+}
+function closeMobileMenu(){ document.getElementById('mobileMenu').classList.remove('open'); document.getElementById('hamburger').classList.remove('active'); document.body.style.overflow=''; }
+
+/* ===== 平滑滚动 ===== */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',function(e){
+        const id=this.getAttribute('href');
+        if(id==='#') return;
+        e.preventDefault();
+        document.querySelector(id)?.scrollIntoView({behavior:'smooth'});
+        closeMobileMenu();
+    });
+});
+
+/* ===== 职位画廊 ===== */
+const jobImages = {
+    '互联网科技': ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80',
+                   'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80',
+                   'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&q=80',
+                   'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80'],
+    '金融': ['https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&q=80',
+             'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80',
+             'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80',
+             'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80'],
+    '咨询': ['https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80',
+             'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80',
+             'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80',
+             'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80'],
+    'all': ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80',
+            'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&q=80',
+            'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80',
+            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80']
+};
+let allJobs = [];
+
+async function loadJobs(){
+    try {
+        const r=await fetch('/api/jobs/search');
+        const d=await r.json();
+        if(d.success && d.jobs.length){
+            const shuffled=d.jobs.sort(()=>Math.random()-0.5).slice(0,4);
+            allJobs=shuffled.map((j,i)=>({
+                ...j, _order:i, _category:['互联网科技','金融','咨询','互联网科技'][i%4]
+            }));
+            renderJobs(allJobs);
+        } else {
+            renderFallbackJobs();
+        }
+    } catch(e){
+        console.error('加载职位失败:',e);
+        renderFallbackJobs();
+    }
+}
+
+function renderFallbackJobs(){
+    const fallback=[
+        {id:1001,job_name:'高级前端工程师',company_name:'字节跳动',city:'北京',min_salary:'30',max_salary:'60',experience:'3-5年',skill_tags:'React,TypeScript,Vue',_category:'互联网科技'},
+        {id:1002,job_name:'数据分析师',company_name:'蚂蚁集团',city:'杭州',min_salary:'25',max_salary:'50',experience:'1-3年',skill_tags:'Python,SQL,Tableau',_category:'金融'},
+        {id:1003,job_name:'管理咨询顾问',company_name:'麦肯锡',city:'上海',min_salary:'35',max_salary:'70',experience:'1-3年',skill_tags:'战略分析,PPT,沟通',_category:'咨询'},
+        {id:1004,job_name:'产品经理',company_name:'腾讯',city:'深圳',min_salary:'28',max_salary:'55',experience:'3-5年',skill_tags:'产品设计,数据分析,用户研究',_category:'互联网科技'}
+    ];
+    allJobs=fallback.map((j,i)=>({...j,_order:i}));
+    renderJobs(allJobs);
+}
+
+function renderJobs(jobs){
+    const grid=document.getElementById('jobGrid');
+    grid.innerHTML=jobs.map((job,i)=>{
+        const tags=(job.skill_keywords||job.skill_tags||'').split(',').filter(Boolean).slice(0,3);
+        const cat=job._category||'all';
+        const imgs=jobImages[cat]||jobImages.all;
+        const img=imgs[i%imgs.length];
+        const match=Math.floor(75+Math.random()*20)+'%';
+        return `<div class="job-card" data-category="${cat}" onclick="location.href='/job/${job.id}'">
+            <div class="job-card-image">
+                <img src="${img}" alt="${job.job_name}" loading="lazy">
+                <div class="job-card-badge">No.00${i+1}</div>
+                <div class="job-card-match">${match}</div>
+            </div>
+            <div class="job-card-body">
+                <div class="job-card-location"><i class="fas fa-map-marker-alt"></i> ${job.city||'全国'}</div>
+                <h3 class="job-card-title">${job.job_name}</h3>
+                <div class="job-card-desc">${tags.length?tags.join(' / '):'暂无描述'}</div>
+                ${tags.length?`<div class="job-card-tags">${tags.map(t=>`<span class="job-card-tag">${t}</span>`).join('')}</div>`:''}
+                <div class="job-card-footer">
+                    <span class="job-card-salary">${job.min_salary||'面议'}${job.max_salary?'-'+job.max_salary:''}K</span>
+                    <span class="job-card-company">${job.company_name||''} · ${job.experience||''}</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* 筛选 */
+document.querySelectorAll('.filter-pill').forEach(pill=>{
+    pill.addEventListener('click',function(){
+        document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+        this.classList.add('active');
+        const filter=this.dataset.filter;
+        const cards=document.querySelectorAll('.job-card');
+        cards.forEach(c=>{
+            if(filter==='all'||c.dataset.category===filter){
+                c.style.opacity='1'; c.style.display='';
+                setTimeout(()=>{c.style.transform='scale(1)';},50);
+            } else {
+                c.style.opacity='0';
+                setTimeout(()=>{c.style.display='none';},300);
+            }
+        });
+    });
+});
+
+loadJobs();
+
+/* ===== 留言簿 Mock 数据 ===== */
+const guestbookData = [
+    {name:'张明',school:'北京大学',time:'2025-12-15',text:'通过职引未来找到了理想的工作，特别感谢平台提供的简历优化建议，让我在面试中脱颖而出！',likes:28,comments:5},
+    {name:'李华',school:'复旦大学',time:'2025-12-10',text:'职业规划测试非常准确，推荐的岗位都很符合我的专业方向，已经成功入职一家头部互联网公司。',likes:22,comments:3},
+    {name:'王芳',school:'浙江大学',time:'2025-12-08',text:'AI 职业助手的建议非常实用，帮我理清了职业发展方向，强烈推荐给正在求职的同学们！',likes:19,comments:7},
+    {name:'赵磊',school:'上海交通大学',time:'2025-12-05',text:'平台上的企业质量很高，投递流程也很顺畅。HR 反馈很及时，沟通体验非常好。',likes:15,comments:2},
+    {name:'陈雪',school:'南京大学',time:'2025-12-01',text:'留言簿功能很暖心，看到学长学姐的成功案例很受鼓舞。希望明年我也能来这里留言！',likes:31,comments:8}
+];
+
+function renderGuestbook(){
+    const list=document.getElementById('guestbookList');
+    list.innerHTML=guestbookData.map(g=>
+        `<div class="gb-item">
+            <div class="gb-avatar">${g.name[0]}</div>
+            <div class="gb-content">
+                <div class="gb-meta">
+                    <span class="gb-name">${g.name}</span>
+                    <span class="gb-tag">${g.school}</span>
+                    <span class="gb-time">${g.time}</span>
+                </div>
+                <div class="gb-text">${g.text}</div>
+                <div class="gb-actions">
+                    <span><i class="far fa-heart"></i> ${g.likes}</span>
+                    <span><i class="far fa-comment"></i> ${g.comments}</span>
+                </div>
+            </div>
+        </div>`
+    ).join('');
+}
+renderGuestbook();
+
+function openWriteGuestbook(){
+    const name=prompt('请输入您的姓名：');
+    if(!name) return;
+    const text=prompt('请输入您的留言内容：');
+    if(!text) return;
+    guestbookData.unshift({name,school:'校友',time:new Date().toISOString().slice(0,10),text,likes:0,comments:0});
+    renderGuestbook();
+    const list=document.getElementById('guestbookList');
+    if(list.firstElementChild) list.firstElementChild.style.animation='fadeIn 0.5s';
+    showToast('留言已发布，感谢你的分享！','success');
+}
+
+/* ===== 联系表单 ===== */
+function submitContact(e){
+    e.preventDefault();
+    showToast('感谢您的咨询！我们会尽快通过邮件联系您。','success');
+    document.getElementById('contactForm').querySelector('form').reset();
+}
+
+/* 简历上传拖拽 */
+document.addEventListener('DOMContentLoaded',function(){
+    const area=document.getElementById('uploadArea');
+    const input=document.getElementById('resumeInput');
+    if(area && input){
+        area.addEventListener('click',()=>input.click());
+        input.addEventListener('change',function(){
+            if(this.files[0]) showToast('已上传：'+this.files[0].name,'success');
+        });
+        area.addEventListener('dragover',e=>{e.preventDefault();area.style.borderColor='var(--bronze)';});
+        area.addEventListener('dragleave',()=>{area.style.borderColor='rgba(255,255,255,0.12)';});
+        area.addEventListener('drop',e=>{
+            e.preventDefault();
+            area.style.borderColor='rgba(255,255,255,0.12)';
+            if(e.dataTransfer.files[0]){
+                input.files=e.dataTransfer.files;
+                showToast('已上传：'+e.dataTransfer.files[0].name,'success');
+            }
+        });
+    }
+});
+
+/* ===== 语言切换 ===== */
+let currentLang='zh';
+
+const i18nMap = {
+    'nav-platform': {zh:'平台功能',en:'Platform'},
+    'nav-insights': {zh:'数据洞察',en:'Insights'},
+    'nav-jobs': {zh:'职位搜索',en:'Job Search'},
+    'nav-messages': {zh:'消息中心',en:'Messages'},
+    'nav-applications': {zh:'投递中心',en:'Applications'},
+    'nav-opportunities': {zh:'职位机会',en:'Opportunities'},
+    'nav-impact': {zh:'平台实力',en:'Our Impact'},
+    'nav-achievements': {zh:'成果历程',en:'Achievements'},
+    'nav-contact': {zh:'联系我们',en:'Contact Us'},
+    'btn-login': {zh:'登录',en:'Login'},
+    'btn-register': {zh:'注册',en:'Register'},
+    'hero-title-line1': {zh:'Navigating Your',en:'Navigating Your'},
+    'hero-title-line2': {zh:'Career Horizon',en:'Career Horizon'},
+    'hero-sub': {zh:'职引未来，horizon 由你定义 —— 连接高校毕业生与理想职场的桥梁',en:'Define your career horizon — bridging graduates and dream jobs.'},
+    'hero-cta-primary': {zh:'探索职位机会',en:'Explore Jobs'},
+    'hero-cta-secondary': {zh:'预约导师咨询',en:'Book a Consultation'},
+    'gallery-title-en': {zh:'Opportunity Gallery',en:'Opportunity Gallery'},
+    'gallery-title': {zh:'精选职位机会',en:'Featured Positions'},
+    'gallery-sub': {zh:'汇聚优质企业，为你找到最合适的职业起点',en:'Top employers, curated for your career start.'},
+    'filter-all': {zh:'全部',en:'All'},
+    'filter-tech': {zh:'互联网科技',en:'Technology'},
+    'filter-finance': {zh:'金融',en:'Finance'},
+    'filter-consulting': {zh:'咨询',en:'Consulting'},
+    'metrics-title-en': {zh:'Impact Metrics',en:'Impact Metrics'},
+    'metrics-title': {zh:'平台实力',en:'Our Impact'},
+    'metrics-sub': {zh:'用数据说话，见证我们的成长与承诺',en:'Numbers that speak to our commitment.'},
+    'metric-positions': {zh:'岗位机会',en:'Open Positions'},
+    'metric-enterprises': {zh:'合作企业',en:'Partner Enterprises'},
+    'metric-industries': {zh:'覆盖行业',en:'Industries Covered'},
+    'sub-fortune': {zh:'世界 500 强合作',en:'Fortune 500 Partners'},
+    'sub-schools': {zh:'高校合作网络',en:'University Network'},
+    'sub-employment': {zh:'就业成功率',en:'Employment Rate'},
+    'sub-feedback': {zh:'平均反馈时长',en:'Avg. Response Time'},
+    'timeline-title-en': {zh:'Milestones & Guides',en:'Milestones & Guides'},
+    'timeline-title': {zh:'成果历程',en:'Our Journey'},
+    'timeline-sub': {zh:'我们的成长足迹与职业发展指南',en:'Our growth story and career guides.'},
+    'tl-1-title': {zh:'平台正式上线',en:'Platform Launch'},
+    'tl-1-desc': {zh:'职引未来平台 v1.0 正式发布，首批 500+ 企业入驻',en:'v1.0 launched with 500+ partner companies.'},
+    'tl-2-title': {zh:'AI 匹配引擎上线',en:'AI Matching Engine'},
+    'tl-2-desc': {zh:'基于深度学习的职位推荐系统，匹配准确率提升至 92%',en:'Deep-learning recommendation engine with 92% accuracy.'},
+    'tl-3-title': {zh:'用户突破 50,000',en:'50,000 Users'},
+    'tl-3-desc': {zh:'平台注册用户突破 5 万，覆盖全国 200+ 高校',en:'Registered users across 200+ universities nationwide.'},
+    'tl-4-title': {zh:'企业端功能升级',en:'Enterprise v2.0'},
+    'tl-4-desc': {zh:'企业后台 v2.0 上线，新增简历管理、数据分析等功能',en:'Enterprise dashboard v2.0 with resume management & analytics.'},
+    'tl-5-title': {zh:'智能聊天系统发布',en:'Chat System Launch'},
+    'tl-5-desc': {zh:'学生与企业即时沟通，面试邀约线上化，效率提升 60%',en:'Real-time chat between students and recruiters.'},
+    'tl-6-title': {zh:'AI 职业助手上线',en:'AI Career Assistant'},
+    'tl-6-desc': {zh:'集成千问大模型，提供个性化职业规划与简历优化建议',en:'Qwen-powered personalized career guidance.'},
+    'pub-title': {zh:'职业发展指南',en:'Career Guides'},
+    'pub-1-title': {zh:'2024 应届生就业趋势报告',en:'2024 Employment Trends Report'},
+    'pub-1-desc': {zh:'覆盖全国 50+ 城市，10,000+ 企业样本的深度分析',en:'Deep analysis across 50+ cities and 10,000+ enterprises.'},
+    'pub-2-title': {zh:'简历撰写完全指南',en:'Ultimate Resume Guide'},
+    'pub-2-desc': {zh:'从格式到内容，手把手教你写一份出色的简历',en:'From format to content, craft a standout resume.'},
+    'pub-3-title': {zh:'面试通关宝典',en:'Interview Success Guide'},
+    'pub-3-desc': {zh:'精选 100+ 真实面试题，涵盖各行业核心考点',en:'100+ real interview questions across industries.'},
+    'pub-4-title': {zh:'互联网行业薪资地图',en:'Tech Salary Map'},
+    'pub-4-desc': {zh:'一线城市 vs 新一线，各岗位薪资全方位对比',en:'Salary comparison across tier-1 and emerging cities.'},
+    'pub-5-title': {zh:'职业规划工作坊',en:'Career Planning Workshop'},
+    'pub-5-desc': {zh:'专业职业规划师团队，帮你找到最适合的发展方向',en:'Professional guidance to find your ideal career path.'},
+    'pub-6-title': {zh:'考研vs就业决策指南',en:'Grad School vs. Career Guide'},
+    'pub-6-desc': {zh:'数据驱动的决策框架，帮你做出最适合自己的选择',en:'Data-driven framework for making the right choice.'},
+    'pub-download': {zh:'下载报告',en:'Download'},
+    'pub-view': {zh:'查看详情',en:'View Details'},
+    'contact-title-en': {zh:'Contact & Guestbook',en:'Contact & Guestbook'},
+    'contact-title': {zh:'联系我们',en:'Contact Us'},
+    'contact-sub': {zh:'有任何问题或建议？我们随时倾听你的声音',en:'Questions or suggestions? We\'re all ears.'},
+    'form-title': {zh:'智能咨询表单',en:'Smart Inquiry Form'},
+    'form-name': {zh:'姓名',en:'Name'},
+    'form-school': {zh:'学校',en:'School'},
+    'form-major': {zh:'专业',en:'Major'},
+    'form-email': {zh:'邮箱',en:'Email'},
+    'form-intent': {zh:'求职意向',en:'Career Intent'},
+    'form-intent-placeholder': {zh:'请选择求职方向',en:'Select your field'},
+    'form-intent-1': {zh:'互联网科技',en:'Technology'},
+    'form-intent-2': {zh:'金融',en:'Finance'},
+    'form-intent-3': {zh:'咨询',en:'Consulting'},
+    'form-intent-4': {zh:'其他',en:'Other'},
+    'form-resume': {zh:'简历上传',en:'Resume Upload'},
+    'form-upload-text': {zh:'拖拽简历文件到此处或点击上传',en:'Drag & drop or click to upload'},
+    'form-upload-hint': {zh:'支持 PDF、DOCX 格式，文件大小不超过 10MB',en:'PDF, DOCX up to 10MB'},
+    'form-message': {zh:'留言',en:'Message'},
+    'form-message-placeholder': {zh:'请输入您的留言内容...',en:'Type your message...'},
+    'form-submit': {zh:'提交咨询',en:'Submit'},
+    'guestbook-title': {zh:'就业留言簿',en:'Guestbook'},
+    'guestbook-write': {zh:'写留言',en:'Write a Message'},
+    'footer-desc': {zh:'连接高校毕业生与理想职场的桥梁，用数据驱动就业，以科技赋能未来。',en:'Bridging graduates and dream careers with data-driven insights.'},
+    'footer-quick': {zh:'快速链接',en:'Quick Links'},
+    'footer-services': {zh:'平台服务',en:'Services'},
+    'footer-contact': {zh:'联系方式',en:'Contact'},
+    'footer-privacy': {zh:'隐私政策',en:'Privacy Policy'},
+    'footer-terms': {zh:'用户协议',en:'Terms of Service'},
+    'footer-icp': {zh:'京ICP备XXXXXXXX号',en:'ICP: XXXXXXXXXXXX'},
+    'ai-name': {zh:'AI 职业助手',en:'AI Career Assistant'},
+    'ai-status': {zh:'在线',en:'Online'},
+    'ai-welcome-title': {zh:'👋 你好！我是 AI 职业助手',en:'👋 Hi! I\'m your AI Career Assistant'},
+    'ai-welcome-text': {zh:'我可以帮你：',en:'I can help you with:'},
+    'ai-help-1': {zh:'📝 优化简历内容和格式',en:'📝 Resume optimization'},
+    'ai-help-2': {zh:'💡 提供职业发展规划建议',en:'💡 Career planning advice'},
+    'ai-help-3': {zh:'🎯 分析岗位匹配度和技能差距',en:'🎯 Job match & skill gap analysis'},
+    'ai-help-4': {zh:'❓ 回答求职面试相关问题',en:'❓ Interview Q&A'},
+    'ai-placeholder': {zh:'输入你的问题...',en:'Type your question...'}
+};
+
+function toggleLang(){
+    currentLang=currentLang==='zh'?'en':'zh';
+    document.getElementById('langCurrent').textContent=currentLang==='zh'?'中':'EN';
+    document.getElementById('langOther').textContent=currentLang==='zh'?'EN':'中';
+
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const key=el.dataset.i18n;
+        if(i18nMap[key] && i18nMap[key][currentLang]){
+            el.textContent=i18nMap[key][currentLang];
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+        const key=el.dataset.i18nPlaceholder;
+        if(i18nMap[key] && i18nMap[key][currentLang]){
+            el.placeholder=i18nMap[key][currentLang];
+        }
+    });
+}
+
+/* ===== AI 对话 ===== */
+let isAIOpen=false;
+function toggleAI(){
+    isAIOpen=!isAIOpen;
+    document.getElementById('aiPanel').classList.toggle('open',isAIOpen);
+    if(isAIOpen) document.getElementById('aiInput').focus();
+}
+
+function sendAIMessage(){
+    const input=document.getElementById('aiInput');
+    const text=input.value.trim();
+    if(!text) return;
+    input.value='';
+
+    const msgDiv=document.getElementById('aiMessages');
+    const userDiv=document.createElement('div');
+    userDiv.className='user-message';
+    userDiv.textContent=text;
+    msgDiv.appendChild(userDiv);
+    msgDiv.scrollTop=msgDiv.scrollHeight;
+
+    const typingDiv=document.createElement('div');
+    typingDiv.className='ai-message ai-typing';
+    typingDiv.innerHTML='<span></span><span></span><span></span>';
+    typingDiv.id='aiTyping';
+    msgDiv.appendChild(typingDiv);
+    msgDiv.scrollTop=msgDiv.scrollHeight;
+
+    fetch('/api/ai/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:text})
+    })
+    .then(r=>r.json())
+    .then(data=>{
+        const t=document.getElementById('aiTyping');
+        if(t) t.remove();
+        const aiDiv=document.createElement('div');
+        aiDiv.className='ai-message';
+        aiDiv.textContent=data.reply || '抱歉，我现在暂时无法回复，请稍后再试。';
+        msgDiv.appendChild(aiDiv);
+        msgDiv.scrollTop=msgDiv.scrollHeight;
+    })
+    .catch(()=>{
+        const t=document.getElementById('aiTyping');
+        if(t) t.remove();
+        const aiDiv=document.createElement('div');
+        aiDiv.className='ai-message';
+        aiDiv.textContent='抱歉，网络出了点问题，请稍后再试。';
+        msgDiv.appendChild(aiDiv);
+        msgDiv.scrollTop=msgDiv.scrollHeight;
+    });
+}
+
+/* ===== 计数动画 ===== */
+function animateCounters(){
+    document.querySelectorAll('[data-count]').forEach(el=>{
+        const target=parseInt(el.dataset.count);
+        if(!target) return;
+        const dur=2000, start=performance.now();
+        function update(now){
+            const p=Math.min((now-start)/dur,1);
+            // ease-out cubic
+            const ep=1-Math.pow(1-p,3);
+            el.textContent=Math.floor(ep*target).toLocaleString();
+            if(p<1) requestAnimationFrame(update);
+            else el.textContent=target.toLocaleString()+'+';
+        }
+        requestAnimationFrame(update);
+    });
+}
+
+/* ===== 滚动揭示 IntersectionObserver ===== */
+(function(){
+    const revealEls=document.querySelectorAll('[data-reveal]');
+    const countersTriggered={triggered:false};
+
+    const observer=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+            if(entry.isIntersecting){
+                entry.target.classList.add('revealed');
+
+                // trigger counter animation when metrics section enters
+                if(entry.target.closest && entry.target.closest('.impact-metrics') && !countersTriggered.triggered){
+                    countersTriggered.triggered=true;
+                    animateCounters();
+                }
+
+                observer.unobserve(entry.target);
+            }
+        });
+    },{threshold:0.1});
+
+    revealEls.forEach(el=>observer.observe(el));
+})();
+
+/* ===== Toast 通知 ===== */
+function showToast(msg,type){
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--slate);color:var(--text-primary);padding:14px 28px;border-radius:12px;font-size:14px;border:1px solid var(--border-dim);box-shadow:0 10px 40px rgba(0,0,0,0.5);opacity:0;transition:opacity 0.3s;max-width:90vw;text-align:center;';
+    if(type==='success') t.style.borderColor='rgba(201,169,110,0.4)';
+    t.textContent=msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(()=>{t.style.opacity='1';});
+    setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2800);
+}
+
+/* ===== 导航栏滚动效果 ===== */
+let lastScroll=0;
+window.addEventListener('scroll',()=>{
+    const n=document.getElementById('navbar');
+    if(window.scrollY>80) n.classList.add('scrolled');
+    else n.classList.remove('scrolled');
+});
+</script>
 </body>
 </html>

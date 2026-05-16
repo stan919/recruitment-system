@@ -12,7 +12,8 @@ try:
             username='admin',
             email='admin@example.com',
             phone='',
-            password_hash=generate_password_hash('admin123')
+            password_hash=generate_password_hash('admin123'),
+            is_admin=True
         )
         session.add(admin_user)
         session.commit()

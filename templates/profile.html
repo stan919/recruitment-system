@@ -1,512 +1,524 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <title>个人中心 - 职引未来</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人中心 — 职引未来 MERIDIAN CAREER</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/global.css">
+<style>
+/* ===== Navigation Bar ===== */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    height: 80px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.3s;
+}
+.navbar.scrolled { background: rgba(10,10,15,0.95); }
+.navbar-inner {
+    max-width: var(--container-max); margin: 0 auto; padding: 0 24px;
+    height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-square {
+    width: 36px; height: 36px; border: 2px solid var(--bronze);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px;
+    color: var(--bronze); letter-spacing: 0; line-height: 1;
+}
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-text-cn { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.logo-text-en { font-size: 11px; font-weight: 500; color: var(--bronze); letter-spacing: 0.15em; text-transform: uppercase; }
+.nav-center { display: flex; align-items: center; gap: 6px; }
+.nav-link {
+    position: relative; padding: 8px 18px;
+    font-size: 14px; font-weight: 500; color: var(--text-secondary);
+    text-decoration: none; border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    cursor: pointer; white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+.nav-link i { font-size: 10px; margin-left: 4px; transition: transform 0.2s; }
+.nav-link:hover i { transform: rotate(180deg); }
+.dropdown { position: relative; }
+.dropdown-menu {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-8px);
+    background: var(--slate); border: 1px solid var(--border-dim); border-radius: 12px;
+    padding: 8px; min-width: 200px; opacity: 0; visibility: hidden;
+    transition: all 0.25s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    pointer-events: none;
+}
+.dropdown:hover .dropdown-menu, .dropdown-menu:hover {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.dropdown-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
+.dropdown-item:hover { background: rgba(201,169,110,0.1); color: var(--bronze); }
+.dropdown-item i { width: 20px; text-align: center; font-size: 14px; color: var(--bronze); }
+.dropdown-divider { height: 1px; background: var(--border-dim); margin: 4px 8px; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.auth-btn { padding: 8px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; font-family: inherit; border: none; }
+.auth-btn-primary { background: var(--bronze); color: var(--obsidian); }
+.auth-btn-primary:hover { background: var(--bronze-light); }
+.auth-btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-dim); }
+.auth-btn-ghost:hover { border-color: var(--bronze); color: var(--bronze); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+.hamburger span { display: block; width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.3s; }
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+.mobile-menu {
+    display: none; position: fixed; top: 80px; left: 0; right: 0;
+    background: rgba(10,10,15,0.98); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-dim);
+    padding: 16px 24px; z-index: 999;
+    transform: translateY(-100%); opacity: 0; transition: all 0.3s ease;
+    pointer-events: none;
+}
+.mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.mobile-link { display: block; padding: 14px 0; color: var(--text-secondary); text-decoration: none; font-size: 15px; border-bottom: 1px solid var(--border-dim); transition: color 0.2s; }
+.mobile-link:last-child { border-bottom: none; }
+.mobile-link:hover { color: var(--bronze); }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #ffffff;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
+/* ===== Page Layout ===== */
+body {
+    background: var(--obsidian); color: var(--text-primary);
+    font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+.page-wrap { padding-top: 80px; }
 
-        /* 导航栏 */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 48px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #f0f0f0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
+/* ===== Profile Header ===== */
+.profile-section { padding: 48px 0 60px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.profile-header {
+    background: var(--slate); border-radius: 20px;
+    padding: 40px; margin-bottom: 40px;
+    border: 1px solid var(--border-dim);
+}
+.user-info { display: flex; align-items: center; gap: 28px; }
+.avatar-block { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.avatar {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: var(--bronze); display: flex; align-items: center; justify-content: center;
+    color: var(--obsidian); font-size: 36px; font-weight: bold; overflow: hidden;
+    flex-shrink: 0;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.avatar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.avatar-btn { border: 1px solid var(--border-dim); background: transparent; color: var(--text-secondary); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.avatar-btn:hover { background: var(--graphite); color: var(--text-primary); }
+.avatar-btn.primary { background: var(--bronze); color: var(--obsidian); border-color: var(--bronze); }
+.avatar-btn.primary:hover { background: var(--bronze-light); }
+.avatar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.user-details h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.user-details p { color: var(--text-secondary); font-size: 15px; }
+.user-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid rgba(201,169,110,0.3); color: var(--bronze);
+    padding: 4px 14px; border-radius: 9999px; font-size: 12px;
+    font-weight: 500; margin-top: 12px;
+}
 
-        .logo {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
+/* ===== Cards ===== */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.profile-card {
+    background: var(--slate); border-radius: 20px;
+    padding: 28px; border: 1px solid var(--border-light);
+    transition: all 0.3s;
+}
+.profile-card:hover { border-color: var(--bronze); box-shadow: 0 8px 30px rgba(201,169,110,0.08); transform: translateY(-3px); }
+.card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: rgba(201,169,110,0.12); display: flex; align-items: center; justify-content: center;
+    color: var(--bronze); font-size: 20px; margin-bottom: 16px;
+}
+.card-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.card-desc { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.card-count { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-light); font-size: 26px; font-weight: 700; color: var(--bronze); font-family: 'Inter', sans-serif; }
 
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--color-brand);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
+/* ===== Modal ===== */
+.modal {
+    display: flex; position: fixed; z-index: 2000; left: 0; top: 0;
+    width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
+    align-items: center; justify-content: center;
+}
+.modal-content {
+    background: var(--slate); border: 1px solid var(--border-dim);
+    border-radius: 20px; width: 90%; max-width: 600px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; border-bottom: 1px solid var(--border-light); }
+.modal-header h2 { font-size: 22px; font-weight: 600; }
+.modal-header h2 i { color: var(--bronze); margin-right: 8px; }
+.close { font-size: 28px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+.close:hover { color: var(--text-primary); }
+.modal-body { padding: 32px; }
+.form-section { margin-bottom: 32px; }
+.section-title { font-size: 17px; font-weight: 600; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 8px; }
+.section-title i { color: var(--bronze); font-size: 16px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+.form-group input, .form-group select {
+    width: 100%; padding: 12px 16px; border: 1px solid var(--border-dim);
+    border-radius: 10px; font-size: 15px; font-family: inherit; outline: none;
+    transition: all 0.2s; background: var(--graphite); color: var(--text-primary);
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--bronze); box-shadow: 0 0 0 2px rgba(201,169,110,0.2); }
+.form-group select option { background: var(--slate); color: var(--text-primary); }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-light); }
+.btn-cancel, .btn-save { padding: 12px 32px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-family: inherit; }
+.btn-cancel { background: var(--graphite); color: var(--text-secondary); }
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.btn-save { background: var(--bronze-gradient); color: var(--obsidian); }
+.btn-save:hover { box-shadow: 0 4px 16px rgba(201,169,110,0.3); transform: translateY(-1px); }
+.avatar-settings-row { display: flex; align-items: center; gap: 18px; }
 
-        .nav-links {
-            display: flex;
-            gap: 40px;
-        }
+/* ===== Footer ===== */
+.footer {
+    background: var(--slate); border-top: 1px solid var(--border-light);
+    padding: 64px 0 0;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+.footer-desc { font-size: 14px; color: var(--text-muted); line-height: 1.8; max-width: 320px; margin-bottom: 24px; }
+.footer-socials { display: flex; gap: 12px; }
+.footer-social { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.04); border: 1px solid var(--border-dim); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; font-size: 16px; }
+.footer-social:hover { background: var(--bronze); color: var(--obsidian); border-color: var(--bronze); }
+.footer-col-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; }
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { margin-bottom: 12px; }
+.footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.footer-links a:hover { color: var(--bronze); }
+.footer-contact p { font-size: 14px; color: var(--text-muted); margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.footer-contact i { color: var(--bronze); width: 16px; }
+.footer-bottom { margin-top: 48px; padding: 24px 0; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-bottom p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.footer-bottom-links { display: flex; gap: 20px; }
+.footer-bottom-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+.footer-bottom-links a:hover { color: var(--bronze); }
 
-        .nav-links a {
-            text-decoration: none;
-            color: #666;
-            font-size: 15px;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--color-brand);
-        }
-
-        /* 主内容区 */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 120px 24px 40px;
-        }
-
-        .profile-header {
-            background: #f5f5f5;
-            border-radius: 12px;
-            padding: 40px;
-            margin-bottom: 40px;
-            border: 1px solid #e0e0e0;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #1a1a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-        .user-details h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .user-details p {
-            color: #666;
-            font-size: 15px;
-        }
-
-        /* 功能卡片 */
-        .profile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .profile-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #e0e0e0;
-            transition: all 0.3s;
-        }
-
-        .profile-card:hover {
-            border-color: #e0e0e0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .card-desc {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .card-count {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #f0f0f0;
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
-        /* 弹窗样式 */
-        .modal {
-            display: flex;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 32px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .modal-header h2 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .close {
-            font-size: 28px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .close:hover {
-            color: #1a1a1a;
-        }
-
-        .modal-body {
-            padding: 32px;
-        }
-
-        .form-section {
-            margin-bottom: 32px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--color-brand);
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .btn-cancel,
-        .btn-save {
-            padding: 12px 32px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-
-        .btn-cancel {
-            background: #f5f5f5;
-            color: #666;
-        }
-
-        .btn-cancel:hover {
-            background: #e5e5e5;
-        }
-
-        .btn-save {
-            background: #1a1a1a;
-            color: white;
-        }
-
-        .btn-save:hover {
-            background: #333;
-        }
-    </style>
+@media (max-width: 1023px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 767px) {
+    .nav-center { display: none; }
+    .nav-right .auth-btn { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: block; }
+    .profile-header { padding: 24px; }
+    .user-info { flex-direction: column; text-align: center; }
+    .profile-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+}
+</style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="logo">
-            职引未来
-        </div>
-        <div class="nav-links">
-            <a href="/">首页</a>
-            <a href="/insights">数据洞察</a>
-            <a href="/profile">个人中心</a>
-        </div>
-    </nav>
 
-    <!-- 主内容区 -->
+<!-- ===== Navigation Bar ===== -->
+<nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+        <a href="/" class="logo">
+            <div class="logo-square">M</div>
+            <div class="logo-text">
+                <span class="logo-text-cn">职引未来</span>
+                <span class="logo-text-en">MERIDIAN CAREER</span>
+            </div>
+        </a>
+        <div class="nav-center">
+            <a class="nav-link" href="/">首页</a>
+            <div class="dropdown">
+                <a class="nav-link"><span>平台功能</span> <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/insights"><i class="fas fa-chart-bar"></i> 数据洞察</a>
+                    <a class="dropdown-item" href="/jobs/search"><i class="fas fa-search"></i> 职位搜索</a>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/chat/user"><i class="fas fa-comment-dots"></i> 消息中心</a>
+                    <a class="dropdown-item" href="/applications"><i class="fas fa-file-alt"></i> 投递中心</a>
+                    {% endif %}
+                </div>
+            </div>
+            <a class="nav-link" href="/jobs/search">职位搜索</a>
+            <a class="nav-link" href="/insights">数据洞察</a>
+        </div>
+        <div class="nav-right">
+            {% if session.get('is_admin') %}
+            <a href="/admin" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-shield-alt"></i> 管理后台</a>
+            {% elif session.get('is_company') %}
+            <a href="/company" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-building"></i> 企业后台</a>
+            {% else %}
+            <a href="/profile" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;"><i class="fas fa-user"></i> 个人中心</a>
+            <button class="auth-btn auth-btn-primary" onclick="logout()" style="padding:8px 18px;font-size:12px;">退出</button>
+            {% endif %}
+            <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="菜单">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+        <a class="mobile-link" href="/" onclick="closeMobileMenu()">首页</a>
+        <a class="mobile-link" href="/jobs/search" onclick="closeMobileMenu()">职位搜索</a>
+        <a class="mobile-link" href="/insights" onclick="closeMobileMenu()">数据洞察</a>
+        {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+        <a class="mobile-link" href="/chat/user" onclick="closeMobileMenu()">消息中心</a>
+        <a class="mobile-link" href="/applications" onclick="closeMobileMenu()">投递中心</a>
+        {% endif %}
+        <a class="mobile-link" href="/login" onclick="closeMobileMenu()" style="display:none;">登录</a>
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <section class="profile-section">
+        <div class="container">
+            <!-- Profile Header -->
+            <div class="profile-header" data-reveal>
+                <div class="user-info">
+                    <div class="avatar-block">
+                        <div class="avatar" id="avatarDisplay">
+                            {% if user.avatar %}
+                            <img loading="lazy" src="{{ user.avatar }}" alt="用户头像" id="avatarImage">
+                            {% else %}
+                            <span id="avatarFallback">{{ user.username[0].upper() }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="user-details">
+                        <h1 class="text-primary" class="text-primary" class="text-primary">{{ user.username }}</h1>
+                        <p><i class="fas fa-envelope" style="color:var(--bronze);width:16px;"></i> {{ user.email }} {% if user.phone %} | <i class="fas fa-phone" style="color:var(--bronze);width:16px;"></i> {{ user.phone }}{% endif %}</p>
+                        <p><i class="fas fa-graduation-cap" style="color:var(--bronze);width:16px;"></i> 毕业年份：{{ user.graduation_year or '未设置' }} | 学历：{{ user.education or '未设置' }}</p>
+                        <div class="user-badge"><i class="fas fa-check-circle"></i> 认证用户</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards -->
+            <div class="profile-grid">
+                <div class="profile-card bg-slate border-dim radius-16" onclick="location.href='/applications'" style="cursor:pointer;" data-reveal>
+                    <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                    <h3 class="card-title" class="text-primary" class="text-primary" class="text-primary">投递记录</h3>
+                    <p class="card-desc">追踪投递状态，从提交到面试全程掌握。</p>
+                    <div class="card-count">{{ applications_count }} 个</div>
+                </div>
+                <div class="profile-card bg-slate border-dim radius-16" onclick="openAccountSettings()" style="cursor:pointer;" data-reveal>
+                    <div class="card-icon"><i class="fas fa-cog"></i></div>
+                    <h3 class="card-title" class="text-primary" class="text-primary" class="text-primary">账户设置</h3>
+                    <p class="card-desc">修改个人信息、密码和求职偏好。</p>
+                </div>
+                {% if not session.get('is_company') and not session.get('is_admin') %}
+                <div class="profile-card bg-slate border-dim radius-16" onclick="location.href='/chat/user'" style="cursor:pointer;" data-reveal>
+                    <div class="card-icon"><i class="fas fa-comment-dots"></i></div>
+                    <h3 class="card-title" class="text-primary" class="text-primary" class="text-primary">消息中心</h3>
+                    <p class="card-desc">与企业沟通，查看面试邀约和通知。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ===== Account Settings Modal ===== -->
+<div id="accountSettingsModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-cog"></i> 账户设置</h2>
+            <span class="close" onclick="closeAccountSettings()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="accountSettingsForm">
+                <div class="form-section">
+                    <h3 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-user-circle"></i> 头像设置</h3>
+                    <div class="avatar-settings-row">
+                        <div class="avatar" id="modalAvatarDisplay">
+                            {% if user.avatar %}
+                            <img loading="lazy" src="{{ user.avatar }}" alt="用户头像" id="modalAvatarImage">
+                            {% else %}
+                            <span id="modalAvatarFallback">{{ user.username[0].upper() }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="avatar-actions">
+                            <button type="button" class="avatar-btn" onclick="triggerAvatarUpload()"><i class="fas fa-upload"></i> 上传头像</button>
+                            <button type="button" class="avatar-btn primary" id="confirmAvatarBtn" onclick="confirmAvatarChange()" disabled>确认更换</button>
+                            <button type="button" class="avatar-btn" onclick="deleteAvatar()"><i class="fas fa-undo"></i> 恢复默认</button>
+                        </div>
+                    </div>
+                    <input type="file" id="avatarInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-id-card"></i> 基本信息</h3>
+                    <div class="form-group"><label>用户名</label><input type="text" id="username" value="{{ user.username }}" required></div>
+                    <div class="form-group"><label>邮箱</label><input type="email" id="email" value="{{ user.email }}" required></div>
+                    <div class="form-group"><label>手机号</label><input type="text" id="phone" value="{{ user.phone or '' }}"></div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-graduation-cap"></i> 教育信息</h3>
+                    <div class="form-group"><label>毕业年份</label><input type="number" id="graduation_year" value="{{ user.graduation_year or '' }}" min="2000" max="2030"></div>
+                    <div class="form-group">
+                        <label>学历</label>
+                        <select id="education">
+                            <option value="">请选择</option>
+                            <option value="高中" {% if user.education == '高中' %}selected{% endif %}>高中</option>
+                            <option value="大专" {% if user.education == '大专' %}selected{% endif %}>大专</option>
+                            <option value="本科" {% if user.education == '本科' %}selected{% endif %}>本科</option>
+                            <option value="硕士" {% if user.education == '硕士' %}selected{% endif %}>硕士</option>
+                            <option value="博士" {% if user.education == '博士' %}selected{% endif %}>博士</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title" class="text-primary" class="text-primary" class="text-primary"><i class="fas fa-lock"></i> 修改密码</h3>
+                    <div class="form-group"><label>当前密码</label><input type="password" id="current_password"></div>
+                    <div class="form-group"><label>新密码</label><input type="password" id="new_password"></div>
+                    <div class="form-group"><label>确认新密码</label><input type="password" id="confirm_password"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAccountSettings()">取消</button>
+                    <button type="submit" class="btn-save"><i class="fas fa-check"></i> 保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
     <div class="container">
-        <!-- 用户信息 -->
-        <div class="profile-header">
-            <div class="user-info">
-                <div class="avatar">{{ user.username[0].upper() }}</div>
-                <div class="user-details">
-                    <h1>{{ user.username }}</h1>
-                    <p>{{ user.email }} {% if user.phone %} | {{ user.phone }}{% endif %}</p>
-                    <p>毕业年份：{{ user.graduation_year or '未设置' }} | 学历：{{ user.education or '未设置' }}</p>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo" style="margin-bottom:16px;">
+                    <div class="logo-square">M</div>
+                    <div class="logo-text">
+                        <span class="logo-text-cn">职引未来</span>
+                        <span class="logo-text-en">MERIDIAN CAREER</span>
+                    </div>
+                </a>
+                <p class="footer-desc">连接高校毕业生与理想职场的桥梁，用数据驱动就业，以科技赋能未来。</p>
+                <div class="footer-socials">
+                    <a class="footer-social" href="#" title="微信"><i class="fab fa-weixin"></i></a>
+                    <a class="footer-social" href="#" title="微博"><i class="fab fa-weibo"></i></a>
+                    <a class="footer-social" href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a class="footer-social" href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-col-title">快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="/">首页</a></li>
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">平台服务</h4>
+                <ul class="footer-links">
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <li><a href="/chat/user">消息中心</a></li>
+                    <li><a href="/applications">投递中心</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">联系方式</h4>
+                <div class="footer-contact">
+                    <p><i class="fas fa-envelope"></i> contact@meridiancareer.com</p>
+                    <p><i class="fas fa-phone"></i> 400-888-9999</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园</p>
                 </div>
             </div>
         </div>
-
-        <!-- 功能卡片 -->
-        <div class="profile-grid">
-            <!-- 投递记录 -->
-            <div class="profile-card" onclick="location.href='/applications'" style="cursor: pointer;">
-                <h3 class="card-title">投递记录</h3>
-                <p class="card-desc">追踪投递状态，从提交到面试全程掌握。</p>
-                <div class="card-count">{{ applications_count }} 个</div>
-            </div>
-
-            <!-- 账户设置 -->
-            <div class="profile-card" onclick="openAccountSettings()" style="cursor: pointer;">
-                <h3 class="card-title">账户设置</h3>
-                <p class="card-desc">修改个人信息、密码和求职偏好。</p>
+        <div class="footer-bottom">
+            <p>&copy; 2026 职引未来 MERIDIAN CAREER. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">隐私政策</a>
+                <a href="#">用户协议</a>
+                <a href="#">京ICP备XXXXXXXX号</a>
             </div>
         </div>
     </div>
+</footer>
 
-    <!-- 账户设置弹窗 -->
-    <div id="accountSettingsModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>账户设置</h2>
-                <span class="close" onclick="closeAccountSettings()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="accountSettingsForm">
-                    <div class="form-section">
-                        <h3 class="section-title">基本信息</h3>
-                        <div class="form-group">
-                            <label>用户名</label>
-                            <input type="text" id="username" value="{{ user.username }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>邮箱</label>
-                            <input type="email" id="email" value="{{ user.email }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>手机号</label>
-                            <input type="text" id="phone" value="{{ user.phone or '' }}">
-                        </div>
-                    </div>
+<script src="/static/js/ui_feedback.js"></script>
+<script>
+const avatarInitial = {{ user.username[0].upper() | tojson }};
+let currentAvatarUrl = {{ (user.avatar or '') | tojson }};
+let pendingAvatarFile = null;
+let pendingAvatarPreviewUrl = null;
 
-                    <div class="form-section">
-                        <h3 class="section-title">教育信息</h3>
-                        <div class="form-group">
-                            <label>毕业年份</label>
-                            <input type="number" id="graduation_year" value="{{ user.graduation_year or '' }}" min="2000" max="2030">
-                        </div>
-                        <div class="form-group">
-                            <label>学历</label>
-                            <select id="education">
-                                <option value="">请选择</option>
-                                <option value="高中" {% if user.education == '高中' %}selected{% endif %}>高中</option>
-                                <option value="大专" {% if user.education == '大专' %}selected{% endif %}>大专</option>
-                                <option value="本科" {% if user.education == '本科' %}selected{% endif %}>本科</option>
-                                <option value="硕士" {% if user.education == '硕士' %}selected{% endif %}>硕士</option>
-                                <option value="博士" {% if user.education == '博士' %}selected{% endif %}>博士</option>
-                            </select>
-                        </div>
-                    </div>
+function setAvatarDisplay(cid, url){
+    const d=document.getElementById(cid); if(!d) return;
+    if(!url){ d.innerHTML='<span>'+avatarInitial+'</span>'; return; }
+    const sep=String(url).indexOf('?')>=0?'&':'?';
+    d.innerHTML='<img loading="lazy" src="'+(url.startsWith('blob:')?url:url+sep+'t='+Date.now())+'" alt="用户头像">';
+}
+function syncModalAvatarPreview(url){ setAvatarDisplay('modalAvatarDisplay',url); }
+function triggerAvatarUpload(){ document.getElementById('avatarInput').click(); }
+function syncAvatarPreview(url){ setAvatarDisplay('avatarDisplay',url); }
+function resetPendingAvatarState(){
+    pendingAvatarFile=null; if(pendingAvatarPreviewUrl){URL.revokeObjectURL(pendingAvatarPreviewUrl);pendingAvatarPreviewUrl=null;}
+    const cb=document.getElementById('confirmAvatarBtn'); if(cb) cb.disabled=true;
+    const ai=document.getElementById('avatarInput'); if(ai) ai.value='';
+    syncModalAvatarPreview(currentAvatarUrl);
+}
+function confirmAvatarChange(){
+    if(!pendingAvatarFile){alert('请先选择头像文件');return;}
+    const fd=new FormData(); fd.append('avatar',pendingAvatarFile);
+    fetch('/api/account/avatar',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{if(d.success){currentAvatarUrl=d.avatar_url||'';syncAvatarPreview(currentAvatarUrl);alert('头像上传成功');resetPendingAvatarState();}else alert(d.message||'上传失败');}).catch(()=>alert('上传失败'));
+}
+async function deleteAvatar(){
+    const cf=window.showConfirm?await showConfirm('确定恢复默认头像吗？',{title:'请确认',confirmText:'确认',cancelText:'取消',danger:true}):confirm('确定恢复默认头像吗？');
+    if(!cf) return;
+    fetch('/api/account/avatar',{method:'DELETE'}).then(r=>r.json()).then(d=>{if(d.success){currentAvatarUrl='';alert('已恢复默认头像');syncAvatarPreview(null);resetPendingAvatarState();}else alert(d.message||'恢复失败');}).catch(()=>alert('恢复失败'));
+}
+document.getElementById('avatarInput')?.addEventListener('change',function(e){
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    pendingAvatarFile=f; if(pendingAvatarPreviewUrl) URL.revokeObjectURL(pendingAvatarPreviewUrl);
+    pendingAvatarPreviewUrl=URL.createObjectURL(f); syncModalAvatarPreview(pendingAvatarPreviewUrl);
+    const cb=document.getElementById('confirmAvatarBtn'); if(cb) cb.disabled=false;
+    alert('已选择头像，请点击"确认更换"完成更新');
+});
 
-                    <div class="form-section">
-                        <h3 class="section-title">修改密码</h3>
-                        <div class="form-group">
-                            <label>当前密码</label>
-                            <input type="password" id="current_password">
-                        </div>
-                        <div class="form-group">
-                            <label>新密码</label>
-                            <input type="password" id="new_password">
-                        </div>
-                        <div class="form-group">
-                            <label>确认新密码</label>
-                            <input type="password" id="confirm_password">
-                        </div>
-                    </div>
+function logout(){ fetch('/api/logout',{method:'POST'}).then(r=>r.json()).then(d=>{if(d.success) window.location.href='/';}).catch(()=>{}); }
+function toggleMobileMenu(){ const m=document.getElementById('mobileMenu'),h=document.getElementById('hamburger'); m.classList.toggle('open'); h.classList.toggle('active'); document.body.style.overflow=m.classList.contains('open')?'hidden':''; }
+function closeMobileMenu(){ document.getElementById('mobileMenu').classList.remove('open'); document.getElementById('hamburger').classList.remove('active'); document.body.style.overflow=''; }
 
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="closeAccountSettings()">取消</button>
-                        <button type="submit" class="btn-save">保存</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+window.addEventListener('scroll',()=>{ const n=document.getElementById('navbar'); if(window.scrollY>80) n.classList.add('scrolled'); else n.classList.remove('scrolled'); });
 
-    <script>
-        // 退出登录
-        function logout() {
-            fetch('/api/logout', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = '/';
-                    } else {
-                        alert('退出失败：' + (data.message || '未知错误'));
-                    }
-                })
-                .catch(error => {
-                    console.error('退出登录失败:', error);
-                    alert('退出失败，请重试');
-                });
-        }
+(function(){ document.querySelectorAll('[data-reveal]').forEach(el=>{ const o=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');o.unobserve(e.target);}});},{threshold:0.1}); o.observe(el); }); })();
 
-        // 打开账户设置弹窗
-        function openAccountSettings() {
-            document.getElementById('accountSettingsModal').style.display = 'flex';
-        }
+function openAccountSettings(){ document.getElementById('accountSettingsModal').style.display='flex'; resetPendingAvatarState(); }
+function closeAccountSettings(){ document.getElementById('accountSettingsModal').style.display='none'; document.getElementById('accountSettingsForm').reset(); resetPendingAvatarState(); }
 
-        // 关闭账户设置弹窗
-        function closeAccountSettings() {
-            document.getElementById('accountSettingsModal').style.display = 'none';
-            document.getElementById('accountSettingsForm').reset();
-        }
+document.getElementById('accountSettingsForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    const data={
+        username:document.getElementById('username').value, email:document.getElementById('email').value, phone:document.getElementById('phone').value,
+        graduation_year:document.getElementById('graduation_year').value, education:document.getElementById('education').value,
+        current_password:document.getElementById('current_password').value, new_password:document.getElementById('new_password').value, confirm_password:document.getElementById('confirm_password').value
+    };
+    if(data.current_password||data.new_password||data.confirm_password){
+        if(!data.current_password){alert('请输入当前密码');return;}
+        if(data.new_password!==data.confirm_password){alert('两次输入的新密码不一致');return;}
+        if(data.new_password.length<6){alert('新密码长度至少 6 位');return;}
+    }
+    fetch('/api/account/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+        .then(r=>r.json()).then(r=>{if(r.success){alert('保存成功');closeAccountSettings();window.location.reload();}else alert(r.message||'保存失败');}).catch(()=>alert('保存失败'));
+});
 
-        // 保存账户设置
-        document.getElementById('accountSettingsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const data = {
-                username: document.getElementById('username').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                graduation_year: document.getElementById('graduation_year').value,
-                education: document.getElementById('education').value,
-                current_password: document.getElementById('current_password').value,
-                new_password: document.getElementById('new_password').value,
-                confirm_password: document.getElementById('confirm_password').value
-            };
-            
-            // 验证密码
-            if (data.current_password || data.new_password || data.confirm_password) {
-                if (!data.current_password) {
-                    alert('请输入当前密码');
-                    return;
-                }
-                if (data.new_password !== data.confirm_password) {
-                    alert('两次输入的新密码不一致');
-                    return;
-                }
-                if (data.new_password.length < 6) {
-                    alert('新密码长度至少 6 位');
-                    return;
-                }
-            }
-            
-            fetch('/api/account/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    alert('保存成功');
-                    closeAccountSettings();
-                    window.location.reload();
-                } else {
-                    alert(result.message || '保存失败');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('保存失败，请重试');
-            });
-        });
-
-        // 点击弹窗外部关闭
-        window.onclick = function(event) {
-            const modal = document.getElementById('accountSettingsModal');
-            if (event.target === modal) {
-                closeAccountSettings();
-            }
-        }
-    </script>
+window.onclick=function(e){ const m=document.getElementById('accountSettingsModal'); if(e.target===m) closeAccountSettings(); };
+</script>
 </body>
 </html>

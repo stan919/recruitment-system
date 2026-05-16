@@ -1,730 +1,481 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <title>职位搜索 - 职引未来</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #ffffff;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 48px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #f0f0f0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--color-brand);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 40px;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #666;
-            font-size: 15px;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: #1a1a1a;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn-login {
-            padding: 10px 28px;
-            background: var(--color-brand);
-            color: white;
-            border: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .btn-register {
-            padding: 10px 28px;
-            background: transparent;
-            color: var(--color-brand);
-            border: 1.5px solid var(--color-brand);
-            border-radius: 9999px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .search-page {
-            padding: 140px 20px 60px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .search-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .search-header h1 {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .search-header p {
-            font-size: 16px;
-            color: #666;
-        }
-
-        /* 主搜索框 */
-        .search-box-container {
-            max-width: 800px;
-            margin: 0 auto 40px;
-            display: flex;
-            gap: 12px;
-            background: #ffffff;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 16px;
-            padding: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s;
-        }
-
-        .search-box-container:focus-within {
-            border-color: var(--color-brand);
-            box-shadow: 0 6px 28px rgba(139, 92, 246, 0.15);
-        }
-
-        .main-search-input {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 14px 20px;
-            font-size: 15px;
-            background: transparent;
-            color: #1a1a1a;
-        }
-
-        .main-search-input::placeholder {
-            color: #999;
-        }
-
-        .main-search-btn {
-            padding: 14px 32px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .main-search-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
-        }
-
-        /* 变量 */
-        :root {
-            --primary: var(--color-brand);
-            --primary-dark: var(--color-brand-hover);
-            --bg-white: #ffffff;
-            --bg-gray: #f8fafc;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-color: #e2e8f0;
-            --border-hover: #cbd5e1;
-            --radius-md: 10px;
-            --radius-lg: 16px;
-        }
-
-        /* 筛选区域 */
-        .filters {
-            padding: 40px;
-        }
-
-        .filters-content {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        /* 上排布局 */
-        .filter-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-
-        .filter-item {
-            position: relative;
-        }
-
-        .filter-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* 下拉选择 */
-        .filter-select {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            background: var(--bg-gray);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .filter-select:hover {
-            border-color: var(--border-hover);
-            background: var(--bg-white);
-        }
-
-        .filter-select.active {
-            border-color: var(--primary);
-            background: var(--bg-white);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .filter-value {
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .filter-select[data-value] .filter-value {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        .arrow {
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid var(--text-muted);
-            transition: transform 0.2s ease;
-        }
-
-        .filter-select.active .arrow {
-            transform: rotate(180deg);
-        }
-
-        /* 下拉菜单 */
-        .dropdown-menu {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            padding: 8px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            z-index: 50;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .filter-select.active .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-group {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 12px 12px 6px;
-            margin-top: 4px;
-        }
-
-        .dropdown-group:first-child {
-            margin-top: 0;
-            padding-top: 6px;
-        }
-
-        .dropdown-item {
-            padding: 10px 12px;
-            font-size: 14px;
-            color: var(--text-primary);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .dropdown-item:hover {
-            background: var(--bg-gray);
-            color: var(--primary);
-        }
-
-        /* 薪资范围 */
-        .salary-filter {
-            margin-bottom: 24px;
-        }
-
-        .salary-range {
-            background: var(--bg-gray);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 20px 24px;
-            transition: all 0.2s ease;
-        }
-
-        .salary-range:focus-within {
-            border-color: var(--primary);
-            background: var(--bg-white);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .range-inputs {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .range-input {
-            width: 100px;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 15px;
-            text-align: center;
-            outline: none;
-        }
-
-        .range-input:focus {
-            border-color: var(--primary);
-        }
-
-        .range-separator {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .range-unit {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-left: 8px;
-        }
-
-        .salary-presets {
-            display: flex;
-            gap: 12px;
-        }
-
-        .preset-chip {
-            padding: 10px 20px;
-            font-size: 14px;
-            color: var(--text-secondary);
-            background: var(--bg-white);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .preset-chip:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .preset-chip.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-
-        /* 已选条件 */
-        .selected-filters {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            background: #f8f7ff;
-            border: 1px solid #ece6ff;
-            border-radius: var(--radius-md);
-            margin-top: 18px;
-            flex-wrap: wrap;
-        }
-
-        .selected-label {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .selected-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .selected-tag {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            background: white;
-            border: 1px solid #ddd6fe;
-            border-radius: 999px;
-            font-size: 12px;
-            color: #4c1d95;
-        }
-
-        .close-btn {
-            font-size: 13px;
-            color: #6d28d9;
-            cursor: pointer;
-            font-weight: 600;
-            line-height: 1;
-        }
-
-        .clear-btn {
-            font-size: 12px;
-            color: #6d28d9;
-            font-weight: 600;
-            margin-left: auto;
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd6fe;
-            background: white;
-            cursor: pointer;
-        }
-
-        .clear-btn:hover {
-            background: rgba(139, 92, 246, 0.1);
-        }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .filter-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .filters {
-                padding: 24px 20px;
-            }
-            
-            .salary-presets {
-                flex-wrap: wrap;
-            }
-            
-            .search-page {
-                padding: 120px 12px 48px;
-            }
-        }
-
-        .results-container {
-            max-width: 1500px;
-            margin: 0 auto;
-            padding: 36px 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            align-items: stretch;
-        }
-
-        .job-card {
-            background: #ffffff;
-            border: 1px solid #ececf2;
-            border-radius: 14px;
-            padding: 16px;
-            cursor: pointer;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: none;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-height: 200px;
-            touch-action: manipulation;
-        }
-
-        .job-card:hover {
-            border-color: #d7c8f7;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
-        }
-
-        .job-card:focus-visible {
-            outline: none;
-            border-color: var(--color-brand);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
-        }
-
-        .job-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .job-company-badge {
-            font-size: 11px;
-            font-weight: 600;
-            color: #6b6480;
-            background: #f4f3f8;
-            border: 1px solid #e8e6ef;
-            border-radius: 999px;
-            padding: 4px 9px;
-        }
-
-        .job-salary {
-            font-size: 15px;
-            font-weight: 700;
-            color: #5b21b6;
-        }
-
-        .job-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f1f29;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .job-company {
-            font-size: 14px;
-            color: #6f6a80;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-weight: 500;
-        }
-
-        .job-meta-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-        }
-
-        .job-meta-item {
-            background: #fafafc;
-            border: 1px solid #efeff5;
-            border-radius: 8px;
-            padding: 8px 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            min-height: 38px;
-        }
-
-        .job-meta-label {
-            font-size: 12px;
-            color: #7c788a;
-            font-weight: 500;
-        }
-
-        .job-meta-value {
-            font-size: 13px;
-            color: #2c2a35;
-            font-weight: 600;
-            max-width: 65%;
-            text-align: right;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 30px 8px;
-            color: #8c8898;
-            font-size: 14px;
-            border: none;
-            background: transparent;
-        }
-
-        /* 分页样式 */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin-top: 48px;
-            padding: 32px 0;
-        }
-
-        .pagination-btn {
-            padding: 12px 20px;
-            border: 2px solid #e5e7eb;
-            background: white;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: #6b7280;
-            transition: all 0.3s ease;
-        }
-
-        .pagination-btn:hover:not(:disabled) {
-            border-color: #a78bfa;
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
-        }
-
-        .pagination-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .pagination-btn.active {
-            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-hover) 100%);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
-        }
-
-        .pagination-info {
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 500;
-        }
-
-        .footer {
-            background: #fafbff;
-            color: #1a1a1a;
-            padding: 64px 48px;
-            border-top: 1px solid #f0f0f0;
-            text-align: center;
-            margin-top: 80px;
-        }
-
-        .footer p {
-            color: #888;
-            font-size: 14px;
-        }
-
-        @media (max-width: 1280px) {
-            .results-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .results-container {
-                grid-template-columns: 1fr;
-                padding: 40px 12px;
-                gap: 16px;
-            }
-
-            .job-card {
-                border-radius: 18px;
-                min-height: 230px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>职位搜索 — 职引未来 MERIDIAN CAREER</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/global.css">
+<style>
+/* ===== Navigation Bar (identical to home) ===== */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    height: 80px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.3s;
+}
+.navbar.scrolled { background: rgba(10,10,15,0.95); }
+.navbar-inner {
+    max-width: var(--container-max); margin: 0 auto; padding: 0 24px;
+    height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-square {
+    width: 36px; height: 36px; border: 2px solid var(--bronze);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px;
+    color: var(--bronze); letter-spacing: 0; line-height: 1;
+}
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-text-cn { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.logo-text-en { font-size: 11px; font-weight: 500; color: var(--bronze); letter-spacing: 0.15em; text-transform: uppercase; }
+.nav-center { display: flex; align-items: center; gap: 6px; }
+.nav-link {
+    position: relative; padding: 8px 18px;
+    font-size: 14px; font-weight: 500; color: var(--text-secondary);
+    text-decoration: none; border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    cursor: pointer; white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+.nav-link i { font-size: 10px; margin-left: 4px; transition: transform 0.2s; }
+.nav-link:hover i { transform: rotate(180deg); }
+.dropdown { position: relative; }
+.dropdown-menu {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-8px);
+    background: var(--slate); border: 1px solid var(--border-dim); border-radius: 12px;
+    padding: 8px; min-width: 200px; opacity: 0; visibility: hidden;
+    transition: all 0.25s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    pointer-events: none;
+}
+.dropdown:hover .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.dropdown-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+    color: var(--text-secondary); text-decoration: none; border-radius: 8px;
+    font-size: 14px; transition: all 0.2s;
+}
+.dropdown-item:hover { background: rgba(201,169,110,0.1); color: var(--bronze); }
+.dropdown-item i { width: 20px; text-align: center; font-size: 14px; color: var(--bronze); }
+.dropdown-divider { height: 1px; background: var(--border-dim); margin: 4px 8px; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.lang-toggle {
+    display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border-dim);
+    border-radius: 9999px; cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--text-secondary); transition: all 0.2s; font-family: inherit;
+}
+.lang-toggle:hover { border-color: var(--bronze); color: var(--bronze); }
+.lang-toggle .active-lang { color: var(--bronze); }
+.auth-btn { padding: 8px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; font-family: inherit; border: none; }
+.auth-btn-primary { background: var(--bronze); color: var(--obsidian); }
+.auth-btn-primary:hover { background: var(--bronze-light); }
+.auth-btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-dim); }
+.auth-btn-ghost:hover { border-color: var(--bronze); color: var(--bronze); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+.hamburger span { display: block; width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.3s; }
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+.mobile-menu {
+    display: none; position: fixed; top: 80px; left: 0; right: 0;
+    background: rgba(10,10,15,0.98); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-dim);
+    padding: 16px 24px; z-index: 999;
+    transform: translateY(-100%); opacity: 0; transition: all 0.3s ease;
+    pointer-events: none;
+}
+.mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.mobile-link {
+    display: block; padding: 14px 0; color: var(--text-secondary);
+    text-decoration: none; font-size: 15px; border-bottom: 1px solid var(--border-dim);
+    transition: color 0.2s;
+}
+.mobile-link:last-child { border-bottom: none; }
+.mobile-link:hover { color: var(--bronze); }
+
+/* ===== Page Layout ===== */
+.page-wrap {
+    padding-top: 80px;
+}
+
+.page-header {
+    padding: 60px 0 32px; text-align: center;
+}
+.page-header .badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(201,169,110,0.3); color: var(--bronze);
+    padding: 6px 20px; border-radius: 9999px; font-size: 11px; letter-spacing: 0.3em;
+    font-weight: 500; margin-bottom: 20px; font-family: 'Inter', sans-serif;
+}
+.page-title { font-size: clamp(32px, 4vw, 48px); font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; }
+.page-title-en { display: block; font-size: 13px; font-weight: 500; color: var(--bronze); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
+.page-subtitle { color: var(--text-secondary); font-size: 16px; max-width: 500px; margin: 0 auto; }
+
+/* ===== Search Box ===== */
+.search-section { padding: 0 0 32px; }
+.search-box-container {
+    max-width: 720px; margin: 0 auto;
+    display: flex; gap: 12px;
+    background: var(--slate); border: 1.5px solid var(--border-dim);
+    border-radius: 16px; padding: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.search-box-container:focus-within {
+    border-color: var(--bronze);
+    box-shadow: 0 6px 28px rgba(201,169,110,0.15);
+}
+.main-search-input {
+    flex: 1; border: none; outline: none;
+    padding: 14px 20px; font-size: 15px; font-family: inherit;
+    background: var(--graphite); color: var(--text-primary);
+    border-radius: 10px;
+}
+.main-search-input::placeholder { color: var(--text-muted); }
+.main-search-input:-webkit-autofill,
+.main-search-input:-webkit-autofill:hover,
+.main-search-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--graphite) inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+}
+.main-search-btn {
+    padding: 14px 32px; background: var(--bronze-gradient);
+    color: var(--obsidian); border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.main-search-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,169,110,0.3); }
+
+/* ===== Filters ===== */
+.filters-section { padding: 0 0 16px; }
+.filters-card {
+    max-width: 1000px; margin: 0 auto;
+    background: var(--slate); border: 1px solid var(--border-dim);
+    border-radius: 20px; padding: 32px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.filter-item { position: relative; }
+.filter-label {
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 10px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;
+}
+.filter-label i { color: var(--bronze); font-size: 12px; }
+
+.filter-select {
+    position: relative; display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--graphite);
+    border: 1px solid var(--border-dim); border-radius: 10px;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.filter-select:hover { border-color: rgba(255,255,255,0.15); }
+.filter-select.active { border-color: var(--bronze); box-shadow: 0 0 0 3px rgba(201,169,110,0.15); }
+.filter-value { font-size: 14px; color: var(--text-muted); }
+.filter-select[data-value] .filter-value { color: var(--text-primary); font-weight: 500; }
+.filter-arrow {
+    width: 0; height: 0;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 5px solid var(--text-muted);
+    transition: transform 0.2s ease;
+}
+.filter-select.active .filter-arrow { transform: rotate(180deg); }
+
+.dropdown-menu {
+    position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    background: var(--slate); border: 1px solid var(--border-dim);
+    border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    padding: 8px; opacity: 0; visibility: hidden;
+    transform: translateY(-10px); transition: all 0.2s ease;
+    z-index: 50; max-height: 300px; overflow-y: auto;
+}
+.filter-select.active .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+.dropdown-group {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 12px 12px 6px; margin-top: 4px;
+}
+.dropdown-group:first-child { margin-top: 0; padding-top: 6px; }
+.dropdown-item {
+    padding: 10px 12px; font-size: 14px; color: var(--text-primary);
+    border-radius: 6px; cursor: pointer; transition: all 0.2s ease;
+}
+.dropdown-item:hover { background: var(--graphite); color: var(--bronze); }
+
+/* Salary */
+.salary-range {
+    background: var(--graphite); border: 1px solid var(--border-dim);
+    border-radius: 10px; padding: 20px 24px;
+    transition: border-color 0.2s;
+}
+.salary-range:focus-within { border-color: var(--bronze); box-shadow: 0 0 0 3px rgba(201,169,110,0.15); }
+.range-inputs { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.range-input {
+    width: 100px; padding: 12px 16px; border: 1px solid var(--border-dim);
+    border-radius: 10px; font-size: 15px; text-align: center; outline: none;
+    background: var(--slate); color: var(--text-primary); font-family: inherit;
+}
+.range-input:focus { border-color: var(--bronze); box-shadow: 0 0 0 2px rgba(201,169,110,0.2); }
+.range-separator { color: var(--text-muted); font-size: 14px; }
+.range-unit { font-size: 13px; color: var(--text-muted); margin-left: 8px; }
+.salary-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.preset-chip {
+    padding: 8px 18px; font-size: 13px; color: var(--text-secondary);
+    background: transparent; border: 1px solid var(--border-dim);
+    border-radius: 9999px; cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+}
+.preset-chip:hover { border-color: var(--bronze); color: var(--bronze); }
+.preset-chip.active { background: var(--bronze); border-color: var(--bronze); color: var(--obsidian); font-weight: 600; }
+
+/* Selected tags */
+.selected-filters {
+    display: none; align-items: center; gap: 12px;
+    padding: 14px 16px; background: rgba(201,169,110,0.06);
+    border: 1px solid rgba(201,169,110,0.15);
+    border-radius: 10px; margin-top: 18px; flex-wrap: wrap;
+}
+.selected-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.selected-tags { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+.selected-tag {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; background: var(--slate);
+    border: 1px solid rgba(201,169,110,0.3); border-radius: 999px;
+    font-size: 12px; color: var(--bronze-light);
+}
+.close-btn { font-size: 13px; color: var(--bronze); cursor: pointer; font-weight: 600; line-height: 1; }
+.clear-btn {
+    font-size: 12px; color: var(--bronze); font-weight: 600; margin-left: auto;
+    padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(201,169,110,0.3);
+    background: transparent; cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.clear-btn:hover { background: rgba(201,169,110,0.1); }
+
+/* ===== Results Grid ===== */
+.results-section { padding: 40px 0 60px; }
+.results-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.results-count { font-size: 14px; color: var(--text-muted); }
+.results-container {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 20px; min-height: 400px;
+    transition: opacity 0.3s ease;
+}
+
+.job-card {
+    background: var(--slate); border: 1px solid var(--border-light);
+    border-radius: 16px; padding: 24px;
+    cursor: pointer; transition: all 0.3s ease;
+    display: flex; flex-direction: column; gap: 12px;
+    touch-action: manipulation;
+}
+.job-card:hover {
+    border-color: var(--bronze);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    transform: translateY(-4px);
+}
+.job-card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.job-company-badge {
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    background: var(--graphite); border: 1px solid var(--border-light);
+    border-radius: 999px; padding: 4px 10px;
+}
+.job-salary { font-size: 16px; font-weight: 700; color: var(--bronze); font-family: 'Inter', sans-serif; }
+.job-title { font-size: 18px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.job-company { font-size: 14px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.job-meta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.job-meta-item {
+    background: var(--graphite); border: 1px solid var(--border-light);
+    border-radius: 8px; padding: 8px 10px; display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+}
+.job-meta-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.job-meta-value { font-size: 13px; color: var(--text-primary); font-weight: 600; max-width: 65%; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.no-results { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; grid-column: 1 / -1; }
+.no-results i { font-size: 40px; color: var(--text-muted); opacity: 0.4; margin-bottom: 16px; }
+
+/* ===== Pagination ===== */
+.pagination-container { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 48px; }
+.pagination-btn {
+    padding: 12px 24px; border: 1px solid var(--border-dim);
+    background: transparent; border-radius: 12px; cursor: pointer;
+    font-size: 14px; font-weight: 600; color: var(--text-secondary);
+    transition: all 0.3s ease; font-family: inherit; display: flex; align-items: center; gap: 8px;
+}
+.pagination-btn:hover:not(:disabled) { border-color: var(--bronze); color: var(--bronze); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(201,169,110,0.15); }
+.pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination-btn.active { background: var(--bronze); color: var(--obsidian); border-color: transparent; box-shadow: 0 4px 16px rgba(201,169,110,0.3); }
+.pagination-info { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+
+/* ===== Loading Skeleton ===== */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--graphite) 25%, rgba(255,255,255,0.05) 50%, var(--graphite) 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+}
+@keyframes loading-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ===== Footer ===== */
+.footer {
+    background: var(--slate); border-top: 1px solid var(--border-light);
+    padding: 64px 0 0;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+.footer-brand .logo { margin-bottom: 16px; }
+.footer-desc { font-size: 14px; color: var(--text-muted); line-height: 1.8; max-width: 320px; margin-bottom: 24px; }
+.footer-socials { display: flex; gap: 12px; }
+.footer-social {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-dim);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); text-decoration: none;
+    transition: all 0.2s; font-size: 16px;
+}
+.footer-social:hover { background: var(--bronze); color: var(--obsidian); border-color: var(--bronze); }
+.footer-col-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; }
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { margin-bottom: 12px; }
+.footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.footer-links a:hover { color: var(--bronze); }
+.footer-contact p { font-size: 14px; color: var(--text-muted); margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.footer-contact i { color: var(--bronze); width: 16px; }
+.footer-bottom { margin-top: 48px; padding: 24px 0; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-bottom p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.footer-bottom-links { display: flex; gap: 20px; }
+.footer-bottom-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+.footer-bottom-links a:hover { color: var(--bronze); }
+
+/* ===== Responsive ===== */
+@media (max-width: 1279px) {
+    .results-container { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1023px) {
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .filters-card { padding: 24px; }
+}
+@media (max-width: 767px) {
+    .nav-center { display: none; }
+    .nav-right .auth-btn { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: block; }
+    .results-container { grid-template-columns: 1fr; gap: 16px; }
+    .page-header { padding: 40px 0 24px; }
+    .filter-row { grid-template-columns: 1fr; }
+    .filters-card { padding: 20px; }
+    .salary-presets { flex-wrap: wrap; }
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+}
+</style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">
-            职引未来
+
+<!-- ===== Navigation Bar ===== -->
+<nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+        <a href="/" class="logo">
+            <div class="logo-square">M</div>
+            <div class="logo-text">
+                <span class="logo-text-cn">职引未来</span>
+                <span class="logo-text-en">MERIDIAN CAREER</span>
+            </div>
+        </a>
+
+        <div class="nav-center">
+            <a class="nav-link" href="/">首页</a>
+            <div class="dropdown">
+                <a class="nav-link"><span data-i18n="nav-platform">平台功能</span> <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/insights"><i class="fas fa-chart-bar"></i> <span data-i18n="nav-insights">数据洞察</span></a>
+                    <a class="dropdown-item" href="/jobs/search"><i class="fas fa-search"></i> <span data-i18n="nav-jobs">职位搜索</span></a>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/chat/user"><i class="fas fa-comment-dots"></i> <span data-i18n="nav-messages">消息中心</span></a>
+                    <a class="dropdown-item" href="/applications"><i class="fas fa-file-alt"></i> <span data-i18n="nav-applications">投递中心</span></a>
+                    {% endif %}
+                </div>
+            </div>
+            <a class="nav-link active" href="/jobs/search" data-i18n="nav-jobs">职位搜索</a>
+            <a class="nav-link" href="/insights" data-i18n="nav-insights">数据洞察</a>
         </div>
-        <div class="nav-links">
-            <a href="/">首页</a>
-            <a href="/jobs/search">职位搜索</a>
-            <a href="/insights">数据洞察</a>
-            <a href="/#features">功能介绍</a>
-        </div>
-        <div class="auth-buttons">
+
+        <div class="nav-right">
             {% if session.get('user_id') %}
-            <button class="btn-register" onclick="location.href='/profile'">个人中心</button>
-            <button class="btn-login" onclick="logout()">退出</button>
+                {% if session.get('is_admin') %}
+                <a href="/admin" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-shield-alt"></i> 管理后台</a>
+                {% elif session.get('is_company') %}
+                <a href="/company" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;"><i class="fas fa-building"></i> 企业后台</a>
+                {% else %}
+                <a href="/profile" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;"><i class="fas fa-user"></i> 个人中心</a>
+                <button class="auth-btn auth-btn-primary" onclick="logout()" style="padding:8px 18px;font-size:12px;">退出</button>
+                {% endif %}
             {% else %}
-            <button class="btn-login" onclick="location.href='/login'">登录</button>
-            <button class="btn-register" onclick="location.href='/register'">注册</button>
+                <a href="/login" class="auth-btn auth-btn-ghost" style="padding:8px 18px;font-size:12px;" data-i18n="btn-login">登录</a>
+                <a href="/register" class="auth-btn auth-btn-primary" style="padding:8px 18px;font-size:12px;" data-i18n="btn-register">注册</a>
             {% endif %}
-        </div>
-    </nav>
 
-    <div class="search-page">
-        <div class="search-header">
-            <h1>职位搜索</h1>
-            <p>精准匹配，快速找到理想职位</p>
+            <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="菜单">
+                <span></span><span></span><span></span>
+            </button>
         </div>
+    </div>
 
-        <!-- 搜索框 -->
-        <div class="search-box-container">
-            <input type="text" class="main-search-input" placeholder="搜索职位、公司或关键词..." id="searchInput">
-            <button class="main-search-btn" onclick="searchJobs()">搜索</button>
+    <div class="mobile-menu" id="mobileMenu">
+        <a class="mobile-link" href="/" onclick="closeMobileMenu()">首页</a>
+        <a class="mobile-link" href="/jobs/search" onclick="closeMobileMenu()" data-i18n="nav-jobs">职位搜索</a>
+        <a class="mobile-link" href="/insights" onclick="closeMobileMenu()" data-i18n="nav-insights">数据洞察</a>
+        {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+        <a class="mobile-link" href="/chat/user" onclick="closeMobileMenu()" data-i18n="nav-messages">消息中心</a>
+        <a class="mobile-link" href="/applications" onclick="closeMobileMenu()" data-i18n="nav-applications">投递中心</a>
+        {% endif %}
+        {% if not session.get('user_id') %}
+        <a class="mobile-link" href="/login" onclick="closeMobileMenu()" data-i18n="btn-login">登录</a>
+        <a class="mobile-link" href="/register" onclick="closeMobileMenu()" data-i18n="btn-register">注册</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <!-- ===== Page Header ===== -->
+    <section class="page-header" data-reveal>
+        <div class="badge">JOB SEARCH</div>
+        <h1 class="page-title" class="text-primary" class="text-primary" class="text-primary">
+            <span class="page-title-en">Position Search</span>
+            <span>职位搜索</span>
+        </h1>
+        <p class="page-subtitle">精准匹配，快速找到理想职位</p>
+    </section>
+
+    <!-- ===== Search Box ===== -->
+    <section class="search-section" data-reveal>
+        <div class="container">
+            <div class="search-box-container">
+                <input type="text" class="main-search-input" placeholder="搜索职位、公司或关键词..." id="searchInput">
+                <button class="main-search-btn bronze-gradient" onclick="searchJobs()"><i class="fas fa-search"></i> 搜索</button>
+            </div>
         </div>
-        <!-- 筛选区域 -->
-        <section class="filters">
-            <div class="filters-content">
-                
-                <!-- 上排：专业 + 城市 -->
+    </section>
+
+    <!-- ===== Filters ===== -->
+    <section class="filters-section" data-reveal>
+        <div class="container">
+            <div class="filters-card bg-slate border-dim">
                 <div class="filter-row">
                     <div class="filter-item">
-                        <label class="filter-label">专业方向</label>
+                        <label class="filter-label"><i class="fas fa-graduation-cap"></i> 专业方向</label>
                         <div class="filter-select" id="professionSelect">
                             <span class="filter-value">选择专业方向</span>
-                            <span class="arrow"></span>
+                            <span class="filter-arrow"></span>
                             <div class="dropdown-menu">
                                 <div class="dropdown-item" data-value="cs">计算机科学与技术</div>
                                 <div class="dropdown-item" data-value="se">软件工程</div>
@@ -739,10 +490,10 @@
                     </div>
 
                     <div class="filter-item">
-                        <label class="filter-label">工作城市</label>
+                        <label class="filter-label"><i class="fas fa-map-marker-alt"></i> 工作城市</label>
                         <div class="filter-select" id="citySelect">
                             <span class="filter-value">选择城市</span>
-                            <span class="arrow"></span>
+                            <span class="filter-arrow"></span>
                             <div class="dropdown-menu">
                                 <div class="dropdown-group">一线城市</div>
                                 <div class="dropdown-item" data-value="bj">北京</div>
@@ -764,9 +515,8 @@
                     </div>
                 </div>
 
-                <!-- 下排：薪资范围 -->
                 <div class="filter-item salary-filter">
-                    <label class="filter-label">薪资范围</label>
+                    <label class="filter-label"><i class="fas fa-dollar-sign"></i> 薪资范围</label>
                     <div class="salary-range">
                         <div class="range-inputs">
                             <input type="text" class="range-input" id="salaryMin" placeholder="最低">
@@ -784,400 +534,261 @@
                     </div>
                 </div>
 
-                <!-- 已选条件标签 -->
                 <div class="selected-filters" id="selectedFilters">
                     <span class="selected-label">已选条件：</span>
                     <div class="selected-tags" id="selectedTags"></div>
                     <button class="clear-btn" id="clearAll" type="button">清空全部</button>
                 </div>
-
             </div>
-        </section>
+        </div>
+    </section>
 
-        <div class="results-container" id="resultsContainer"></div>
+    <!-- ===== Results ===== -->
+    <section class="results-section">
+        <div class="container">
+            <div class="results-header" data-reveal>
+                <span class="results-count" id="resultsCount">为您推荐以下职位</span>
+            </div>
+            <div class="results-container" id="resultsContainer"></div>
+            <div class="pagination-container" id="paginationContainer"></div>
+        </div>
+    </section>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo" style="margin-bottom:16px;">
+                    <div class="logo-square">M</div>
+                    <div class="logo-text">
+                        <span class="logo-text-cn">职引未来</span>
+                        <span class="logo-text-en">MERIDIAN CAREER</span>
+                    </div>
+                </a>
+                <p class="footer-desc" data-i18n="footer-desc">连接高校毕业生与理想职场的桥梁，用数据驱动就业，以科技赋能未来。</p>
+                <div class="footer-socials">
+                    <a class="footer-social" href="#" title="微信"><i class="fab fa-weixin"></i></a>
+                    <a class="footer-social" href="#" title="微博"><i class="fab fa-weibo"></i></a>
+                    <a class="footer-social" href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a class="footer-social" href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-col-title">快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="/">首页</a></li>
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">平台服务</h4>
+                <ul class="footer-links">
+                    <li><a href="/jobs/search">职位搜索</a></li>
+                    <li><a href="/insights">数据洞察</a></li>
+                    {% if session.get('user_id') and not session.get('is_company') and not session.get('is_admin') %}
+                    <li><a href="/chat/user">消息中心</a></li>
+                    <li><a href="/applications">投递中心</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-col-title">联系方式</h4>
+                <div class="footer-contact">
+                    <p><i class="fas fa-envelope"></i> contact@meridiancareer.com</p>
+                    <p><i class="fas fa-phone"></i> 400-888-9999</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 职引未来 MERIDIAN CAREER. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">隐私政策</a>
+                <a href="#">用户协议</a>
+                <a href="#">京ICP备XXXXXXXX号</a>
+            </div>
+        </div>
     </div>
+</footer>
 
-    <footer class="footer">
-        <p>&copy; 2026 职引未来。All rights reserved. 数据驱动就业，精准匹配理想职位</p>
-    </footer>
+<script>
+/* ===== Utility ===== */
+function logout(){
+    fetch('/api/logout',{method:'POST'}).then(r=>r.json()).then(d=>{if(d.success) window.location.reload();});
+}
+function toggleMobileMenu(){
+    const m=document.getElementById('mobileMenu'),h=document.getElementById('hamburger');
+    m.classList.toggle('open'); h.classList.toggle('active');
+    document.body.style.overflow=m.classList.contains('open')?'hidden':'';
+}
+function closeMobileMenu(){ document.getElementById('mobileMenu').classList.remove('open'); document.getElementById('hamburger').classList.remove('active'); document.body.style.overflow=''; }
 
-    <script>
-        // 从后端注入的职位数据
-        const preloadedJobs = {{ jobs | tojson if jobs else [] }};
-        
-        // 变量
-        let selectedProfession = '';
-        let selectedCity = '';
-        let selectedMinSalary = 0;  // 修改为 0，不限制最低薪资
-        let selectedMaxSalary = 999;  // 修改为 999，不限制最高薪资
+/* ===== Navbar scroll effect ===== */
+window.addEventListener('scroll',()=>{
+    const n=document.getElementById('navbar');
+    if(window.scrollY>80) n.classList.add('scrolled'); else n.classList.remove('scrolled');
+});
 
-        // 分页变量
-        let currentPage = 1;
-        let totalPages = 1;
-        let allJobs = [];
-        const jobsPerPage = 12;
+/* ===== Scroll Reveal ===== */
+(function(){
+    document.querySelectorAll('[data-reveal]').forEach(el=>{
+        const o=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');o.unobserve(e.target);}});},{threshold:0.1});
+        o.observe(el);
+    });
+})();
 
-        function normalizeSalaryRange() {
-            selectedMinSalary = Number.isFinite(selectedMinSalary) ? Math.max(0, selectedMinSalary) : 0;
-            selectedMaxSalary = Number.isFinite(selectedMaxSalary) ? Math.max(0, selectedMaxSalary) : 999;
+/* ===== Search / Filter / Pagination (preserved) ===== */
+const preloadedJobs = {{ jobs | tojson if jobs else [] }};
+let selectedProfession = '';
+let selectedCity = '';
+let selectedMinSalary = 0;
+let selectedMaxSalary = 999;
+let currentPage = 1;
+let totalPages = 1;
+let allJobs = [];
+const jobsPerPage = 12;
 
-            if (selectedMaxSalary > 0 && selectedMaxSalary !== 999 && selectedMaxSalary < selectedMinSalary) {
-                const temp = selectedMinSalary;
-                selectedMinSalary = selectedMaxSalary;
-                selectedMaxSalary = temp;
-            }
-        }
+function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
+var debouncedSearch = debounce((...args) => searchJobs(...args), 500);
 
-        function escapeHtml(value) {
-            return String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/\"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
+function escapeHtml(value) { return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;'); }
+function toSafeText(value, fallback = '-') { return (value===null||value===undefined||value==='')?fallback:escapeHtml(String(value)); }
+function formatSalaryText(minSalary, maxSalary) {
+    const minNum=Number(minSalary), maxNum=Number(maxSalary);
+    if(!Number.isFinite(minNum)||!Number.isFinite(maxNum)||minNum<=0||maxNum<=0) return '薪资面议';
+    return `¥${(minNum/1000).toFixed(0)}k-¥${(maxNum/1000).toFixed(0)}k`;
+}
 
-        function toSafeText(value, fallback = '-') {
-            if (value === null || value === undefined || value === '') {
-                return fallback;
-            }
-            return escapeHtml(String(value));
-        }
+function normalizeSalaryRange() {
+    selectedMinSalary=Number.isFinite(selectedMinSalary)?Math.max(0,selectedMinSalary):0;
+    selectedMaxSalary=Number.isFinite(selectedMaxSalary)?Math.max(0,selectedMaxSalary):999;
+    if(selectedMaxSalary>0&&selectedMaxSalary!==999&&selectedMaxSalary<selectedMinSalary){const t=selectedMinSalary;selectedMinSalary=selectedMaxSalary;selectedMaxSalary=t;}
+}
 
-        function formatSalaryText(minSalary, maxSalary) {
-            const minNum = Number(minSalary);
-            const maxNum = Number(maxSalary);
-            if (!Number.isFinite(minNum) || !Number.isFinite(maxNum) || minNum <= 0 || maxNum <= 0) {
-                return '薪资面议';
-            }
-            return `¥${(minNum / 1000).toFixed(0)}k-¥${(maxNum / 1000).toFixed(0)}k`;
-        }
+function showSkeleton() {
+    const c=document.getElementById('resultsContainer');
+    let html='';
+    for(let i=0;i<6;i++) html+=`<div class="job-card bg-slate border-dim hover-card"><div class="loading-skeleton" style="height:24px;width:60%;margin-bottom:16px;border-radius:4px;"></div><div class="loading-skeleton" style="height:16px;width:40%;margin-bottom:24px;border-radius:4px;"></div><div style="display:flex;gap:8px;"><div class="loading-skeleton" style="height:30px;width:80px;border-radius:4px;"></div><div class="loading-skeleton" style="height:30px;width:80px;border-radius:4px;"></div></div></div>`;
+    c.innerHTML=html;
+}
 
-        // 退出登录
-        function logout() {
-            fetch('/api/logout', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.removeItem('user');
-                        window.location.reload();
-                    }
-                });
-        }
+function searchJobs() {
+    const keyword=document.getElementById('searchInput')?.value.trim()||'';
+    const rc=document.getElementById('resultsContainer');
+    normalizeSalaryRange();
+    showSkeleton();
+    const params=new URLSearchParams();
+    if(keyword) params.append('keyword',keyword);
+    if(selectedMinSalary) params.append('min_salary',selectedMinSalary*1000);
+    if(selectedMaxSalary&&selectedMaxSalary!==999) params.append('max_salary',selectedMaxSalary*1000);
+    if(selectedProfession) params.append('profession',selectedProfession);
+    if(selectedCity) params.append('city',selectedCity);
+    fetch(`/api/jobs/search?${params.toString()}`)
+        .then(r=>r.json())
+        .then(data=>{
+            if(data.success&&data.jobs.length>0){
+                allJobs=data.jobs;totalPages=Math.ceil(allJobs.length/jobsPerPage);currentPage=1;
+                renderJobs(); renderPagination();
+                document.getElementById('resultsContainer').scrollIntoView({behavior:'smooth',block:'start'});
+            } else { rc.innerHTML='<div class="no-results"><i class="fas fa-inbox"></i><p>未找到相关职位</p></div>'; document.getElementById('paginationContainer').innerHTML=''; }
+        })
+        .catch(()=>{ rc.innerHTML='<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>搜索失败，请稍后重试</p></div>'; document.getElementById('paginationContainer').innerHTML=''; });
+}
 
-        // 搜索职位
-        function searchJobs() {
-            const keyword = document.getElementById('searchInput')?.value.trim() || '';
-            const resultsContainer = document.getElementById('resultsContainer');
-            normalizeSalaryRange();
-            
-            resultsContainer.innerHTML = '<div class="no-results">搜索中...</div>';
-            
-            // 构建查询参数
-            const params = new URLSearchParams();
-            if (keyword) params.append('keyword', keyword);
-            if (selectedMinSalary) params.append('min_salary', selectedMinSalary * 1000);
-            if (selectedMaxSalary && selectedMaxSalary !== 999) params.append('max_salary', selectedMaxSalary * 1000);
-            if (selectedProfession) params.append('profession', selectedProfession);
-            if (selectedCity) params.append('city', selectedCity);
-            
-            fetch(`/api/jobs/search?${params.toString()}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.jobs.length > 0) {
-                        allJobs = data.jobs;
-                        totalPages = Math.ceil(allJobs.length / jobsPerPage);
-                        currentPage = 1;
-                        renderJobs();
-                        renderPagination();
-                        // 滚动到岗位卡片位置
-                        document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else {
-                        resultsContainer.innerHTML = '<div class="no-results">未找到相关职位</div>';
-                        document.getElementById('paginationContainer')?.remove();
-                    }
-                })
-                .catch(error => {
-                    console.error('搜索失败:', error);
-                    resultsContainer.innerHTML = '<div class="no-results">搜索失败，请稍后重试</div>';
-                    document.getElementById('paginationContainer')?.remove();
-                });
-        }
-        
-        // 渲染职位列表
-        function renderJobs() {
-            const resultsContainer = document.getElementById('resultsContainer');
-            const start = (currentPage - 1) * jobsPerPage;
-            const end = start + jobsPerPage;
-            const jobsToShow = allJobs.slice(start, end);
-            
-            const html = jobsToShow.map(job => `
-                <div class="job-card" role="button" tabindex="0" onclick="viewJob(${Number(job.id) || 0})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();viewJob(${Number(job.id) || 0});}">
-                    <div class="job-card-header">
-                        <span class="job-company-badge">企业在招</span>
-                        <span class="job-salary">${formatSalaryText(job.min_salary, job.max_salary)}</span>
-                    </div>
-                    <div class="job-title">${toSafeText(job.job_name, '未知职位')}</div>
-                    <div class="job-company">${toSafeText(job.company_name, '未知公司')}</div>
-                    <div class="job-meta-grid">
-                        <div class="job-meta-item"><span class="job-meta-label">城市</span><span class="job-meta-value">${toSafeText(job.city, '未知城市')}</span></div>
-                        <div class="job-meta-item"><span class="job-meta-label">学历</span><span class="job-meta-value">${toSafeText(job.education, '不限')}</span></div>
-                        <div class="job-meta-item"><span class="job-meta-label">经验</span><span class="job-meta-value">${toSafeText(job.experience, '不限')}</span></div>
-                        <div class="job-meta-item"><span class="job-meta-label">状态</span><span class="job-meta-value">可投递</span></div>
-                    </div>
-                </div>
-            `).join('');
-            
-            resultsContainer.innerHTML = html;
-        }
-        
-        // 渲染分页
-        function renderPagination() {
-            let paginationContainer = document.getElementById('paginationContainer');
-            
-            if (!paginationContainer) {
-                paginationContainer = document.createElement('div');
-                paginationContainer.id = 'paginationContainer';
-                paginationContainer.className = 'pagination-container';
-                document.getElementById('resultsContainer').parentNode.appendChild(paginationContainer);
-            }
-            
-            const html = `
-                <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
-                <span class="pagination-info">第 ${currentPage} / ${totalPages} 页</span>
-                <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>
-            `;
-            
-            paginationContainer.innerHTML = html;
-        }
-        
-        // 切换页码
-        function changePage(page) {
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderJobs();
-            renderPagination();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+function renderJobs() {
+    const rc=document.getElementById('resultsContainer');
+    const start=(currentPage-1)*jobsPerPage;
+    const end=start+jobsPerPage;
+    const jobsToShow=allJobs.slice(start,end);
+    rc.innerHTML=jobsToShow.map(job=>`
+        <div class="job-card bg-slate border-dim hover-card" role="button" tabindex="0" onclick="viewJob(${Number(job.id)||0})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();viewJob(${Number(job.id)||0});}">
+            <div class="job-card-header"><span class="job-company-badge">企业在招</span><span class="job-salary">${formatSalaryText(job.min_salary,job.max_salary)}</span></div>
+            <div class="job-title">${toSafeText(job.job_name,'未知职位')}</div>
+            <div class="job-company">${toSafeText(job.company_name,'未知公司')}</div>
+            <div class="job-meta-grid">
+                <div class="job-meta-item"><span class="job-meta-label">城市</span><span class="job-meta-value">${toSafeText(job.city,'未知')}</span></div>
+                <div class="job-meta-item"><span class="job-meta-label">学历</span><span class="job-meta-value">${toSafeText(job.education,'不限')}</span></div>
+                <div class="job-meta-item"><span class="job-meta-label">经验</span><span class="job-meta-value">${toSafeText(job.experience,'不限')}</span></div>
+                <div class="job-meta-item"><span class="job-meta-label">状态</span><span class="job-meta-value">可投递</span></div>
+            </div>
+        </div>
+    `).join('');
+    document.getElementById('resultsCount').textContent=allJobs.length>0?`共 ${allJobs.length} 个职位`:'为您推荐以下职位';
+}
 
-        // 查看职位详情
-        function viewJob(jobId) {
-            if (!Number.isInteger(jobId) || jobId <= 0) {
-                return;
-            }
-            // 跳转到职位详情页面
-            window.location.href = `/job/${jobId}`;
-        }
+function renderPagination(){
+    const pc=document.getElementById('paginationContainer');
+    pc.innerHTML=`
+        <button class="pagination-btn" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}><i class="fas fa-chevron-left"></i> 上一页</button>
+        <span class="pagination-info">第 ${currentPage} / ${totalPages} 页</span>
+        <button class="pagination-btn" onclick="changePage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>下一页 <i class="fas fa-chevron-right"></i></button>
+    `;
+}
+function changePage(page){if(page<1||page>totalPages)return;currentPage=page;renderJobs();renderPagination();window.scrollTo({top:0,behavior:'smooth'});}
+function viewJob(jobId){if(!Number.isInteger(jobId)||jobId<=0)return;window.location.href=`/job/${jobId}`;}
 
-        // 下拉选择功能
-        function initDropdowns() {
-            const selects = document.querySelectorAll('.filter-select');
-            
-            selects.forEach(select => {
-                const items = select.querySelectorAll('.dropdown-item');
-                const valueSpan = select.querySelector('.filter-value');
-                
-                // 点击选择框
-                select.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selects.forEach(s => {
-                        if (s !== select) s.classList.remove('active');
-                    });
-                    select.classList.toggle('active');
-                });
-                
-                // 点击选项
-                items.forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const value = item.dataset.value;
-                        const text = item.textContent;
-                        
-                        valueSpan.textContent = text;
-                        select.dataset.value = value;
-                        select.classList.remove('active');
-                        
-                        if (select.id === 'professionSelect') {
-                            selectedProfession = value;
-                        } else if (select.id === 'citySelect') {
-                            selectedCity = value;
-                        }
+/* Dropdowns */
+function initDropdowns(){
+    const selects=document.querySelectorAll('.filter-select');
+    selects.forEach(select=>{
+        const items=select.querySelectorAll('.dropdown-item'),valueSpan=select.querySelector('.filter-value');
+        select.addEventListener('click',(e)=>{e.stopPropagation();selects.forEach(s=>{if(s!==select)s.classList.remove('active');});select.classList.toggle('active');});
+        items.forEach(item=>{item.addEventListener('click',(e)=>{e.stopPropagation();const v=item.dataset.value,t=item.textContent;valueSpan.textContent=t;select.dataset.value=v;select.classList.remove('active');if(select.id==='professionSelect')selectedProfession=v;else if(select.id==='citySelect')selectedCity=v;updateSelectedTags();searchJobs();});});
+    });
+    document.addEventListener('click',()=>{selects.forEach(s=>s.classList.remove('active'));});
+}
 
-                        updateSelectedTags();
-                        searchJobs();
-                    });
-                });
-            });
-            
-            // 点击外部关闭
-            document.addEventListener('click', () => {
-                selects.forEach(s => s.classList.remove('active'));
-            });
-        }
-
-        // 薪资预设
-        function initSalaryPresets() {
-            const presets = document.querySelectorAll('.preset-chip');
-            
-            presets.forEach(preset => {
-                preset.addEventListener('click', () => {
-                    presets.forEach(p => p.classList.remove('active'));
-                    preset.classList.add('active');
-                    
-                    selectedMinSalary = parseInt(preset.dataset.min) || 0;
-                    selectedMaxSalary = parseInt(preset.dataset.max) || 999;
-
-                    // 更新输入框（不限时保持空值，更直观）
-                    document.getElementById('salaryMin').value = selectedMinSalary === 0 ? '' : selectedMinSalary;
-                    document.getElementById('salaryMax').value = selectedMaxSalary === 999 ? '' : selectedMaxSalary;
-
-                    updateSelectedTags();
-                    searchJobs();
-                });
-            });
-        }
-
-        // 更新已选标签
-        function updateSelectedTags() {
-            const tagsContainer = document.getElementById('selectedTags');
-            const selectedFilters = document.getElementById('selectedFilters');
-            const tags = [];
-
-            if (selectedProfession) {
-                const profSelect = document.getElementById('professionSelect');
-                const profText = profSelect.querySelector('.filter-value').textContent;
-                tags.push({ key: 'profession', text: profText });
-            }
-
-            if (selectedCity) {
-                const citySelect = document.getElementById('citySelect');
-                const cityText = citySelect.querySelector('.filter-value').textContent;
-                tags.push({ key: 'city', text: cityText });
-            }
-
-            const hasSalaryFilter = selectedMinSalary > 0 || (selectedMaxSalary > 0 && selectedMaxSalary !== 999);
-            if (hasSalaryFilter) {
-                tags.push({
-                    key: 'salary',
-                    text: `${selectedMinSalary || 0}-${selectedMaxSalary === 999 ? '∞' : selectedMaxSalary}K`
-                });
-            }
-
-            if (tags.length === 0) {
-                selectedFilters.style.display = 'none';
-                tagsContainer.innerHTML = '';
-                return;
-            }
-
-            selectedFilters.style.display = 'flex';
-            tagsContainer.innerHTML = tags.map(tag => `
-                <div class="selected-tag">
-                    <span>${tag.text}</span>
-                    <span class="close-btn" onclick="removeTag('${tag.key}')">×</span>
-                </div>
-            `).join('');
-        }
-
-        // 移除单个标签
-        function removeTag(key) {
-            if (key === 'profession') {
-                selectedProfession = '';
-                const select = document.getElementById('professionSelect');
-                select.querySelector('.filter-value').textContent = '选择专业方向';
-                delete select.dataset.value;
-            } else if (key === 'city') {
-                selectedCity = '';
-                const select = document.getElementById('citySelect');
-                select.querySelector('.filter-value').textContent = '选择城市';
-                delete select.dataset.value;
-            } else if (key === 'salary') {
-                selectedMinSalary = 0;
-                selectedMaxSalary = 999;
-                document.getElementById('salaryMin').value = '';
-                document.getElementById('salaryMax').value = '';
-                document.querySelectorAll('.preset-chip').forEach(p => {
-                    p.classList.remove('active');
-                    if (p.dataset.min === '0') p.classList.add('active');
-                });
-            }
-
-            updateSelectedTags();
-            searchJobs();
-        }
-
-        // 清空全部
-        document.getElementById('clearAll')?.addEventListener('click', () => {
-            selectedProfession = '';
-            selectedCity = '';
-            selectedMinSalary = 0;
-            selectedMaxSalary = 999;
-
-            const professionSelect = document.getElementById('professionSelect');
-            professionSelect.querySelector('.filter-value').textContent = '选择专业方向';
-            delete professionSelect.dataset.value;
-
-            const citySelect = document.getElementById('citySelect');
-            citySelect.querySelector('.filter-value').textContent = '选择城市';
-            delete citySelect.dataset.value;
-
-            document.getElementById('salaryMin').value = '';
-            document.getElementById('salaryMax').value = '';
-
-            document.querySelectorAll('.preset-chip').forEach(p => {
-                p.classList.remove('active');
-                if (p.dataset.min === '0') p.classList.add('active');
-            });
-
-            updateSelectedTags();
-            searchJobs();
+/* Salary presets */
+function initSalaryPresets(){
+    document.querySelectorAll('.preset-chip').forEach(p=>{
+        p.addEventListener('click',()=>{
+            document.querySelectorAll('.preset-chip').forEach(x=>x.classList.remove('active'));p.classList.add('active');
+            selectedMinSalary=parseInt(p.dataset.min)||0;selectedMaxSalary=parseInt(p.dataset.max)||999;
+            document.getElementById('salaryMin').value=selectedMinSalary===0?'':selectedMinSalary;
+            document.getElementById('salaryMax').value=selectedMaxSalary===999?'':selectedMaxSalary;
+            updateSelectedTags();searchJobs();
         });
+    });
+}
 
-        // 薪资输入框
-        document.getElementById('salaryMin')?.addEventListener('input', (e) => {
-            selectedMinSalary = parseInt(e.target.value, 10) || 0;
-            updateSelectedTags();
-        });
+/* Tags */
+function updateSelectedTags(){
+    const tc=document.getElementById('selectedTags'),sf=document.getElementById('selectedFilters');const tags=[];
+    if(selectedProfession){const ps=document.getElementById('professionSelect');tags.push({key:'profession',text:ps.querySelector('.filter-value').textContent});}
+    if(selectedCity){const cs=document.getElementById('citySelect');tags.push({key:'city',text:cs.querySelector('.filter-value').textContent});}
+    const hs=selectedMinSalary>0||(selectedMaxSalary>0&&selectedMaxSalary!==999);
+    if(hs)tags.push({key:'salary',text:`${selectedMinSalary||0}-${selectedMaxSalary===999?'∞':selectedMaxSalary}K`});
+    if(!tags.length){sf.style.display='none';tc.innerHTML='';return;}
+    sf.style.display='flex';tc.innerHTML=tags.map(t=>`<div class="selected-tag"><span>${t.text}</span><span class="close-btn" onclick="removeTag('${t.key}')">×</span></div>`).join('');
+}
+function removeTag(key){
+    if(key==='profession'){selectedProfession='';const s=document.getElementById('professionSelect');s.querySelector('.filter-value').textContent='选择专业方向';delete s.dataset.value;}
+    else if(key==='city'){selectedCity='';const s=document.getElementById('citySelect');s.querySelector('.filter-value').textContent='选择城市';delete s.dataset.value;}
+    else if(key==='salary'){selectedMinSalary=0;selectedMaxSalary=999;document.getElementById('salaryMin').value='';document.getElementById('salaryMax').value='';document.querySelectorAll('.preset-chip').forEach(p=>{p.classList.remove('active');if(p.dataset.min==='0')p.classList.add('active');});}
+    updateSelectedTags();searchJobs();
+}
+document.getElementById('clearAll')?.addEventListener('click',()=>{
+    selectedProfession='';selectedCity='';selectedMinSalary=0;selectedMaxSalary=999;
+    const ps=document.getElementById('professionSelect');ps.querySelector('.filter-value').textContent='选择专业方向';delete ps.dataset.value;
+    const cs=document.getElementById('citySelect');cs.querySelector('.filter-value').textContent='选择城市';delete cs.dataset.value;
+    document.getElementById('salaryMin').value='';document.getElementById('salaryMax').value='';
+    document.querySelectorAll('.preset-chip').forEach(p=>{p.classList.remove('active');if(p.dataset.min==='0')p.classList.add('active');});
+    updateSelectedTags();searchJobs();
+});
+document.getElementById('salaryMin')?.addEventListener('input',(e)=>{selectedMinSalary=parseInt(e.target.value,10)||0;updateSelectedTags();});
+document.getElementById('salaryMin')?.addEventListener('keydown',(e)=>{if(e.key==='Enter')searchJobs();});
+document.getElementById('salaryMax')?.addEventListener('input',(e)=>{selectedMaxSalary=parseInt(e.target.value,10)||999;updateSelectedTags();});
+document.getElementById('salaryMax')?.addEventListener('keydown',(e)=>{if(e.key==='Enter')searchJobs();});
+document.getElementById('searchInput')?.addEventListener('keydown',(e)=>{if(e.key==='Enter')searchJobs();});
 
-        document.getElementById('salaryMax')?.addEventListener('input', (e) => {
-            selectedMaxSalary = parseInt(e.target.value, 10) || 999;
-            updateSelectedTags();
-        });
-
-        document.getElementById('searchInput')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                searchJobs();
-            }
-        });
-
-        document.getElementById('salaryMin')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                searchJobs();
-            }
-        });
-
-        document.getElementById('salaryMax')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                searchJobs();
-            }
-        });
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            initDropdowns();
-            initSalaryPresets();
-            
-            // 如果有预加载的职位数据，直接显示
-            const preloadedJobs = window.preloadedJobs || [];
-            if (preloadedJobs.length > 0) {
-                allJobs = preloadedJobs;
-                totalPages = Math.ceil(allJobs.length / jobsPerPage);
-                currentPage = 1;
-                renderJobs();
-                renderPagination();
-            } else {
-                document.getElementById('resultsContainer').innerHTML = '';
-            }
-        });
-    </script>
+/* Init */
+document.addEventListener('DOMContentLoaded',()=>{
+    initDropdowns();initSalaryPresets();
+    if(preloadedJobs&&preloadedJobs.length>0){allJobs=preloadedJobs;totalPages=Math.ceil(allJobs.length/jobsPerPage);currentPage=1;renderJobs();renderPagination();}
+});
+</script>
 </body>
 </html>

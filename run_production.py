@@ -11,26 +11,29 @@ if __name__ == '__main__':
     try:
         from gunicorn.app.wsgiapp import run as gunicorn_run
         
-        print("=" * 70)
-        print("🚀 职引未来 - 高校毕业生就业服务平台（生产环境）")
-        print("=" * 70)
-        print(f"📍 服务地址：http://0.0.0.0:{os.environ.get('PORT', 5000)}")
-        print("✨ 使用 Gunicorn WSGI 服务器")
-        print("=" * 70)
+        print(" ✅ 服务启动成功！")
+        print(f"    访问地址：http://localhost:{os.environ.get('PORT', 5000)}")
+        print(f"    ✨ 使用 Gunicorn WSGI 服务器")
         
         # Gunicorn 配置
         os.environ['GUNICORN_CMD_ARGS'] = '--workers=4 --bind=0.0.0.0:5000 --timeout=120 --access-logfile=logs/access.log --error-logfile=logs/error.log'
         gunicorn_run()
         
     except ImportError:
-        print("=" * 70)
-        print("⚠️  未检测到 Gunicorn，使用 Flask 开发服务器")
-        print("=" * 70)
-        print("💡 建议安装：pip install gunicorn")
-        print("=" * 70)
-        
-        # 使用 Flask 内置服务器
-        app.run(
+        try:
+            # 在 Windows 环境下尝试使用高性能的 Waitress (支持并发)
+            from waitress import serve
+            print(" ✅ 服务启动成功！")
+            print(f"    访问地址：http://localhost:{os.environ.get('PORT', 5000)}")
+            print("    ⚡ 使用 Waitress WSGI 服务器")
+            serve(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), threads=6)
+        except ImportError:
+            print(" ✅ 服务启动成功！")
+            print(f"    访问地址：http://localhost:{os.environ.get('PORT', 5000)}")
+            print("    ⚠️  使用 Flask 开发服务器（建议安装 waitress）")
+            
+            # 采用 Flask 内置单线程
+            app.run(
             host='0.0.0.0',
             port=int(os.environ.get('PORT', 5000)),
             debug=False,  # 生产环境关闭 debug
